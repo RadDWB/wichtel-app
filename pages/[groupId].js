@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import AddParticipants from '../components/AddParticipants';
 import DrawNames from '../components/DrawNames';
 import Wishlist from '../components/Wishlist';
-import '../styles/globals.css';
 
 export default function GroupPage() {
   const router = useRouter();
