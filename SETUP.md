@@ -37,7 +37,7 @@ npm run dev
 
 Die App ist dann verfügbar unter: **http://localhost:3000**
 
-## Architektur-Änderungen (v1.3.0)
+## Architektur-Änderungen (v2.0.0)
 
 ### Datenspeicherung
 - **Redis** (Hauptspeicher): Groups, Gifts, Exclusions, Pairings
