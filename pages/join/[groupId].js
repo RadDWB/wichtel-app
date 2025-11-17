@@ -429,7 +429,7 @@ export default function JoinGroup() {
           <div className="max-w-2xl mx-auto mb-6 bg-purple-50 border-l-4 border-purple-500 p-4 rounded">
             <h2 className="font-bold text-purple-900 mb-2">🎁 Phase 2: Persönliche Ausschlüsse (optional)</h2>
             <p className="text-sm text-purple-800">
-              Definiere jetzt, wem du NICHT ein Geschenk kaufen möchtest. Z.B. dein Partner, enge Familie, etc. Dies wird berücksichtigt bei der Auslosung.
+              Wenn du möchtest, kannst du eine Person ausschließen, der/dem du kein Geschenk kaufen möchtest. Zum Beispiel dein Partner, Familie oder enge Freunde.
             </p>
           </div>
 
@@ -437,8 +437,20 @@ export default function JoinGroup() {
 
           {group.participants && group.participants.length >= 2 && (
             <div className="bg-white rounded-lg p-6 shadow-md mb-6">
-              <p className="text-gray-700 mb-4">
-                Wähle eine Person aus, der/dem du definitiv NICHT ein Geschenk kaufen möchtest (optional):
+              <div className="mb-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded">
+                <p className="text-sm text-gray-700 mb-2">
+                  <strong>ℹ️ Wie funktioniert das Ausschließen?</strong>
+                </p>
+                <p className="text-sm text-gray-600 mb-3">
+                  Wenn du jemanden ausschließt, versuchen wir, dass du dieser Person kein Geschenk kaufen musst. Das hilft besonders, wenn es Paare oder Familienmitglieder gibt.
+                </p>
+                <p className="text-sm text-gray-600">
+                  <strong>Wichtig:</strong> Wenn jemand von mehreren Personen ausgeschlossen wird, kann es sein, dass diese Person dir trotzdem zugelost wird. Das ist normal – wir versuchen unser Bestes! 😊
+                </p>
+              </div>
+
+              <p className="text-gray-700 mb-4 font-semibold">
+                Du kannst maximal eine Person ausschließen:
               </p>
 
               <div className="space-y-3">
@@ -479,8 +491,10 @@ export default function JoinGroup() {
               </div>
 
               {Object.keys(exclusions).some(k => exclusions[k]) && (
-                <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm text-gray-700">
-                  ✅ Du hast folgende Person ausgeschlossen: <strong>{group.participants.find(p => p.id === Object.keys(exclusions).filter(k => exclusions[k])[0])?.name}</strong>
+                <div className="mt-4 p-4 bg-green-50 border-l-4 border-green-500 rounded">
+                  <p className="text-sm text-gray-700">
+                    ✅ <strong>Ausgeschlossen:</strong> Du wirst <strong>{group.participants.find(p => p.id === Object.keys(exclusions).filter(k => exclusions[k])[0])?.name}</strong> nicht beschenken müssen.
+                  </p>
                 </div>
               )}
             </div>
@@ -534,45 +548,46 @@ export default function JoinGroup() {
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
         <div className="container mx-auto py-12 px-4 max-w-2xl">
           <div className="bg-white rounded-lg p-8 shadow-lg mb-6">
-            <h1 className="text-4xl font-bold mb-4">✅ Du bist angemeldet!</h1>
-            <p className="text-lg text-gray-700 mb-8">
-              Großartig! Deine Ausschlüsse wurden gespeichert.
+            <div className="text-5xl mb-4 text-center">🎉</div>
+            <h1 className="text-4xl font-bold mb-4 text-center text-green-600">Glückwunsch!</h1>
+            <p className="text-lg text-gray-700 mb-8 text-center">
+              Du bist angemeldet und alles wurde gespeichert. Jetzt geht's los! 🚀
             </p>
 
             {/* Big Button to Create Wishlist */}
             <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-300 rounded-lg p-6 mb-8">
-              <h2 className="text-2xl font-bold text-blue-900 mb-3">📝 Erstelle deine Wunschliste</h2>
+              <h2 className="text-2xl font-bold text-blue-900 mb-3">📝 Deine Wunschliste</h2>
               <p className="text-gray-700 mb-6">
-                Jetzt ist es an der Zeit, deine Geschenkwünsche einzutragen! So weiß dein Wichtel, was du dir wünschst.
+                Jetzt trag deine Geschenkwünsche ein! Schreib auf, was du dir wünschst, damit dein Wichtel weiß, was dich glücklich macht. 🎁
               </p>
               <button
                 onClick={() => setStep(2)}
                 className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold py-4 rounded-lg text-lg transition transform hover:scale-105"
               >
-                ✨ Meine Wunschliste erstellen
+                ✨ Wunschliste jetzt erstellen
               </button>
             </div>
 
-            <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded mb-6">
-              <p className="text-sm text-gray-600">
-                <strong>Das passiert dann:</strong>
+            <div className="bg-purple-50 border-l-4 border-purple-500 p-4 rounded mb-6">
+              <p className="text-sm text-gray-700 mb-3">
+                <strong>📌 So läuft's ab:</strong>
               </p>
-              <ol className="text-sm text-gray-600 mt-2 space-y-1 text-left">
-                <li>📝 Du trägst deine Geschenkwünsche ein (1-10 Produkte)</li>
-                <li>✅ Du wartest, bis alle anderen Teilnehmer auch fertig sind</li>
-                <li>⏳ Der Organisator startet die Auslosung</li>
-                <li>🎁 Du erfährst dann, wen du beschenken darfst</li>
-                <li>🛍️ Du siehst die Geschenkeliste deines Partners und kannst einkaufen!</li>
+              <ol className="text-sm text-gray-600 space-y-2 text-left">
+                <li>✅ <strong>Jetzt:</strong> Du erstellst deine Wunschliste</li>
+                <li>⏳ <strong>Dann:</strong> Alle anderen tragen auch ihre Wünsche ein</li>
+                <li>🎲 <strong>Dann:</strong> Der Organisator startet die Auslosung</li>
+                <li>🎁 <strong>Dann:</strong> Du erfährst, wer dein Wichtel-Partner ist</li>
+                <li>🛍️ <strong>Zum Abschluss:</strong> Du siehst die Wunschliste deines Partners und kannst einkaufen gehen!</li>
               </ol>
             </div>
 
-            <div className="bg-blue-50 border border-blue-200 rounded p-4 mb-6">
+            <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded mb-6">
               <p className="text-sm text-gray-700">
-                💡 <strong>Tipp:</strong> Der Organisator wird euch Bescheid geben, sobald alle fertig sind. Dann beginnt die Auslosung!
+                ✨ <strong>Tipp:</strong> Schreib deine Wünsche ehrlich auf! Dein Wichtel wird es lieben, dir genau das zu schenken, das du dir wünschst. Je spezifischer, desto besser! 😊
               </p>
             </div>
 
-            <a href="/" className="btn-outline text-center block">
+            <a href="/" className="text-center block text-blue-600 hover:underline font-semibold">
               ← Zur Startseite
             </a>
           </div>
