@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
+import { getGroup, saveGroup } from '../../../lib/kv';
 
 export default function DrawPage() {
   const router = useRouter();
@@ -17,11 +18,39 @@ export default function DrawPage() {
     }
   }, [id]);
 
-  const loadGroup = () => {
+  const loadGroup = async () => {
     try {
-      const groupData = localStorage.getItem(`group_${id}`);
+      // Try KV first (primary)
+      let groupData = null;
+      try {
+        groupData = await getGroup(id);
+        if (groupData) {
+          console.log('✅ Group loaded from KV');
+        }
+      } catch (kvErr) {
+        console.log('KV not available, trying API:', kvErr);
+      }
+
+      // Fallback to API
+      if (!groupData) {
+        try {
+          const response = await fetch(`/api/groups/list?groupId=${id}`);
+          if (response.ok) {
+            const data = await response.json();
+            if (data.groups && data.groups.length > 0) {
+              groupData = data.groups[0];
+              console.log('✅ Group loaded from API');
+            }
+          }
+        } catch (apiErr) {
+          console.error('API not available:', apiErr);
+        }
+      }
+
       if (groupData) {
-        setGroup(JSON.parse(groupData));
+        setGroup(groupData);
+      } else {
+        setError('Fehler beim Laden der Gruppe');
       }
     } catch (err) {
       console.error('Error loading group:', err);
@@ -53,7 +82,7 @@ export default function DrawPage() {
 
       const data = await response.json();
 
-      // Save updated group with pairing to localStorage
+      // Update local state (no need to save to localStorage - KV was updated by API)
       const updatedGroup = {
         ...group,
         drawn: true,
@@ -61,7 +90,6 @@ export default function DrawPage() {
         drawnAt: new Date().toISOString(),
       };
 
-      localStorage.setItem(`group_${id}`, JSON.stringify(updatedGroup));
       setGroup(updatedGroup);
       setSuccess(true);
 

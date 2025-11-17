@@ -24,11 +24,7 @@ export default function JoinGroup() {
 
     // Refresh group status every 5 seconds to detect when it's marked as complete
     const interval = setInterval(() => {
-      const saved = localStorage.getItem(`group_${groupId}`);
-      if (saved) {
-        const latest = JSON.parse(saved);
-        setGroup(latest);
-      }
+      loadGroup();
     }, 5000);
 
     return () => clearInterval(interval);
@@ -69,16 +65,7 @@ export default function JoinGroup() {
             }
           }
         } catch (apiErr) {
-          console.log('API not available, trying localStorage:', apiErr);
-        }
-      }
-
-      // Fallback to localStorage
-      if (!groupData) {
-        const saved = localStorage.getItem(`group_${groupId}`);
-        if (saved) {
-          groupData = JSON.parse(saved);
-          console.log('✅ Group loaded from localStorage');
+          console.error('API not available:', apiErr);
         }
       }
 
@@ -142,18 +129,16 @@ export default function JoinGroup() {
     };
 
     try {
-      // Save to KV (primary)
+      // Save to KV (primary - no fallback)
       await saveGroup(groupId, updated);
       console.log('✅ Group updated in KV');
+      setGroup(updated);
+      setSelectedParticipant({ ...selectedParticipant, name: nameEdit, email: emailEdit });
+      setStep(1.5); // Go to gift choice first
     } catch (kvErr) {
-      console.warn('KV save failed, using localStorage:', kvErr);
+      console.error('❌ Failed to save group:', kvErr);
+      setError('Fehler beim Speichern. Bitte versuche es später erneut.');
     }
-
-    // Also save to localStorage as fallback
-    localStorage.setItem(`group_${groupId}`, JSON.stringify(updated));
-    setGroup(updated);
-    setSelectedParticipant({ ...selectedParticipant, name: nameEdit, email: emailEdit });
-    setStep(1.5); // Go to gift choice first
   };
 
   if (loading) {
@@ -264,7 +249,7 @@ export default function JoinGroup() {
                 ← Zurück
               </button>
               <button
-                onClick={() => {
+                onClick={async () => {
                   if (!nameEdit.trim()) {
                     setError('Bitte gib deinen Namen ein');
                     return;
@@ -278,11 +263,19 @@ export default function JoinGroup() {
                     ...group,
                     participants: [...group.participants, newParticipant],
                   };
-                  localStorage.setItem(`group_${groupId}`, JSON.stringify(updated));
-                  localStorage.setItem(`participant_${groupId}`, newParticipant.id);
-                  setGroup(updated);
-                  setSelectedParticipant(newParticipant);
-                  setStep(1.5); // Go to gift choice, not directly to exclusions
+
+                  try {
+                    // Save to KV (primary - no fallback)
+                    await saveGroup(groupId, updated);
+                    console.log('✅ New participant added to KV');
+                    localStorage.setItem(`participant_${groupId}`, newParticipant.id);
+                    setGroup(updated);
+                    setSelectedParticipant(newParticipant);
+                    setStep(1.5); // Go to gift choice, not directly to exclusions
+                  } catch (kvErr) {
+                    console.error('❌ Failed to save new participant:', kvErr);
+                    setError('Fehler beim Hinzufügen. Bitte versuche es später erneut.');
+                  }
                 }}
                 className="flex-1 btn-primary"
               >
@@ -494,17 +487,15 @@ export default function JoinGroup() {
                 const updated = { ...group, exclusions: updatedExclusions };
 
                 try {
-                  // Save to KV
+                  // Save to KV (primary - no fallback)
                   await saveGroup(groupId, updated);
                   console.log('✅ Exclusions saved to KV');
+                  setGroup(updated);
+                  setStep(4);
                 } catch (kvErr) {
-                  console.warn('KV save failed, using localStorage:', kvErr);
+                  console.error('❌ Failed to save exclusions:', kvErr);
+                  setError('Fehler beim Speichern der Ausschlüsse. Bitte versuche es später erneut.');
                 }
-
-                // Also save to localStorage
-                localStorage.setItem(`group_${groupId}`, JSON.stringify(updated));
-                setGroup(updated);
-                setStep(4);
               }}
               className="w-full btn-primary"
             >

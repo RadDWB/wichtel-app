@@ -45,16 +45,7 @@ export default function PairingsPage() {
             }
           }
         } catch (apiErr) {
-          console.log('API not available, trying localStorage:', apiErr);
-        }
-      }
-
-      // Fallback to localStorage
-      if (!groupData) {
-        const saved = localStorage.getItem(`group_${groupId}`);
-        if (saved) {
-          groupData = JSON.parse(saved);
-          console.log('✅ Group loaded from localStorage');
+          console.error('API not available:', apiErr);
         }
       }
 
@@ -69,9 +60,8 @@ export default function PairingsPage() {
               const giftData = await getGifts(groupId, p.id);
               allGifts[p.id] = giftData || [];
             } catch (err) {
-              // Fallback to localStorage
-              const localGifts = localStorage.getItem(`group:${groupId}:gifts:${p.id}`);
-              allGifts[p.id] = localGifts ? JSON.parse(localGifts) : [];
+              console.warn(`Failed to load gifts for ${p.id}:`, err);
+              allGifts[p.id] = [];
             }
           }
         }

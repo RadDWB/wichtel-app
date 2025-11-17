@@ -67,13 +67,6 @@ export default function OrganizerDashboard() {
       // Verify PIN against group
       let groupData = await getGroup(id);
 
-      if (!groupData) {
-        const saved = localStorage.getItem(`group_${id}`);
-        if (saved) {
-          groupData = JSON.parse(saved);
-        }
-      }
-
       if (!groupData || groupData.organizerPin !== pinInput.trim()) {
         setPinError('❌ PIN ist ungültig');
         setPinInput('');
@@ -105,16 +98,7 @@ export default function OrganizerDashboard() {
           console.log('✅ Group loaded from KV');
         }
       } catch (kvErr) {
-        console.log('KV not available, trying localStorage:', kvErr);
-      }
-
-      // Fallback to localStorage
-      if (!groupData) {
-        const saved = localStorage.getItem(`group_${id}`);
-        if (saved) {
-          groupData = JSON.parse(saved);
-          console.log('✅ Group loaded from localStorage');
-        }
+        console.error('KV not available:', kvErr);
       }
 
       if (groupData) {
@@ -128,9 +112,8 @@ export default function OrganizerDashboard() {
               const giftData = await getGifts(id, p.id);
               allGifts[p.id] = giftData || [];
             } catch (err) {
-              // Fallback to localStorage
-              const localGifts = localStorage.getItem(`group:${id}:gifts:${p.id}`);
-              allGifts[p.id] = localGifts ? JSON.parse(localGifts) : [];
+              console.warn(`Failed to load gifts for ${p.id}:`, err);
+              allGifts[p.id] = [];
             }
           }
         }

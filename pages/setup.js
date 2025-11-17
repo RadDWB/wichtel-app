@@ -154,17 +154,11 @@ export default function Setup() {
         invitationText,
       };
 
-      // Save to Vercel KV (primary storage)
-      try {
-        await saveGroup(groupId, group);
-        console.log('✅ Group saved to KV');
-      } catch (kvErr) {
-        console.error('❌ KV save failed:', kvErr);
-        // Continue anyway, localStorage fallback will work
-      }
+      // Save to Vercel KV (primary storage - no fallback)
+      await saveGroup(groupId, group);
+      console.log('✅ Group saved to KV');
 
-      // Also save to localStorage as fallback
-      localStorage.setItem(`group_${groupId}`, JSON.stringify(group));
+      // Save organizer session auth (localStorage only for session data)
       localStorage.setItem(`organizer_${groupId}`, JSON.stringify({ pin: organizerPin, createdAt: new Date().toISOString() }));
 
       // Redirect to organizer dashboard with PIN shown
