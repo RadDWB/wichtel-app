@@ -400,10 +400,10 @@ export default function JoinGroup() {
           <div className="container mx-auto mt-8 max-w-2xl">
             <div className="flex gap-3">
               <button
-                onClick={() => setStep(1)}
+                onClick={() => orgParticipant ? router.push(`/organizer/${groupId}`) : setStep(1)}
                 className="flex-1 btn-outline"
               >
-                ← Zurück zur Teilnehmerliste
+                ← {orgParticipant ? 'Zum Dashboard' : 'Zur Teilnehmerliste'}
               </button>
               <button
                 onClick={() => setStep(3)}

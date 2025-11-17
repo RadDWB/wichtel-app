@@ -4,7 +4,7 @@ import GiftIdeaBrowser from './GiftIdeaBrowser';
 
 const AMAZON_AFFILIATE_TAG = process.env.NEXT_PUBLIC_AMAZON_AFFILIATE_TAG || 'httpwwwspor03-21';
 
-export default function GiftList({ group, groupId, participantId }) {
+export default function GiftList({ group, groupId, participantId, isViewing = false }) {
   const [gifts, setGifts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -189,6 +189,44 @@ export default function GiftList({ group, groupId, participantId }) {
     }
   };
 
+  // Viewing mode - only show the gift list, nothing else
+  if (isViewing) {
+    return (
+      <div className="space-y-4">
+        {loading && <p className="text-center text-gray-500">Lädt...</p>}
+
+        {gifts.length > 0 ? (
+          <div className="grid grid-cols-1 gap-3">
+            {gifts.map(gift => (
+              <div key={gift.id} className="bg-white p-4 rounded-lg border border-gray-200 hover:shadow-md transition">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <h4 className="font-bold text-lg mb-2">🎁 {gift.name}</h4>
+                    {gift.link && (
+                      <a
+                        href={gift.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline font-medium inline-flex items-center gap-2"
+                      >
+                        🔗 Auf Amazon anschauen
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-center text-gray-500 italic py-6">
+            Keine Geschenke hinterlegt
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  // Edit mode - show full form for adding gifts
   return (
     <div className="space-y-6">
       {error && (
