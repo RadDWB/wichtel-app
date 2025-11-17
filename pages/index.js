@@ -1,9 +1,4 @@
-import { useState } from 'react';
-import CreateGroup from '../components/CreateGroup';
-
 export default function Home() {
-  const [groupId, setGroupId] = useState(null);
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
       <main className="container py-12">
@@ -80,29 +75,6 @@ export default function Home() {
                 </ol>
               </div>
             </div>
-          ) : (
-            <div className="success text-center">
-              <h3>✅ Gruppe erstellt!</h3>
-              <p className="text-gray-700 mb-4">Teile diesen Link mit allen Teilnehmern:</p>
-              <code className="code block mb-4">
-                {typeof window !== 'undefined' ? `${window.location.origin}/${groupId}` : ''}
-              </code>
-              <button
-                onClick={() => {
-                  if (typeof window !== 'undefined') {
-                    navigator.clipboard.writeText(`${window.location.origin}/${groupId}`);
-                    alert('Link kopiert!');
-                  }
-                }}
-                className="btn-outline mr-2"
-              >
-                📋 Kopieren
-              </button>
-              <a href={`/${groupId}`} className="btn-secondary">
-                Zur Gruppe →
-              </a>
-            </div>
-          )}
         </div>
 
         {/* Footer */}
