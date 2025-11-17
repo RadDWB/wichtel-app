@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { GIFT_CATEGORIES } from '../lib/categories';
-import ProductBrowser from './ProductBrowser';
-import GiftSuggestionsGenerator from './GiftSuggestionsGenerator';
+import GiftIdeaBrowser from './GiftIdeaBrowser';
 
-const AMAZON_AFFILIATE_TAG = process.env.NEXT_PUBLIC_AMAZON_AFFILIATE_TAG || 'wichtel-app-21';
+const AMAZON_AFFILIATE_TAG = process.env.NEXT_PUBLIC_AMAZON_AFFILIATE_TAG || 'httpwwwspor03-21';
 
 export default function GiftList({ group, groupId, participantId }) {
   const [gifts, setGifts] = useState([]);
@@ -111,20 +110,36 @@ export default function GiftList({ group, groupId, participantId }) {
     }
   };
 
-  const addProductsFromBrowser = async (selectedProducts) => {
+  const addGiftsFromIdeaBrowser = async (selectedGifts) => {
     try {
       setLoading(true);
       setError('');
 
-      // Konvertiere Produkte zu Geschenk-Format
-      const newGifts = selectedProducts.map(product => ({
-        id: Date.now().toString() + Math.random(),
-        name: product.name,
-        link: product.link,
-        category: 'bluetooth_headphones',
-        price: product.price + '€',
-        createdAt: new Date().toISOString(),
-      }));
+      // Konvertiere Geschenke zu Geschenk-Format
+      const newGifts = selectedGifts.map(gift => {
+        // Affiliate-Tag hinzufügen, falls Amazon-Link
+        let link = gift.link;
+        if (gift.link && gift.link.includes('amazon.')) {
+          try {
+            const urlObj = new URL(gift.link);
+            if (!urlObj.searchParams.has('tag')) {
+              urlObj.searchParams.set('tag', AMAZON_AFFILIATE_TAG);
+              link = urlObj.toString();
+            }
+          } catch (e) {
+            // URL-Parsing fehlgeschlagen, verwende wie vorhanden
+          }
+        }
+
+        return {
+          id: Date.now().toString() + Math.random(),
+          name: gift.name,
+          link: link,
+          category: 'other',
+          price: gift.price + '€',
+          createdAt: new Date().toISOString(),
+        };
+      });
 
       // Prüfe max 10 Limit
       if (gifts.length + newGifts.length > 10) {
@@ -149,53 +164,8 @@ export default function GiftList({ group, groupId, participantId }) {
 
       setGifts(updatedGifts);
     } catch (err) {
-      console.error('Error adding products:', err);
-      setError('Fehler beim Hinzufügen der Produkte');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const addSuggestedGifts = async (suggestedGifts) => {
-    try {
-      setLoading(true);
-      setError('');
-
-      // Konvertiere Vorschläge zu Geschenk-Format
-      const newGifts = suggestedGifts.map(gift => ({
-        id: Date.now().toString() + Math.random(),
-        name: gift.name,
-        link: gift.link,
-        category: 'other',
-        price: gift.price + '€',
-        createdAt: new Date().toISOString(),
-      }));
-
-      // Prüfe max 10 Limit
-      if (gifts.length + newGifts.length > 10) {
-        const canAdd = 10 - gifts.length;
-        setError(`Du kannst maximal ${canAdd} weitere Geschenke hinzufügen!`);
-        setLoading(false);
-        return;
-      }
-
-      const updatedGifts = [...gifts, ...newGifts];
-
-      // Speichere auf Backend
-      const response = await fetch(`/api/gifts/${groupId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ participantId, gifts: updatedGifts }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save gifts');
-      }
-
-      setGifts(updatedGifts);
-    } catch (err) {
-      console.error('Error adding suggested gifts:', err);
-      setError('Fehler beim Hinzufügen der Vorschläge');
+      console.error('Error adding gifts from browser:', err);
+      setError('Fehler beim Hinzufügen der Geschenke');
     } finally {
       setLoading(false);
     }
@@ -209,19 +179,11 @@ export default function GiftList({ group, groupId, participantId }) {
         </div>
       )}
 
-      {/* Gift Suggestions Generator - nur wenn noch Platz vorhanden */}
+      {/* Gift Idea Browser - nur wenn noch Platz vorhanden */}
       {gifts.length < 10 && (
-        <GiftSuggestionsGenerator
+        <GiftIdeaBrowser
           budget={group?.budget}
-          onSelectGifts={addSuggestedGifts}
-        />
-      )}
-
-      {/* Product Browser - nur wenn noch Platz vorhanden */}
-      {gifts.length < 10 && (
-        <ProductBrowser
-          budget={group?.budget}
-          onSelectProducts={addProductsFromBrowser}
+          onSelectGifts={addGiftsFromIdeaBrowser}
         />
       )}
 
