@@ -1,5 +1,15 @@
-import { useState } from 'react';
-import { getAllGiftCategories, getGiftIdeasByCategory } from '../lib/giftIdeas';
+import { useState, useEffect } from 'react';
+import { getAllGiftCategories } from '../lib/giftIdeas';
+
+// Category to search keywords mapping
+const CATEGORY_KEYWORDS = {
+  tech: 'Technik Gadgets Elektronik',
+  lifestyle: 'Lifestyle Fashion Accessoires',
+  books: 'Buch eBook Sachbuch Roman',
+  home: 'Wohndeko Heimdekoration Einrichtung',
+  sports: 'Sport Fitness Training',
+  drinks: 'Drinks Getränke Kaffee Tee',
+};
 
 export default function GiftIdeaBrowser({ budget, onSelectGifts }) {
   const [step, setStep] = useState(1); // 1: Kategorie, 2: Geschlecht, 3: Anzahl & Auswahl
@@ -8,6 +18,8 @@ export default function GiftIdeaBrowser({ budget, onSelectGifts }) {
   const [giftCount, setGiftCount] = useState(10);
   const [selectedGifts, setSelectedGifts] = useState({});
   const [loading, setLoading] = useState(false);
+  const [availableGifts, setAvailableGifts] = useState([]);
+  const [searchError, setSearchError] = useState('');
 
   const categories = getAllGiftCategories();
 
@@ -20,21 +32,63 @@ export default function GiftIdeaBrowser({ budget, onSelectGifts }) {
     setSelectedGender(gender);
     setStep(3);
     setSelectedGifts({});
+    // Automatically load products when gender is selected
+    loadProducts(gender);
   };
 
-  const getAvailableGifts = () => {
-    if (!selectedCategory || !selectedGender) return [];
+  const loadProducts = async (gender) => {
+    if (!selectedCategory || !gender) return;
 
-    // Extract numeric budget value (e.g., "30 €" -> 30)
-    const budgetValue = parseFloat(String(budget).replace(/[^0-9.,]/g, '').replace(',', '.')) || 100;
+    setLoading(true);
+    setSearchError('');
+    setAvailableGifts([]);
 
-    // Get all gifts for this category/gender and filter by budget
-    const allGifts = getGiftIdeasByCategory(selectedCategory, selectedGender);
-    const filteredByBudget = allGifts.filter(gift => gift.price <= budgetValue);
+    try {
+      // Extract numeric budget value (e.g., "30 €" -> 30)
+      const budgetValue = parseFloat(String(budget).replace(/[^0-9.,]/g, '').replace(',', '.')) || 100;
 
-    // Return only the requested count
-    return filteredByBudget.slice(0, giftCount);
+      // Build search query based on category and gender
+      const categoryKeywords = CATEGORY_KEYWORDS[selectedCategory] || selectedCategory;
+      const genderPrefix = gender === 'female' ? 'Für Frauen Damen' : 'Für Männer Herren';
+      const query = `${categoryKeywords} ${genderPrefix}`;
+
+      // Call backend API to search Amazon products
+      const response = await fetch(
+        `/api/amazon/search?q=${encodeURIComponent(query)}&maxPrice=${Math.ceil(budgetValue)}&limit=${giftCount}`
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to load products');
+      }
+
+      const data = await response.json();
+
+      if (data.products && data.products.length > 0) {
+        setAvailableGifts(data.products);
+      } else {
+        setSearchError('Keine Produkte im Budget gefunden. Versuche später erneut.');
+        setAvailableGifts([]);
+      }
+    } catch (error) {
+      console.error('Error loading products:', error);
+      setSearchError(
+        error.message === 'Failed to load products'
+          ? 'Amazon API wird überarbeitet. Bitte später erneut versuchen.'
+          : 'Fehler beim Laden von Produkten. Versuche später erneut.'
+      );
+      setAvailableGifts([]);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  // Reload products when giftCount changes
+  useEffect(() => {
+    if (step === 3 && selectedCategory && selectedGender) {
+      loadProducts(selectedGender);
+    }
+  }, [giftCount, selectedCategory, selectedGender, step]);
 
   const handleGiftToggle = (index) => {
     const updated = { ...selectedGifts };
@@ -47,9 +101,8 @@ export default function GiftIdeaBrowser({ budget, onSelectGifts }) {
   };
 
   const handleAddGifts = async () => {
-    const gifts = getAvailableGifts();
     const selectedGiftsList = Object.keys(selectedGifts)
-      .map(index => gifts[parseInt(index)])
+      .map(index => availableGifts[parseInt(index)])
       .filter(gift => gift);
 
     if (selectedGiftsList.length === 0) {
@@ -59,13 +112,27 @@ export default function GiftIdeaBrowser({ budget, onSelectGifts }) {
 
     try {
       setLoading(true);
-      onSelectGifts(selectedGiftsList);
+      // Transform Amazon PA products to gift format
+      const transformedGifts = selectedGiftsList.map(gift => ({
+        id: gift.asin || Date.now().toString() + Math.random(),
+        name: gift.name,
+        link: gift.link,
+        category: 'other',
+        price: gift.price ? `${gift.price}€` : '',
+        createdAt: new Date().toISOString(),
+        imageUrl: gift.imageUrl,
+        rating: gift.rating,
+        reviewCount: gift.reviewCount,
+        source: 'amazon-pa',
+      }));
+      onSelectGifts(transformedGifts);
       // Reset
       setStep(1);
       setSelectedCategory(null);
       setSelectedGender(null);
       setGiftCount(10);
       setSelectedGifts({});
+      setAvailableGifts([]);
     } catch (err) {
       console.error('Error adding gifts:', err);
     } finally {
@@ -85,7 +152,6 @@ export default function GiftIdeaBrowser({ budget, onSelectGifts }) {
   };
 
   const selectedCategoryData = categories.find(c => c.id === selectedCategory);
-  const availableGifts = getAvailableGifts();
 
   return (
     <div className="bg-white rounded-lg p-6 shadow-md mb-6 border-l-4 border-purple-500">
@@ -183,56 +249,100 @@ export default function GiftIdeaBrowser({ budget, onSelectGifts }) {
 
           {/* Gift Selection Grid */}
           <p className="text-gray-600 mb-4 font-semibold">
-            Wähle die Geschenke, die dir gefallen ({Object.keys(selectedGifts).length} ausgewählt):
+            {loading ? '🔄 Produkte werden geladen...' : `Wähle die Geschenke, die dir gefallen (${Object.keys(selectedGifts).length} ausgewählt):`}
           </p>
 
-          {availableGifts.length === 0 && (
+          {searchError && (
+            <div className="bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded mb-4">
+              ❌ {searchError}
+            </div>
+          )}
+
+          {!loading && availableGifts.length === 0 && !searchError && (
             <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-3 rounded mb-4">
               ⚠️ Keine Geschenke im Budget verfügbar. Budget erhöhen oder andere Kategorie/Geschlecht wählen.
             </div>
           )}
 
-          {availableGifts.length < giftCount && availableGifts.length > 0 && (
+          {!loading && availableGifts.length < giftCount && availableGifts.length > 0 && (
             <div className="bg-blue-100 border border-blue-400 text-blue-800 px-4 py-3 rounded mb-4">
               ℹ️ Es sind nur {availableGifts.length} Geschenke im Budget verfügbar (statt {giftCount}).
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
-            {availableGifts.map((gift, index) => (
-              <div
-                key={index}
-                onClick={() => handleGiftToggle(index)}
-                className={`border-2 rounded-lg p-4 cursor-pointer transition ${
-                  selectedGifts[index]
-                    ? 'border-purple-500 bg-purple-50'
-                    : 'border-gray-300 hover:border-purple-300'
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  <input
-                    type="checkbox"
-                    checked={selectedGifts[index] || false}
-                    onChange={() => handleGiftToggle(index)}
-                    className="w-5 h-5 mt-1"
-                  />
-                  <div className="flex-1">
-                    <h5 className="font-bold text-gray-900">{gift.name}</h5>
-                    <p className="text-lg font-bold text-purple-600 mt-2">{gift.price}€</p>
-                    <a
-                      href={gift.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline text-sm font-semibold inline-block mt-2"
-                      onClick={e => e.stopPropagation()}
-                    >
-                      🔗 Auf Amazon anschauen
-                    </a>
+          {loading ? (
+            <div className="flex justify-center py-8">
+              <div className="text-center">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mb-3"></div>
+                <p className="text-gray-600">Suche nach passenden Produkten...</p>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              {availableGifts.map((gift, index) => (
+                <div
+                  key={index}
+                  onClick={() => handleGiftToggle(index)}
+                  className={`border-2 rounded-lg overflow-hidden cursor-pointer transition ${
+                    selectedGifts[index]
+                      ? 'border-purple-500 bg-purple-50'
+                      : 'border-gray-300 hover:border-purple-300'
+                  }`}
+                >
+                  {/* Product Image */}
+                  {gift.imageUrl && (
+                    <div className="relative bg-gray-100 h-40 overflow-hidden">
+                      <img
+                        src={gift.imageUrl}
+                        alt={gift.name}
+                        className="w-full h-full object-contain p-2"
+                        loading="lazy"
+                      />
+                    </div>
+                  )}
+
+                  {/* Product Info */}
+                  <div className="p-4">
+                    <div className="flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedGifts[index] || false}
+                        onChange={() => handleGiftToggle(index)}
+                        className="w-5 h-5 mt-0.5 flex-shrink-0"
+                        onClick={e => e.stopPropagation()}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <h5 className="font-bold text-gray-900 text-sm line-clamp-2">{gift.name}</h5>
+
+                        {/* Price */}
+                        <p className="text-lg font-bold text-purple-600 mt-2">
+                          {gift.price ? `${gift.price}€` : 'Preis nicht verfügbar'}
+                        </p>
+
+                        {/* Rating */}
+                        {gift.rating && (
+                          <p className="text-sm text-yellow-600 mt-1">
+                            ⭐ {gift.rating} ({gift.reviewCount} Bewertungen)
+                          </p>
+                        )}
+
+                        {/* Link */}
+                        <a
+                          href={gift.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline text-sm font-semibold inline-block mt-3"
+                          onClick={e => e.stopPropagation()}
+                        >
+                          🔗 Auf Amazon anschauen
+                        </a>
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
           {/* Action Buttons */}
           {Object.keys(selectedGifts).length > 0 && (
