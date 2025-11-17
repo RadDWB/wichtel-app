@@ -159,13 +159,21 @@ export default function GiftList({ group, groupId, participantId }) {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save gifts');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to save gifts');
       }
 
-      setGifts(updatedGifts);
+      const data = await response.json();
+      setGifts(data.gifts || updatedGifts);
+
+      // Success message
+      setTimeout(() => {
+        setError(''); // Clear error after 3 seconds
+      }, 3000);
+
     } catch (err) {
       console.error('Error adding gifts from browser:', err);
-      setError('Fehler beim Hinzufügen der Geschenke');
+      setError(`❌ Fehler: ${err.message || 'Geschenke konnten nicht hinzugefügt werden. Bitte erneut versuchen.'}`);
     } finally {
       setLoading(false);
     }

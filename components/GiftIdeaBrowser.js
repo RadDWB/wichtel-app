@@ -24,7 +24,16 @@ export default function GiftIdeaBrowser({ budget, onSelectGifts }) {
 
   const getAvailableGifts = () => {
     if (!selectedCategory || !selectedGender) return [];
-    return getGiftIdeasByCategory(selectedCategory, selectedGender).slice(0, giftCount);
+
+    // Extract numeric budget value (e.g., "30 €" -> 30)
+    const budgetValue = parseFloat(String(budget).replace(/[^0-9.,]/g, '').replace(',', '.')) || 100;
+
+    // Get all gifts for this category/gender and filter by budget
+    const allGifts = getGiftIdeasByCategory(selectedCategory, selectedGender);
+    const filteredByBudget = allGifts.filter(gift => gift.price <= budgetValue);
+
+    // Return only the requested count
+    return filteredByBudget.slice(0, giftCount);
   };
 
   const handleGiftToggle = (index) => {
@@ -176,6 +185,18 @@ export default function GiftIdeaBrowser({ budget, onSelectGifts }) {
           <p className="text-gray-600 mb-4 font-semibold">
             Wähle die Geschenke, die dir gefallen ({Object.keys(selectedGifts).length} ausgewählt):
           </p>
+
+          {availableGifts.length === 0 && (
+            <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-3 rounded mb-4">
+              ⚠️ Keine Geschenke im Budget verfügbar. Budget erhöhen oder andere Kategorie/Geschlecht wählen.
+            </div>
+          )}
+
+          {availableGifts.length < giftCount && availableGifts.length > 0 && (
+            <div className="bg-blue-100 border border-blue-400 text-blue-800 px-4 py-3 rounded mb-4">
+              ℹ️ Es sind nur {availableGifts.length} Geschenke im Budget verfügbar (statt {giftCount}).
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
             {availableGifts.map((gift, index) => (

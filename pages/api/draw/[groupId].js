@@ -5,24 +5,26 @@ export default async function handler(req, res) {
 
   if (req.method === 'POST') {
     try {
-      // Try to load from KV first
       let group = null;
+      let fromKV = false;
+
+      // Try to load from KV first
       try {
-        const { getGroup, saveGroup } = require('../../../lib/kv');
+        const { getGroup } = require('../../../lib/kv');
         group = await getGroup(groupId);
+        fromKV = true;
+        console.log('✅ Group loaded from KV');
       } catch (kvErr) {
-        console.warn('KV not available, using localStorage fallback:', kvErr.message);
-        // Fallback to localStorage
-        if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') {
-          console.warn('Running in development, KV may not be configured');
-        }
+        console.warn('⚠️ KV not available, trying fallback:', kvErr.message);
+        // NOTE: In development or without KV setup, the client must have already saved the group
+        // We cannot retrieve it server-side without KV
+        group = null;
       }
 
-      // If KV failed, we can't get the group server-side
-      // Client should handle this
       if (!group) {
-        return res.status(404).json({
-          error: 'Group not found in database. Please ensure group was saved.'
+        return res.status(400).json({
+          error: 'Group not found. KV may not be configured. Please ensure group data is saved before drawing.',
+          hint: 'This is a known limitation without Vercel KV configured. Contact support if this persists.',
         });
       }
 
@@ -37,6 +39,12 @@ export default async function handler(req, res) {
       // Perform the draw
       const pairing = drawNames(group.participants, group.exclusions || {});
 
+      if (!pairing || Object.keys(pairing).length === 0) {
+        return res.status(500).json({
+          error: 'Draw failed: Could not generate valid pairings. Check exclusions or participant count.'
+        });
+      }
+
       // Save the updated group
       const updated = {
         ...group,
@@ -45,11 +53,14 @@ export default async function handler(req, res) {
         drawnAt: new Date().toISOString(),
       };
 
+      // Try to save to KV
       try {
         const { saveGroup } = require('../../../lib/kv');
         await saveGroup(groupId, updated);
+        console.log('✅ Updated group saved to KV');
       } catch (kvErr) {
-        console.warn('Could not save to KV:', kvErr.message);
+        console.warn('⚠️ Could not save to KV:', kvErr.message);
+        // Still return success because the client will save it locally
       }
 
       return res.status(200).json({
@@ -57,10 +68,14 @@ export default async function handler(req, res) {
         message: 'Draw completed successfully',
         drawn: true,
         pairing,
+        group: updated, // Return full group so client can save it
       });
     } catch (error) {
-      console.error('Error performing draw:', error);
-      return res.status(500).json({ error: error.message || 'Failed to perform draw' });
+      console.error('❌ Error performing draw:', error);
+      return res.status(500).json({
+        error: error.message || 'Failed to perform draw. Please try again.',
+        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
     }
   }
 

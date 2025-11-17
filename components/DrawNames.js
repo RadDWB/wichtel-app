@@ -37,19 +37,18 @@ export default function DrawNames({ group, saveGroup, groupId }) {
 
       console.log('✅ Draw successful');
 
-      // Reload group data from KV
-      const groupResponse = await fetch(`/api/groups/${groupId}`);
-      if (groupResponse.ok) {
-        const updatedGroup = await groupResponse.json();
-        console.log('✅ Loaded updated group from KV');
-        saveGroup(updatedGroup);
+      // Save the updated group with pairing
+      if (responseData.group) {
+        console.log('✅ Saving group with pairing from API response');
+        saveGroup(responseData.group);
       } else {
-        console.warn('⚠️ Could not reload group from API, using local state');
-        const localUpdated = { ...group, drawn: true };
+        // Fallback: create updated group locally
+        console.warn('⚠️ No group in response, creating locally');
+        const localUpdated = { ...group, drawn: true, pairing: responseData.pairing };
         saveGroup(localUpdated);
       }
 
-      alert('🎉 Auslosung erfolgreich! Jeder sieht nur sein Los. Bitte seite neu laden.');
+      alert('🎉 Auslosung erfolgreich! Jetzt können alle ihre Los sehen. Bitte teile diese Nachricht mit allen Teilnehmern:\n\n"Schaut auf den Link, um zu sehen, wen ihr wichtelt!"');
     } catch (err) {
       console.error('❌ Error drawing names:', err);
       setError('Fehler: ' + (err.message || 'Bitte versuche es später erneut.'));

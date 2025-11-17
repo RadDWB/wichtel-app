@@ -225,7 +225,7 @@ export default function JoinGroup() {
     );
   }
 
-  // Step 2: Gifts (add gifts before exclusions)
+  // Step 2: Gifts (add gifts BEFORE group marked complete)
   if (step === 2 && selectedParticipant && !group.drawn) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -233,6 +233,14 @@ export default function JoinGroup() {
           <a href="/" className="text-red-600 hover:underline mb-4 inline-block">
             ← Zurück
           </a>
+
+          <div className="max-w-2xl mx-auto mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+            <h2 className="font-bold text-blue-900 mb-2">📋 Phase 1: Geschenkeliste erstellen</h2>
+            <p className="text-sm text-blue-800">
+              Erstelle deine Geschenkeliste. Sobald ALLE Teilnehmer ihre Listen fertig haben, wird der Organisator die Auslosung starten.
+            </p>
+          </div>
+
           <GiftList
             group={group}
             groupId={groupId}
@@ -240,10 +248,10 @@ export default function JoinGroup() {
           />
           <div className="container mx-auto mt-8 max-w-2xl">
             <button
-              onClick={() => setStep(3)}
+              onClick={() => setStep(4)}
               className="w-full btn-primary"
             >
-              Weiter zu Ausschlüssen →
+              ✅ Ich bin fertig - warte auf Auslosung →
             </button>
           </div>
         </div>
@@ -251,28 +259,21 @@ export default function JoinGroup() {
     );
   }
 
-  // Step 3: Exclusions (only if group is complete)
+  // Step 3: Exclusions (ONLY if group is marked complete)
   if (step === 3 && selectedParticipant && !group.drawn) {
-    if (!group.isComplete) {
-      // If group is not yet complete, skip to step 4
-      return (
-        <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50 flex items-center justify-center">
-          <div className="text-center max-w-2xl">
-            <h1 className="text-4xl font-bold mb-4">✅ Du bist angemeldet!</h1>
-            <p className="text-lg text-gray-700 mb-8">
-              Deine Geschenkeliste wurde gespeichert. Warte, bis alle Teilnehmer beigetreten sind und der Organisator die Anmeldephase abschließt.
-            </p>
-            <a href="/" className="btn-primary inline-block">
-              Zur Startseite
-            </a>
-          </div>
-        </div>
-      );
-    }
+    // This step only shows if group.isComplete is true
+    // Otherwise user goes to step 4 (waiting)
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
         <div className="container mx-auto py-12 px-4 max-w-2xl">
+          <div className="max-w-2xl mx-auto mb-6 bg-purple-50 border-l-4 border-purple-500 p-4 rounded">
+            <h2 className="font-bold text-purple-900 mb-2">🎁 Phase 2: Ausschlüsse definieren</h2>
+            <p className="text-sm text-purple-800">
+              Der Organisator hat die Anmeldephase abgeschlossen. Definiere jetzt optional, wem du NICHT ein Geschenk kaufen möchtest.
+            </p>
+          </div>
+
           <h1 className="text-3xl font-bold mb-6">🚫 Ausschlüsse (optional)</h1>
 
           {group.participants && group.participants.length >= 3 && (
@@ -311,12 +312,6 @@ export default function JoinGroup() {
 
           <div className="flex gap-3">
             <button
-              onClick={() => setStep(2)}
-              className="flex-1 btn-outline"
-            >
-              ← Zurück
-            </button>
-            <button
               onClick={() => {
                 // Save exclusions to group
                 const key = `${selectedParticipant?.id}`;
@@ -332,7 +327,7 @@ export default function JoinGroup() {
                 setGroup(updated);
                 setStep(4);
               }}
-              className="flex-1 btn-primary"
+              className="w-full btn-primary"
             >
               ✅ Fertig!
             </button>
@@ -342,18 +337,37 @@ export default function JoinGroup() {
     );
   }
 
-  // Step 4: Waiting for draw (or go home)
+  // Step 4: Waiting for draw
   if (step === 4 && selectedParticipant && !group.drawn) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50 flex items-center justify-center">
         <div className="text-center max-w-2xl">
-          <h1 className="text-4xl font-bold mb-4">✅ Du bist angemeldet!</h1>
-          <p className="text-lg text-gray-700 mb-8">
-            Deine Geschenkeliste und Ausschlüsse wurden gespeichert. Die Auslosung kann jetzt stattfinden!
-          </p>
-          <a href="/" className="btn-primary inline-block">
-            Zur Startseite
-          </a>
+          <div className="bg-white rounded-lg p-8 shadow-lg">
+            <h1 className="text-4xl font-bold mb-4">✅ Du bist bereit!</h1>
+            <p className="text-lg text-gray-700 mb-6">
+              Deine Geschenkeliste und Ausschlüsse wurden gespeichert.
+            </p>
+
+            <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded mb-6">
+              <p className="text-sm text-gray-600">
+                <strong>Das passiert jetzt:</strong>
+              </p>
+              <ol className="text-sm text-gray-600 mt-2 space-y-1 text-left">
+                <li>✅ Du wartest, bis alle anderen Teilnehmer auch fertig sind</li>
+                <li>⏳ Der Organisator startet die Auslosung</li>
+                <li>🎁 Du erfährst dann, wen du beschenken darfst</li>
+                <li>🛍️ Du siehst die Geschenkeliste des Partners</li>
+              </ol>
+            </div>
+
+            <p className="text-gray-600 mb-8">
+              Der Organisator wird euch per Nachricht Bescheid geben, sobald alle angemeldet sind.
+            </p>
+
+            <a href="/" className="btn-primary inline-block">
+              Zur Startseite
+            </a>
+          </div>
         </div>
       </div>
     );
