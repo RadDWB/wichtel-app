@@ -98,7 +98,23 @@ export default function OrganizerDashboard() {
           console.log('✅ Group loaded from KV');
         }
       } catch (kvErr) {
-        console.error('KV not available:', kvErr);
+        console.log('KV not available, trying API:', kvErr);
+      }
+
+      // Fallback to API (server-side - works across browsers)
+      if (!groupData) {
+        try {
+          const response = await fetch(`/api/groups/list?groupId=${id}`);
+          if (response.ok) {
+            const data = await response.json();
+            if (data.groups && data.groups.length > 0) {
+              groupData = data.groups[0];
+              console.log('✅ Group loaded from API');
+            }
+          }
+        } catch (apiErr) {
+          console.error('API not available:', apiErr);
+        }
       }
 
       if (groupData) {
