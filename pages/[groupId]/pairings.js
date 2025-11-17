@@ -30,7 +30,23 @@ export default function PairingsPage() {
           console.log('✅ Group loaded from KV');
         }
       } catch (kvErr) {
-        console.log('KV not available, trying localStorage:', kvErr);
+        console.log('KV not available, trying API:', kvErr);
+      }
+
+      // Fallback to API (server-side - works across browsers)
+      if (!groupData) {
+        try {
+          const response = await fetch(`/api/groups/list?groupId=${groupId}`);
+          if (response.ok) {
+            const data = await response.json();
+            if (data.groups && data.groups.length > 0) {
+              groupData = data.groups[0];
+              console.log('✅ Group loaded from API');
+            }
+          }
+        } catch (apiErr) {
+          console.log('API not available, trying localStorage:', apiErr);
+        }
       }
 
       // Fallback to localStorage
