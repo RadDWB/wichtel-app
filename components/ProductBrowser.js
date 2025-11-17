@@ -1,12 +1,15 @@
 import { useState } from 'react';
-import { getProductsByBudget } from '../lib/products';
+import { getProductsByBudget, getAllProductCategories } from '../lib/products';
 
 export default function ProductBrowser({ budget, onSelectProducts }) {
   const [selected, setSelected] = useState({});
+  const [selectedCategory, setSelectedCategory] = useState('bluetooth_headphones');
+  const [productCount, setProductCount] = useState(10);
 
   // Extrahiere numerischen Wert aus Budget (z.B. "30 €" -> 30)
   const budgetValue = parseFloat(String(budget).replace(/[^0-9.,]/g, '').replace(',', '.')) || 100;
-  const products = getProductsByBudget(budgetValue);
+  const categories = getAllProductCategories();
+  const products = getProductsByBudget(budgetValue, selectedCategory, productCount);
 
   const handleToggle = (productId) => {
     const updated = { ...selected };
@@ -28,11 +31,64 @@ export default function ProductBrowser({ budget, onSelectProducts }) {
     setSelected({});
   };
 
+  const selectedCategoryData = categories.find(c => c.id === selectedCategory);
+
   return (
     <div className="bg-white rounded-lg p-6 shadow-md mb-6">
-      <h3 className="text-2xl font-bold mb-4">🛍️ Vorgeschlagene Bluetooth Kopfhörer</h3>
+      <h3 className="text-2xl font-bold mb-4">
+        🛍️ {selectedCategoryData?.emoji} Vorgeschlagene {selectedCategoryData?.name}
+      </h3>
+
+      <div className="mb-6 space-y-4">
+        {/* Category Selection */}
+        <div>
+          <label className="block text-sm font-medium mb-3">Produktkategorie:</label>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            {categories.map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => {
+                  setSelectedCategory(cat.id);
+                  setSelected({});
+                }}
+                className={`p-2 rounded text-sm font-medium transition ${
+                  selectedCategory === cat.id
+                    ? 'bg-blue-500 text-white border-2 border-blue-600'
+                    : 'border-2 border-gray-300 bg-white hover:border-blue-300'
+                }`}
+              >
+                <span className="text-lg">{cat.emoji}</span> {cat.name}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Product Count Selection */}
+        <div>
+          <label className="block text-sm font-medium mb-3">Anzahl Produkte anzeigen:</label>
+          <div className="flex gap-3">
+            {[5, 10, 15].map(count => (
+              <button
+                key={count}
+                onClick={() => {
+                  setProductCount(count);
+                  setSelected({});
+                }}
+                className={`px-4 py-2 rounded font-semibold transition ${
+                  productCount === count
+                    ? 'bg-blue-500 text-white'
+                    : 'border-2 border-gray-300 bg-white hover:border-blue-300'
+                }`}
+              >
+                {count}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
       <p className="text-gray-600 mb-6">
-        Wähle bis zu 10 Produkte aus deinem Budget (max <strong>{budgetValue}€</strong>) aus:
+        Wähle bis zu {productCount} Produkte aus deinem Budget (max <strong>{budgetValue}€</strong>) aus:
       </p>
 
       {products.length === 0 ? (

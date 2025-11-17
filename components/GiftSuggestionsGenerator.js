@@ -7,6 +7,7 @@ export default function GiftSuggestionsGenerator({ budget, onSelectGifts }) {
   const [selectedSuggestions, setSelectedSuggestions] = useState({});
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [suggestionCount, setSuggestionCount] = useState(10);
 
   const allCategories = getAllCategories();
 
@@ -28,7 +29,7 @@ export default function GiftSuggestionsGenerator({ budget, onSelectGifts }) {
     setLoading(true);
     // Simuliere kurze Verzögerung für besseres UX
     setTimeout(() => {
-      const newSuggestions = getRandomSuggestions(selectedCategories, budget, 8);
+      const newSuggestions = getRandomSuggestions(selectedCategories, budget, suggestionCount);
       setSuggestions(newSuggestions);
       setSelectedSuggestions({});
       setShowSuggestions(true);
@@ -73,6 +74,26 @@ export default function GiftSuggestionsGenerator({ budget, onSelectGifts }) {
           <p className="text-gray-600 mb-4">
             Wähle eine oder mehrere Kategorien und erhalte Vorschläge für dein Budget (<strong>{budget}</strong>):
           </p>
+
+          {/* Suggestion Count Selection */}
+          <div className="mb-6 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+            <label className="block text-sm font-medium mb-3">Anzahl Vorschläge:</label>
+            <div className="flex gap-3">
+              {[5, 10, 15].map(count => (
+                <button
+                  key={count}
+                  onClick={() => setSuggestionCount(count)}
+                  className={`px-4 py-2 rounded font-semibold transition ${
+                    suggestionCount === count
+                      ? 'bg-blue-500 text-white'
+                      : 'border-2 border-blue-300 bg-white hover:bg-blue-100'
+                  }`}
+                >
+                  {count}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {/* Category Selection Grid */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
