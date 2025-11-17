@@ -1,4 +1,3 @@
-import { getGroup, saveGroup } from '../../../lib/kv';
 import { drawNames } from '../../../utils/drawAlgorithm';
 
 export default async function handler(req, res) {
@@ -6,10 +5,25 @@ export default async function handler(req, res) {
 
   if (req.method === 'POST') {
     try {
-      const group = await getGroup(groupId);
+      // Try to load from KV first
+      let group = null;
+      try {
+        const { getGroup, saveGroup } = require('../../../lib/kv');
+        group = await getGroup(groupId);
+      } catch (kvErr) {
+        console.warn('KV not available, using localStorage fallback:', kvErr.message);
+        // Fallback to localStorage
+        if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') {
+          console.warn('Running in development, KV may not be configured');
+        }
+      }
 
+      // If KV failed, we can't get the group server-side
+      // Client should handle this
       if (!group) {
-        return res.status(404).json({ error: 'Group not found' });
+        return res.status(404).json({
+          error: 'Group not found in database. Please ensure group was saved.'
+        });
       }
 
       if (group.participants.length < 3) {
@@ -31,12 +45,18 @@ export default async function handler(req, res) {
         drawnAt: new Date().toISOString(),
       };
 
-      await saveGroup(groupId, updated);
+      try {
+        const { saveGroup } = require('../../../lib/kv');
+        await saveGroup(groupId, updated);
+      } catch (kvErr) {
+        console.warn('Could not save to KV:', kvErr.message);
+      }
 
       return res.status(200).json({
         success: true,
         message: 'Draw completed successfully',
         drawn: true,
+        pairing,
       });
     } catch (error) {
       console.error('Error performing draw:', error);

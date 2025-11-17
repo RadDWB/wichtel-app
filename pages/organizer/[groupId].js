@@ -62,17 +62,43 @@ export default function OrganizerDashboard() {
       });
 
       if (response.ok) {
-        const groupResponse = await fetch(`/api/groups/${groupId}`);
-        if (groupResponse.ok) {
-          const updated = await groupResponse.json();
-          localStorage.setItem(`group_${groupId}`, JSON.stringify(updated));
-          setGroup(updated);
-          alert('🎉 Auslosung erfolgreich! Jeder sieht nur sein Los.');
-        }
+        const result = await response.json();
+
+        // Update group with pairing from response
+        const updated = {
+          ...group,
+          drawn: true,
+          pairing: result.pairing,
+          drawnAt: new Date().toISOString(),
+        };
+
+        localStorage.setItem(`group_${groupId}`, JSON.stringify(updated));
+        setGroup(updated);
+        alert('🎉 Auslosung erfolgreich! Jeder sieht nur sein Los.');
+      } else {
+        const error = await response.json();
+        alert('Fehler: ' + (error.error || 'Auslosung fehlgeschlagen'));
       }
     } catch (err) {
       console.error('Error:', err);
-      alert('Fehler bei der Auslosung');
+
+      // Fallback: do draw in localStorage if API fails
+      try {
+        const { drawNames } = require('../../utils/drawAlgorithm');
+        const pairing = drawNames(group.participants, group.exclusions || {});
+        const updated = {
+          ...group,
+          drawn: true,
+          pairing,
+          drawnAt: new Date().toISOString(),
+        };
+        localStorage.setItem(`group_${groupId}`, JSON.stringify(updated));
+        setGroup(updated);
+        alert('🎉 Auslosung erfolgreich (Fallback-Modus)! Jeder sieht nur sein Los.');
+      } catch (fallbackErr) {
+        console.error('Fallback error:', fallbackErr);
+        alert('Fehler bei der Auslosung: ' + err.message);
+      }
     }
   };
 
