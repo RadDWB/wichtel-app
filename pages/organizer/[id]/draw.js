@@ -93,10 +93,10 @@ export default function DrawPage() {
       setGroup(updatedGroup);
       setSuccess(true);
 
-      // Auto-redirect to dashboard after 3 seconds
+      // Auto-redirect to dashboard after 5 seconds
       setTimeout(() => {
         router.push(`/organizer/${id}`);
-      }, 3000);
+      }, 5000);
     } catch (err) {
       console.error('Error performing draw:', err);
       setError(err.message || 'Fehler beim Auslosen');
@@ -131,7 +131,7 @@ export default function DrawPage() {
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50 flex items-center justify-center">
         <div className="text-center max-w-2xl">
           <div className="bg-white rounded-lg p-12 shadow-lg">
-            <div className="text-6xl mb-4">🎉</div>
+            <div className="text-6xl mb-4 animate-bounce">🎉</div>
             <h1 className="text-4xl font-bold text-green-600 mb-4">Auslosung erfolgreich!</h1>
             <p className="text-xl text-gray-700 mb-8">
               Die Wichtel-Paarungen wurden generiert. Jeder Teilnehmer kann jetzt seinen Partner und dessen Wunschliste sehen!
@@ -149,8 +149,12 @@ export default function DrawPage() {
               </ul>
             </div>
 
-            <p className="text-gray-600 mb-8">
+            <p className="text-gray-600 mb-4">
               Leite deine Teilnehmer auf die Seite weiter, damit sie ihre Wichtel-Partner sehen können.
+            </p>
+
+            <p className="text-sm text-gray-500 mb-8 animate-pulse">
+              Weitergeleitet zum Dashboard in Kürze...
             </p>
 
             <Link href={`/organizer/${id}`} className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition">
