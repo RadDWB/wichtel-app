@@ -118,8 +118,8 @@ export default function DrawPage() {
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50 flex items-center justify-center">
         <div className="text-center">
           <p className="text-2xl text-gray-900 mb-4">❌ Gruppe nicht gefunden</p>
-          <Link href="/">
-            <a className="text-blue-600 hover:underline">← Zurück zur Startseite</a>
+          <Link href="/" className="text-blue-600 hover:underline">
+            ← Zurück zur Startseite
           </Link>
         </div>
       </div>
@@ -153,10 +153,8 @@ export default function DrawPage() {
               Leite deine Teilnehmer auf die Seite weiter, damit sie ihre Wichtel-Partner sehen können.
             </p>
 
-            <Link href={`/organizer/${id}`}>
-              <a className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition">
-                ← Zum Dashboard zurück
-              </a>
+            <Link href={`/organizer/${id}`} className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition">
+              ← Zum Dashboard zurück
             </Link>
           </div>
         </div>
@@ -239,10 +237,8 @@ export default function DrawPage() {
 
           {/* Buttons */}
           <div className="flex gap-4">
-            <Link href={`/organizer/${id}`}>
-              <a className="flex-1 btn-outline text-center">
-                ← Zurück
-              </a>
+            <Link href={`/organizer/${id}`} className="flex-1 btn-outline text-center">
+              ← Zurück
             </Link>
             <button
               onClick={performDraw}

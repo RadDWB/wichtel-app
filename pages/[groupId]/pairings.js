@@ -87,8 +87,8 @@ export default function PairingsPage() {
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50 flex items-center justify-center">
         <div className="text-center">
           <p className="text-2xl text-gray-900 mb-4">❌ Gruppe nicht gefunden</p>
-          <Link href="/">
-            <a className="text-blue-600 hover:underline">← Zurück zur Startseite</a>
+          <Link href="/" className="text-blue-600 hover:underline">
+            ← Zurück zur Startseite
           </Link>
         </div>
       </div>
@@ -105,8 +105,8 @@ export default function PairingsPage() {
           <p className="text-gray-600 mb-8">
             Die Wichtel-Paarungen werden angezeigt, sobald der Organisator die Auslosung durchgeführt hat.
           </p>
-          <Link href="/">
-            <a className="text-blue-600 hover:underline">← Zurück zur Startseite</a>
+          <Link href="/" className="text-blue-600 hover:underline">
+            ← Zurück zur Startseite
           </Link>
         </div>
       </div>
@@ -263,8 +263,8 @@ export default function PairingsPage() {
 
           {/* Back Link */}
           <div className="text-center mt-8">
-            <Link href="/">
-              <a className="text-blue-600 hover:underline">← Zurück zur Startseite</a>
+            <Link href="/" className="text-blue-600 hover:underline">
+              ← Zurück zur Startseite
             </Link>
           </div>
         </div>

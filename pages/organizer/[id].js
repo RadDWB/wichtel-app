@@ -258,10 +258,8 @@ export default function OrganizerDashboard() {
                 🔓 Dashboard entsperren
               </button>
 
-              <Link href="/">
-                <a className="block text-center text-blue-600 hover:underline text-sm">
-                  ← Zurück zur Startseite
-                </a>
+              <Link href="/" className="block text-center text-blue-600 hover:underline text-sm">
+                ← Zurück zur Startseite
               </Link>
             </form>
           </div>
@@ -275,8 +273,8 @@ export default function OrganizerDashboard() {
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50 flex items-center justify-center">
         <div className="text-center">
           <p className="text-2xl text-gray-900 mb-4">❌ Gruppe nicht gefunden</p>
-          <Link href="/">
-            <a className="text-blue-600 hover:underline">← Zurück zur Startseite</a>
+          <Link href="/" className="text-blue-600 hover:underline">
+            ← Zurück zur Startseite
           </Link>
         </div>
       </div>
@@ -623,10 +621,8 @@ export default function OrganizerDashboard() {
             {/* Quick Access to Organizer's Own Gift List */}
             {getOrganizerParticipant() && (
               <div className="relative group">
-                <Link href={`/join/${id}?orgParticipant=${getOrganizerParticipant().id}`}>
-                  <a className="block text-center p-4 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition shadow-lg">
-                    🎁 Meine Wunschliste
-                  </a>
+                <Link href={`/join/${id}?orgParticipant=${getOrganizerParticipant().id}`} className="block text-center p-4 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition shadow-lg">
+                  🎁 Meine Wunschliste
                 </Link>
                 <div className="absolute hidden group-hover:flex bg-gray-900 text-white text-xs rounded-lg p-3 left-0 mt-2 w-56 z-10 flex-col gap-1">
                   <p className="font-semibold">Du nimmst auch teil!</p>
@@ -635,24 +631,18 @@ export default function OrganizerDashboard() {
               </div>
             )}
 
-            <Link href={`/join/${id}`}>
-              <a className="block text-center p-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold transition">
-                🔗 Zum Beitritts-Link
-              </a>
+            <Link href={`/join/${id}`} className="block text-center p-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold transition">
+              🔗 Zum Beitritts-Link
             </Link>
 
             {stats.percentage === 100 && !group.drawn && (
-              <Link href={`/organizer/${id}/draw`}>
-                <a className="block text-center p-4 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition">
-                  🎲 Jetzt auslosen
-                </a>
+              <Link href={`/organizer/${id}/draw`} className="block text-center p-4 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition">
+                🎲 Jetzt auslosen
               </Link>
             )}
 
-            <Link href="/">
-              <a className="block text-center p-4 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-semibold transition">
-                🏠 Zur Startseite
-              </a>
+            <Link href="/" className="block text-center p-4 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-semibold transition">
+              🏠 Zur Startseite
             </Link>
           </div>
 

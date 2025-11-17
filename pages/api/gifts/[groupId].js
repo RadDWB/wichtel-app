@@ -1,5 +1,27 @@
-// Fallback in-memory storage for development
+// In-memory storage fallback
 const giftStore = {};
+
+// Import saveGifts, getGifts from server-only lib/kv
+// This is only loaded server-side in API routes
+async function getGiftsFromRedis(groupId, participantId) {
+  try {
+    const { getGifts } = await import('../../../lib/kv');
+    return await getGifts(groupId, participantId);
+  } catch (error) {
+    console.error('Error getting gifts from Redis:', error);
+    return null;
+  }
+}
+
+async function saveGiftsToRedis(groupId, participantId, gifts) {
+  try {
+    const { saveGifts } = await import('../../../lib/kv');
+    return await saveGifts(groupId, participantId, gifts);
+  } catch (error) {
+    console.error('Error saving gifts to Redis:', error);
+    return false;
+  }
+}
 
 export default async function handler(req, res) {
   const { groupId } = req.query;
@@ -17,16 +39,8 @@ export default async function handler(req, res) {
 
   if (req.method === 'GET') {
     try {
-      // Try to use Vercel KV if available
-      let gifts = null;
-      try {
-        const { kv } = await import('@vercel/kv');
-        if (kv) {
-          gifts = await kv.get(cacheKey);
-        }
-      } catch (e) {
-        console.log('KV not available, using fallback storage');
-      }
+      // Try Redis first
+      let gifts = await getGiftsFromRedis(groupId, participantId);
 
       // Fallback to in-memory storage
       if (!gifts && giftStore[cacheKey]) {
@@ -65,15 +79,8 @@ export default async function handler(req, res) {
       // Save to in-memory fallback
       giftStore[correctCacheKey] = gifts;
 
-      // Try to save to KV
-      try {
-        const { kv } = await import('@vercel/kv');
-        if (kv) {
-          await kv.set(correctCacheKey, gifts);
-        }
-      } catch (e) {
-        console.log('KV not available, using fallback storage', e.message);
-      }
+      // Try to save to Redis
+      await saveGiftsToRedis(groupId, actualParticipantId, gifts);
 
       return res.status(200).json({ gifts });
     } catch (error) {

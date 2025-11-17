@@ -188,10 +188,8 @@ export default function OrganizerLogin() {
           )}
 
           <div className="mt-8 pt-6 border-t border-gray-200">
-            <Link href="/">
-              <a className="text-center block text-blue-600 hover:underline text-sm">
-                ← Zurück zur Startseite
-              </a>
+            <Link href="/" className="text-center block text-blue-600 hover:underline text-sm">
+              ← Zurück zur Startseite
             </Link>
           </div>
         </div>
