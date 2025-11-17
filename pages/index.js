@@ -49,14 +49,17 @@ export default function Home() {
 
         {/* Main Content */}
         <div className="max-w-md mx-auto">
-          {!groupId ? (
-            <div>
-              <div className="card bg-gradient-to-br from-white to-amber-50 shadow-xl border-2 border-amber-200 mb-6">
-                <h2 className="text-2xl font-bold text-center mb-6 text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-amber-600">
-                  🚀 Jetzt starten!
-                </h2>
-                <CreateGroup onGroupCreated={setGroupId} />
-              </div>
+          <div className="card bg-gradient-to-br from-white to-amber-50 shadow-xl border-2 border-amber-200 mb-6">
+            <h2 className="text-2xl font-bold text-center mb-6 text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-amber-600">
+              🚀 Jetzt starten!
+            </h2>
+            <a
+              href="/setup"
+              className="block w-full bg-gradient-to-r from-red-600 to-orange-500 text-white font-bold py-3 rounded-lg text-center hover:from-red-700 hover:to-orange-600 transition"
+            >
+              ✅ Neue Wichtelgruppe anlegen
+            </a>
+          </div>
 
               {/* Instructions */}
               <div className="card bg-gradient-to-br from-orange-50 to-amber-50 border-l-4 border-orange-500">
