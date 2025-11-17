@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { GIFT_CATEGORIES } from '../lib/categories';
+import ProductBrowser from './ProductBrowser';
 
 const AMAZON_AFFILIATE_TAG = process.env.NEXT_PUBLIC_AMAZON_AFFILIATE_TAG || 'wichtel-app-21';
 
@@ -109,12 +110,65 @@ export default function GiftList({ group, groupId, participantId }) {
     }
   };
 
+  const addProductsFromBrowser = async (selectedProducts) => {
+    try {
+      setLoading(true);
+      setError('');
+
+      // Konvertiere Produkte zu Geschenk-Format
+      const newGifts = selectedProducts.map(product => ({
+        id: Date.now().toString() + Math.random(),
+        name: product.name,
+        link: product.link,
+        category: 'bluetooth_headphones',
+        price: product.price + '€',
+        createdAt: new Date().toISOString(),
+      }));
+
+      // Prüfe max 10 Limit
+      if (gifts.length + newGifts.length > 10) {
+        const canAdd = 10 - gifts.length;
+        setError(`Du kannst maximal ${canAdd} weitere Geschenke hinzufügen!`);
+        setLoading(false);
+        return;
+      }
+
+      const updatedGifts = [...gifts, ...newGifts];
+
+      // Speichere auf Backend
+      const response = await fetch(`/api/gifts/${groupId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ participantId, gifts: updatedGifts }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save gifts');
+      }
+
+      setGifts(updatedGifts);
+    } catch (err) {
+      console.error('Error adding products:', err);
+      setError('Fehler beim Hinzufügen der Produkte');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
           {error}
         </div>
+      )}
+
+      {/* Product Browser - nur wenn noch Platz vorhanden */}
+      {gifts.length < 10 && (
+        <ProductBrowser
+          budget={group?.budget}
+          onSelectProducts={addProductsFromBrowser}
+        />
       )}
 
       {/* Add Gift Form */}
