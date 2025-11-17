@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { OCCASIONS } from '../../lib/occasions';
 import { getGroup, saveGroup, saveExclusions } from '../../lib/kv-client';
 import GiftList from '../../components/GiftList';
@@ -16,6 +16,12 @@ export default function JoinGroup() {
   const [emailEdit, setEmailEdit] = useState('');
   const [exclusions, setExclusions] = useState({});
   const [wantsSurprise, setWantsSurprise] = useState(false); // Ich möchte überrascht werden
+  const stepRef = useRef(step); // Track step without causing effect re-runs
+
+  // Update ref when step changes
+  useEffect(() => {
+    stepRef.current = step;
+  }, [step]);
 
   useEffect(() => {
     if (groupId) {
@@ -24,16 +30,15 @@ export default function JoinGroup() {
 
     // Refresh group status every 5 seconds to detect when it's marked as complete
     // BUT: Only poll on steps 1, 3, 4 - NOT on step 2 (gift entry) to avoid form disruption
-    const shouldPoll = step !== 2;
+    const interval = setInterval(() => {
+      // Check ref to see if we should poll (don't block on step change)
+      if (stepRef.current !== 2) {
+        loadGroup();
+      }
+    }, 5000);
 
-    const interval = shouldPoll ? setInterval(() => {
-      loadGroup();
-    }, 5000) : null;
-
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [groupId, orgParticipant, step]);
+    return () => clearInterval(interval);
+  }, [groupId, orgParticipant]);
 
   // Clear localStorage participant ID when flow is complete (Step 4)
   // So user starts fresh on next visit with participant list
