@@ -3,7 +3,8 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import AddParticipants from '../components/AddParticipants';
 import DrawNames from '../components/DrawNames';
-import Wishlist from '../components/Wishlist';
+import GiftList from '../components/GiftList';
+import GiftGallery from '../components/GiftGallery';
 
 export default function GroupPage() {
   const router = useRouter();
@@ -165,8 +166,24 @@ export default function GroupPage() {
             </>
           )}
 
-          {/* Nach Auslosung: Wunschzettel */}
-          {group.drawn && <Wishlist group={group} groupId={groupId} />}
+          {/* Nach Auslosung: Geschenkeliste & Galerie */}
+          {group.drawn && (
+            <div className="space-y-8">
+              {/* Own Gift List */}
+              <GiftList
+                group={group}
+                groupId={groupId}
+                participantId={group.pairing?.[localStorage.getItem(`participant_${groupId}`)] ? localStorage.getItem(`participant_${groupId}`) : null}
+              />
+
+              {/* Partner's Gift Gallery */}
+              <GiftGallery
+                group={group}
+                groupId={groupId}
+                participantId={localStorage.getItem(`participant_${groupId}`)}
+              />
+            </div>
+          )}
         </div>
       )}
     </div>
