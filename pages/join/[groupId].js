@@ -23,12 +23,17 @@ export default function JoinGroup() {
     }
 
     // Refresh group status every 5 seconds to detect when it's marked as complete
-    const interval = setInterval(() => {
-      loadGroup();
-    }, 5000);
+    // BUT: Only poll on steps 1, 3, 4 - NOT on step 2 (gift entry) to avoid form disruption
+    const shouldPoll = step !== 2;
 
-    return () => clearInterval(interval);
-  }, [groupId, orgParticipant]);
+    const interval = shouldPoll ? setInterval(() => {
+      loadGroup();
+    }, 5000) : null;
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [groupId, orgParticipant, step]);
 
   // Clear localStorage participant ID when flow is complete (Step 4)
   // So user starts fresh on next visit with participant list
