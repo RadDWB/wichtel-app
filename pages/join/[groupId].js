@@ -82,26 +82,30 @@ export default function JoinGroup() {
       if (groupData) {
         setGroup(groupData);
 
-        // Auto-select organizer if coming from organizer dashboard
-        if (orgParticipant) {
-          const orgParticipantObj = groupData.participants.find(p => p.id === orgParticipant);
-          if (orgParticipantObj) {
-            setSelectedParticipant(orgParticipantObj);
-            setNameEdit(orgParticipantObj.name);
-            setEmailEdit(orgParticipantObj.email || '');
-            setStep(1.5); // Go to gift choice
-            localStorage.setItem(`participant_${groupId}`, orgParticipant);
-            return;
+        // Only auto-navigate on initial load (not on step 2 - gift entry)
+        // This prevents disrupting the user while they're adding gifts
+        if (stepRef.current === 1 || stepRef.current === 1.5) {
+          // Auto-select organizer if coming from organizer dashboard
+          if (orgParticipant) {
+            const orgParticipantObj = groupData.participants.find(p => p.id === orgParticipant);
+            if (orgParticipantObj) {
+              setSelectedParticipant(orgParticipantObj);
+              setNameEdit(orgParticipantObj.name);
+              setEmailEdit(orgParticipantObj.email || '');
+              setStep(1.5); // Go to gift choice
+              localStorage.setItem(`participant_${groupId}`, orgParticipant);
+              return;
+            }
           }
-        }
 
-        // Check if participant is already joined
-        const participantId = localStorage.getItem(`participant_${groupId}`);
-        if (participantId) {
-          const participant = groupData.participants.find(p => p.id === participantId);
-          if (participant) {
-            setSelectedParticipant(participant);
-            setStep(1.5); // Go to gift choice
+          // Check if participant is already joined
+          const participantId = localStorage.getItem(`participant_${groupId}`);
+          if (participantId) {
+            const participant = groupData.participants.find(p => p.id === participantId);
+            if (participant) {
+              setSelectedParticipant(participant);
+              setStep(1.5); // Go to gift choice
+            }
           }
         }
       } else {
