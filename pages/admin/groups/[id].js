@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { isAdminLoggedIn } from '../../../lib/admin';
+import { getGroup, getGifts } from '../../../lib/kv';
 
 export default function AdminGroupDetails() {
   const router = useRouter();
@@ -20,23 +21,36 @@ export default function AdminGroupDetails() {
     }
   }, [id]);
 
-  const loadGroupData = () => {
+  const loadGroupData = async () => {
     try {
       setLoading(true);
-      const groupData = localStorage.getItem(`group_${id}`);
+
+      // Load from KV (primary - no fallback for admin)
+      let groupData = null;
+      try {
+        groupData = await getGroup(id);
+        if (groupData) {
+          console.log('✅ Group loaded from KV');
+        }
+      } catch (kvErr) {
+        console.error('Failed to load group from KV:', kvErr);
+      }
+
       if (groupData) {
-        setGroup(JSON.parse(groupData));
+        setGroup(groupData);
 
         // Load gifts for each participant
         const allGifts = {};
-        const parsed = JSON.parse(groupData);
-        if (parsed.participants) {
-          parsed.participants.forEach((p) => {
-            const giftData = localStorage.getItem(
-              `group:${id}:gifts:${p.id}`
-            );
-            allGifts[p.id] = giftData ? JSON.parse(giftData) : [];
-          });
+        if (groupData.participants) {
+          for (const p of groupData.participants) {
+            try {
+              const giftData = await getGifts(id, p.id);
+              allGifts[p.id] = giftData || [];
+            } catch (err) {
+              console.warn(`Failed to load gifts for ${p.id}:`, err);
+              allGifts[p.id] = [];
+            }
+          }
         }
         setGifts(allGifts);
       }

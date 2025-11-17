@@ -1,6 +1,7 @@
 // pages/[groupId].js
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
+import { getGroup, saveGroup as saveGroupToKV } from '../lib/kv';
 import AddParticipants from '../components/AddParticipants';
 import DrawNames from '../components/DrawNames';
 import GiftList from '../components/GiftList';
@@ -25,33 +26,42 @@ export default function GroupPage() {
       setLoading(true);
       setError('');
 
-      // Try to load from API first
+      let groupData = null;
+
+      // Try KV first (primary)
       try {
-        const response = await fetch(`/api/groups/${groupId}`);
-        if (response.ok) {
-          const data = await response.json();
-          setGroup(data);
-          localStorage.setItem(`group_${groupId}`, JSON.stringify(data));
-        } else {
-          // Fall back to localStorage
-          const saved = localStorage.getItem(`group_${groupId}`);
-          if (saved) {
-            setGroup(JSON.parse(saved));
-          } else {
-            router.push('/');
-          }
+        groupData = await getGroup(groupId);
+        if (groupData) {
+          console.log('✅ Group loaded from KV');
         }
-      } catch (apiErr) {
-        // Fall back to localStorage
-        const saved = localStorage.getItem(`group_${groupId}`);
-        if (saved) {
-          setGroup(JSON.parse(saved));
-        } else {
-          router.push('/');
+      } catch (kvErr) {
+        console.log('KV not available, trying API:', kvErr);
+      }
+
+      // Fallback to API
+      if (!groupData) {
+        try {
+          const response = await fetch(`/api/groups/list?groupId=${groupId}`);
+          if (response.ok) {
+            const data = await response.json();
+            if (data.groups && data.groups.length > 0) {
+              groupData = data.groups[0];
+              console.log('✅ Group loaded from API');
+            }
+          }
+        } catch (apiErr) {
+          console.error('API not available:', apiErr);
         }
       }
 
-      // Prüfe, ob du schon als Teilnehmer angemeldet bist
+      if (groupData) {
+        setGroup(groupData);
+      } else {
+        router.push('/');
+        return;
+      }
+
+      // Check if already joined as participant (session only)
       const savedParticipant = localStorage.getItem(`participant_${groupId}`);
       if (savedParticipant) {
         setIsParticipant(true);
@@ -64,21 +74,16 @@ export default function GroupPage() {
     }
   };
 
-  const saveGroup = async (updated) => {
+  const handleSaveGroup = async (updated) => {
     try {
-      // Save to API
-      await fetch(`/api/groups/${groupId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updated),
-      });
+      // Save to KV (primary - no fallback)
+      await saveGroupToKV(groupId, updated);
+      console.log('✅ Group saved to KV');
+      setGroup(updated);
     } catch (err) {
-      console.error('Error saving to API:', err);
+      console.error('❌ Failed to save group:', err);
+      setError('Fehler beim Speichern. Bitte versuche es später erneut.');
     }
-
-    // Always save to localStorage as fallback
-    localStorage.setItem(`group_${groupId}`, JSON.stringify(updated));
-    setGroup(updated);
   };
 
   const joinAsParticipant = async () => {
@@ -89,7 +94,7 @@ export default function GroupPage() {
         ...group,
         participants: [...group.participants, newParticipant],
       };
-      await saveGroup(updated);
+      await handleSaveGroup(updated);
       localStorage.setItem(`participant_${groupId}`, newParticipant.id);
       setIsParticipant(true);
       alert(`Willkommen, ${name.trim()}! Du bist jetzt Teil der Gruppe. Teile den Link weiter!`);
@@ -161,8 +166,8 @@ export default function GroupPage() {
           {/* Organisator-Features */}
           {!group.drawn && (
             <>
-              <AddParticipants group={group} saveGroup={saveGroup} />
-              <DrawNames group={group} saveGroup={saveGroup} groupId={groupId} />
+              <AddParticipants group={group} saveGroup={handleSaveGroup} />
+              <DrawNames group={group} saveGroup={handleSaveGroup} groupId={groupId} />
             </>
           )}
 

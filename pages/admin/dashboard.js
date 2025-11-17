@@ -29,21 +29,13 @@ export default function AdminDashboard() {
       setLoading(true);
       let allGroups = [];
 
-      // Try to load from KV first (primary storage)
+      // Load from KV (primary storage - no fallback for admin)
       try {
         allGroups = await getAllGroups();
         console.log('✅ Loaded groups from KV');
       } catch (kvErr) {
-        console.warn('KV not available, trying localStorage:', kvErr);
-
-        // Fallback to localStorage
-        for (let i = 0; i < localStorage.length; i++) {
-          const key = localStorage.key(i);
-          if (key?.startsWith('group_')) {
-            const groupData = JSON.parse(localStorage.getItem(key));
-            allGroups.push(groupData);
-          }
-        }
+        console.error('Failed to load groups from KV:', kvErr);
+        // No localStorage fallback for admin panel
       }
 
       // Sort by date, newest first
@@ -78,18 +70,13 @@ export default function AdminDashboard() {
   const deleteGroup = async (groupId) => {
     if (window.confirm('🗑️ Wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden!')) {
       try {
-        // Delete from KV (primary)
+        // Delete from KV (primary - no fallback)
         await deleteGroupKV(groupId);
         console.log('✅ Group deleted from KV');
+        loadGroups();
       } catch (kvErr) {
-        console.warn('KV delete failed, using localStorage:', kvErr);
+        console.error('❌ Failed to delete group:', kvErr);
       }
-
-      // Also delete from localStorage
-      localStorage.removeItem(`group_${groupId}`);
-      localStorage.removeItem(`organizer_${groupId}`);
-
-      loadGroups();
     }
   };
 
