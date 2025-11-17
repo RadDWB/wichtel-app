@@ -84,14 +84,18 @@ export default function GiftList({ group, groupId, participantId }) {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save gift');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Server error: ${response.status}`);
       }
 
-      setGifts(updatedGifts);
+      const data = await response.json();
+      setGifts(data.gifts || updatedGifts);
       setNewGift({ name: '', link: '', category: 'other', price: '' });
+      setError('✅ Geschenk erfolgreich hinzugefügt!');
+      setTimeout(() => setError(''), 3000);
     } catch (err) {
       console.error('Error adding gift:', err);
-      setError('Fehler beim Hinzufügen. Bitte versuche es später erneut.');
+      setError(`❌ Fehler: ${err.message || 'Geschenk konnte nicht hinzugefügt werden. Bitte versuche es später erneut.'}`);
     } finally {
       setLoading(false);
     }
@@ -203,67 +207,97 @@ export default function GiftList({ group, groupId, participantId }) {
 
       {/* Add Gift Manual Form */}
       <div className="card bg-green-50 border-l-4 border-green-500">
-        <h3 className="section-title">🎁 Geschenk von Amazon hinzufügen</h3>
-        <p className="text-gray-600 mb-4 text-sm">
+        <h3 className="section-title">🎁 Eigenes Amazon-Produkt hinzufügen</h3>
+        <p className="text-gray-600 mb-6 text-sm">
           Maximal {10 - gifts.length} Geschenke mehr möglich (Budget: {group.budget})
         </p>
 
         {gifts.length < 10 ? (
-          <div className="space-y-4">
-            {/* How-To Guide */}
+          <div className="space-y-6">
+            {/* Step 1 */}
+            <div className="border-b pb-6">
+              <div className="flex gap-3 mb-3">
+                <span className="flex-shrink-0 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center font-bold text-sm">1</span>
+                <p className="font-semibold text-gray-800">Gehe auf <a href="https://amazon.de" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-bold">amazon.de</a></p>
+              </div>
+              <p className="text-sm text-gray-600 ml-11">
+                Suche dein Wunschprodukt. Du kannst die Amazon-Filter nutzen, um den Preis auf dein Budget ({group.budget}) zu begrenzen.
+              </p>
+            </div>
+
+            {/* Step 2 */}
+            <div className="border-b pb-6">
+              <div className="flex gap-3 mb-3">
+                <span className="flex-shrink-0 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center font-bold text-sm">2</span>
+                <p className="font-semibold text-gray-800">Wähle dein Produkt aus</p>
+              </div>
+              <p className="text-sm text-gray-600 ml-11">
+                Klicke auf das Produkt, das dir gefällt, und öffne die Produktseite.
+              </p>
+            </div>
+
+            {/* Step 3 */}
+            <div className="border-b pb-6">
+              <div className="flex gap-3 mb-3">
+                <span className="flex-shrink-0 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center font-bold text-sm">3</span>
+                <p className="font-semibold text-gray-800">Kopiere den Link</p>
+              </div>
+              <p className="text-sm text-gray-600 ml-11 mb-3">
+                Markiere die URL in der Adresszeile deines Browsers und kopiere sie. Beispiel:
+              </p>
+              <p className="text-xs bg-gray-200 rounded p-2 ml-11 font-mono mb-2">
+                https://amazon.de/dp/B08N5WRWNW
+              </p>
+            </div>
+
+            {/* Step 4 - Input Fields */}
             <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-              <p className="font-semibold text-blue-900 mb-2">📋 So findest du den Link:</p>
-              <ol className="text-sm text-blue-800 space-y-1 ml-4">
-                <li>1️⃣ Gehe auf <a href="https://amazon.de" target="_blank" rel="noopener noreferrer" className="underline">amazon.de</a> und suche dein Produkt</li>
-                <li>2️⃣ Öffne die Produktseite</li>
-                <li>3️⃣ Kopiere die URL aus der Adressleiste (z.B. https://amazon.de/dp/B08N5WRWNW)</li>
-                <li>4️⃣ Paste den Link unten ein und gib der Wunschliste einen Namen</li>
-              </ol>
-            </div>
-
-            {/* Input Fields - Only Name and Link */}
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  📝 Produktname (was möchtest du?)
-                </label>
-                <input
-                  type="text"
-                  value={newGift.name}
-                  onChange={e => setNewGift({ ...newGift, name: e.target.value })}
-                  placeholder="z.B. AirPods Pro, Thermoskanne, Mystery-Buch"
-                  className="input-field"
-                />
+              <div className="flex gap-3 mb-4">
+                <span className="flex-shrink-0 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center font-bold text-sm">4</span>
+                <p className="font-semibold text-gray-800">Trage den Link und Namen hier ein</p>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  🔗 Amazon-Produktlink
-                </label>
-                <input
-                  type="url"
-                  value={newGift.link}
-                  onChange={e => setNewGift({ ...newGift, link: e.target.value })}
-                  placeholder="https://amazon.de/dp/B08N5WRWNW"
-                  className="input-field font-mono text-xs"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  💡 Tipp: Der Link kann auch gekürzt sein (z.B. amazon.de/gp/product/ASIN)
-                </p>
+              <div className="space-y-4 ml-11">
+                {/* Link Input */}
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">
+                    🔗 Kopiere den Link unten ein:
+                  </label>
+                  <input
+                    type="url"
+                    value={newGift.link}
+                    onChange={e => setNewGift({ ...newGift, link: e.target.value })}
+                    placeholder="https://amazon.de/dp/B08N5WRWNW"
+                    className="input-field font-mono text-xs w-full"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    💡 Der Link kann auch gekürzt sein (z.B. amazon.de/gp/product/ASIN)
+                  </p>
+                </div>
+
+                {/* Name Input */}
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">
+                    📝 Gib dem Geschenk einen aussagekräftigen Namen:
+                  </label>
+                  <input
+                    type="text"
+                    value={newGift.name}
+                    onChange={e => setNewGift({ ...newGift, name: e.target.value })}
+                    placeholder="z.B. AirPods Pro, Thermoskanne, Mystery-Buch"
+                    className="input-field w-full"
+                  />
+                </div>
+
+                {/* Button */}
+                <button
+                  onClick={addGift}
+                  disabled={loading}
+                  className="btn-secondary w-full disabled:opacity-50 mt-4"
+                >
+                  {loading ? '✨ Wird hinzugefügt...' : '✨ Geschenk hinzufügen'}
+                </button>
               </div>
-
-              <button
-                onClick={addGift}
-                disabled={loading}
-                className="btn-secondary w-full disabled:opacity-50"
-              >
-                {loading ? '✨ Wird hinzugefügt...' : '✨ Geschenk zur Liste hinzufügen'}
-              </button>
-            </div>
-
-            {/* Info Box */}
-            <div className="bg-yellow-50 border-l-4 border-yellow-500 p-3 rounded text-sm text-yellow-800">
-              ℹ️ <strong>Hinweis:</strong> Der Affiliate-Link wird automatisch hinzugefügt, damit der Organisator eine kleine Provision erhält!
             </div>
           </div>
         ) : (
@@ -319,6 +353,13 @@ export default function GiftList({ group, groupId, participantId }) {
             Noch keine Geschenke hinzugefügt
           </p>
         )}
+
+        {/* Footer */}
+        <div className="mt-6 pt-4 border-t border-gray-200">
+          <p className="text-xs text-gray-500 text-center">
+            💚 Der Amazon-Link wird automatisch mit unserem Affiliate-Link verknüpft – der Organisator erhält eine kleine Provision!
+          </p>
+        </div>
       </div>
     </div>
   );
