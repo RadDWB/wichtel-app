@@ -3,7 +3,10 @@ import { getProductsByBudget } from '../lib/products';
 
 export default function ProductBrowser({ budget, onSelectProducts }) {
   const [selected, setSelected] = useState({});
-  const products = getProductsByBudget(parseFloat(budget) || 100);
+
+  // Extrahiere numerischen Wert aus Budget (z.B. "30 €" -> 30)
+  const budgetValue = parseFloat(String(budget).replace(/[^0-9.,]/g, '').replace(',', '.')) || 100;
+  const products = getProductsByBudget(budgetValue);
 
   const handleToggle = (productId) => {
     const updated = { ...selected };
@@ -27,9 +30,9 @@ export default function ProductBrowser({ budget, onSelectProducts }) {
 
   return (
     <div className="bg-white rounded-lg p-6 shadow-md mb-6">
-      <h3 className="text-2xl font-bold mb-4">🛍️ Vorgeschlagene Produkte</h3>
+      <h3 className="text-2xl font-bold mb-4">🛍️ Vorgeschlagene Bluetooth Kopfhörer</h3>
       <p className="text-gray-600 mb-6">
-        Wähle bis zu 10 Produkte aus deinem Budget (max <strong>{budget}€</strong>) aus:
+        Wähle bis zu 10 Produkte aus deinem Budget (max <strong>{budgetValue}€</strong>) aus:
       </p>
 
       {products.length === 0 ? (
