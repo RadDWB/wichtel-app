@@ -304,30 +304,39 @@ export default function OrganizerDashboard() {
               <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg font-semibold transition">
                 📲 Link teilen
               </button>
-              <div className="absolute hidden group-hover:flex bg-gray-900 text-white text-xs rounded-lg p-3 right-0 mt-2 w-40 z-10 flex-col gap-2">
+              <div className="absolute hidden group-hover:flex bg-gray-900 text-white text-xs rounded-lg p-3 right-0 mt-2 w-48 z-10 flex-col gap-2">
                 <a
-                  href={`https://wa.me/?text=${encodeURIComponent(`Wichtel Gruppe: ${getParticipantLink()}`)}`}
+                  href={`https://wa.me/?text=${encodeURIComponent(`Wichtelgruppe "${group?.name}": ${getParticipantLink()}`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-green-400"
+                  className="hover:text-green-400 block"
                 >
                   💬 WhatsApp
                 </a>
                 <a
-                  href={`mailto:?body=${encodeURIComponent(`Teilnahmelink: ${getParticipantLink()}`)}`}
-                  className="hover:text-blue-400"
+                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`Wichtelgruppe "${group?.name}": ${getParticipantLink()}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-green-400 block text-xs"
+                >
+                  💬 WhatsApp (App)
+                </a>
+                <a
+                  href={`mailto:?body=${encodeURIComponent(`Wichtelgruppe "${group?.name}":\n\n${getParticipantLink()}`)}`}
+                  className="hover:text-blue-400 block"
                 >
                   📧 Email
                 </a>
                 <button
                   onClick={() => {
-                    const text = `Wichtel Gruppe: ${getParticipantLink()}`;
+                    const text = `Wichtelgruppe "${group?.name}": ${getParticipantLink()}`;
                     navigator.clipboard.writeText(text);
-                    alert('Nachricht kopiert!');
+                    setCopiedType('share');
+                    setTimeout(() => setCopiedType(null), 2000);
                   }}
-                  className="text-left hover:text-yellow-400"
+                  className="text-left hover:text-yellow-400 block"
                 >
-                  📌 Nachricht kopieren
+                  {copiedType === 'share' ? '✅ Kopiert!' : '📌 Text kopieren'}
                 </button>
               </div>
             </div>
