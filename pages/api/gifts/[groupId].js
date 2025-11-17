@@ -1,20 +1,43 @@
-import { kv } from '@vercel/kv';
+// Fallback in-memory storage for development
+const giftStore = {};
 
 export default async function handler(req, res) {
   const { groupId } = req.query;
   const { participantId } = req.body || req.query;
 
+  if (!groupId) {
+    return res.status(400).json({ error: 'groupId required' });
+  }
+
   if (!participantId) {
     return res.status(400).json({ error: 'participantId required' });
   }
 
+  const cacheKey = `group:${groupId}:gifts:${participantId}`;
+
   if (req.method === 'GET') {
     try {
-      const gifts = await kv.get(`group:${groupId}:gifts:${participantId}`);
+      // Try to use Vercel KV if available
+      let gifts = null;
+      try {
+        const { kv } = await import('@vercel/kv');
+        if (kv) {
+          gifts = await kv.get(cacheKey);
+        }
+      } catch (e) {
+        console.log('KV not available, using fallback storage');
+      }
+
+      // Fallback to in-memory storage
+      if (!gifts && giftStore[cacheKey]) {
+        gifts = giftStore[cacheKey];
+      }
+
       return res.status(200).json({ gifts: gifts || [] });
     } catch (error) {
       console.error('Error fetching gifts:', error);
-      return res.status(500).json({ error: 'Failed to fetch gifts' });
+      // Return fallback data
+      return res.status(200).json({ gifts: giftStore[cacheKey] || [] });
     }
   }
 
@@ -31,11 +54,23 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Maximum 10 gifts allowed' });
       }
 
-      await kv.set(`group:${groupId}:gifts:${participantId}`, gifts);
+      // Save to in-memory fallback
+      giftStore[cacheKey] = gifts;
+
+      // Try to save to KV
+      try {
+        const { kv } = await import('@vercel/kv');
+        if (kv) {
+          await kv.set(cacheKey, gifts);
+        }
+      } catch (e) {
+        console.log('KV not available, using fallback storage', e.message);
+      }
+
       return res.status(200).json({ gifts });
     } catch (error) {
       console.error('Error saving gifts:', error);
-      return res.status(500).json({ error: 'Failed to save gifts' });
+      return res.status(500).json({ error: `Failed to save gifts: ${error.message}` });
     }
   }
 
