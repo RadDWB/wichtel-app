@@ -180,10 +180,14 @@ export default function OrganizerDashboard() {
   };
 
   const getParticipantStatus = (participantId) => {
+    const participant = group?.participants?.find(p => p.id === participantId);
     const hasList = gifts[participantId] && gifts[participantId].length > 0;
+    const wantsSurprise = participant?.wantsSurprise === true;
+
     return {
-      hasGifts: hasList,
+      hasGifts: hasList || wantsSurprise, // Count "surprise me" as completed
       giftCount: gifts[participantId]?.length || 0,
+      wantsSurprise,
     };
   };
 
@@ -451,10 +455,10 @@ export default function OrganizerDashboard() {
                         <div className="text-right">
                           {status.hasGifts ? (
                             <div className="flex items-center gap-2">
-                              <span className="text-2xl">✅</span>
+                              <span className="text-2xl">{status.wantsSurprise ? '🎉' : '✅'}</span>
                               <div>
-                                <p className="font-bold text-green-600">
-                                  {status.giftCount} Geschenke
+                                <p className={`font-bold ${status.wantsSurprise ? 'text-purple-600' : 'text-green-600'}`}>
+                                  {status.wantsSurprise ? 'Überraschung!' : `${status.giftCount} Geschenke`}
                                 </p>
                                 <p className="text-xs text-gray-500">Fertig</p>
                               </div>

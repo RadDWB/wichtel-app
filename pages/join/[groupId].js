@@ -498,12 +498,19 @@ export default function JoinGroup() {
                   }
                 });
 
-                const updated = { ...group, exclusions: updatedExclusions };
+                // Mark "surprise me" preference if selected
+                const updatedParticipants = group.participants.map(p =>
+                  p.id === selectedParticipant.id
+                    ? { ...p, wantsSurprise: wantsSurprise }
+                    : p
+                );
+
+                const updated = { ...group, exclusions: updatedExclusions, participants: updatedParticipants };
 
                 try {
                   // Save to KV (primary - no fallback)
                   await saveGroup(groupId, updated);
-                  console.log('✅ Exclusions saved to KV');
+                  console.log('✅ Exclusions and surprise preference saved to KV');
                   setGroup(updated);
                   setStep(4);
                 } catch (kvErr) {
