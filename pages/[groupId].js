@@ -167,13 +167,13 @@ export default function GroupPage() {
           )}
 
           {/* Nach Auslosung: Geschenkeliste & Galerie */}
-          {group.drawn && (
+          {group.drawn && isParticipant && (
             <div className="space-y-8">
               {/* Own Gift List */}
               <GiftList
                 group={group}
                 groupId={groupId}
-                participantId={group.pairing?.[localStorage.getItem(`participant_${groupId}`)] ? localStorage.getItem(`participant_${groupId}`) : null}
+                participantId={localStorage.getItem(`participant_${groupId}`)}
               />
 
               {/* Partner's Gift Gallery */}
