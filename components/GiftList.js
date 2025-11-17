@@ -37,7 +37,12 @@ export default function GiftList({ group, groupId, participantId }) {
 
   const addGift = async () => {
     if (!newGift.name.trim()) {
-      setError('Bitte Geschenkname eingeben');
+      setError('Bitte Produktname eingeben');
+      return;
+    }
+
+    if (!newGift.link.trim()) {
+      setError('Bitte Amazon-Link eingeben');
       return;
     }
 
@@ -45,17 +50,20 @@ export default function GiftList({ group, groupId, participantId }) {
     setError('');
 
     try {
-      let affiliateLink = newGift.link;
+      let affiliateLink = newGift.link.trim();
 
       // Add affiliate tag if Amazon link
-      if (newGift.link && newGift.link.includes('amazon.')) {
+      if (affiliateLink.includes('amazon.')) {
         try {
-          const urlObj = new URL(newGift.link);
-          urlObj.searchParams.set('tag', AMAZON_AFFILIATE_TAG);
-          affiliateLink = urlObj.toString();
+          const urlObj = new URL(affiliateLink);
+          // Only add tag if not already present
+          if (!urlObj.searchParams.has('tag')) {
+            urlObj.searchParams.set('tag', AMAZON_AFFILIATE_TAG);
+            affiliateLink = urlObj.toString();
+          }
         } catch (e) {
           // If URL parsing fails, use as-is
-          affiliateLink = newGift.link;
+          console.warn('Could not parse Amazon URL:', e);
         }
       }
 
@@ -63,8 +71,6 @@ export default function GiftList({ group, groupId, participantId }) {
         id: Date.now().toString(),
         name: newGift.name.trim(),
         link: affiliateLink,
-        category: newGift.category,
-        price: newGift.price || '',
         createdAt: new Date().toISOString(),
       };
 
@@ -195,72 +201,70 @@ export default function GiftList({ group, groupId, participantId }) {
         />
       )}
 
-      {/* Add Gift Form */}
+      {/* Add Gift Manual Form */}
       <div className="card bg-green-50 border-l-4 border-green-500">
-        <h3 className="section-title">🎁 Geschenk hinzufügen</h3>
+        <h3 className="section-title">🎁 Geschenk von Amazon hinzufügen</h3>
         <p className="text-gray-600 mb-4 text-sm">
           Maximal {10 - gifts.length} Geschenke mehr möglich (Budget: {group.budget})
         </p>
 
         {gifts.length < 10 ? (
-          <div className="space-y-3">
-            <div>
-              <label className="block text-sm font-medium mb-1">Geschenk-Name</label>
-              <input
-                type="text"
-                value={newGift.name}
-                onChange={e => setNewGift({ ...newGift, name: e.target.value })}
-                placeholder="z.B. AirPods Pro, Thermoskanne, Buch"
-                className="input-field"
-              />
+          <div className="space-y-4">
+            {/* How-To Guide */}
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+              <p className="font-semibold text-blue-900 mb-2">📋 So findest du den Link:</p>
+              <ol className="text-sm text-blue-800 space-y-1 ml-4">
+                <li>1️⃣ Gehe auf <a href="https://amazon.de" target="_blank" rel="noopener noreferrer" className="underline">amazon.de</a> und suche dein Produkt</li>
+                <li>2️⃣ Öffne die Produktseite</li>
+                <li>3️⃣ Kopiere die URL aus der Adressleiste (z.B. https://amazon.de/dp/B08N5WRWNW)</li>
+                <li>4️⃣ Paste den Link unten ein und gib der Wunschliste einen Namen</li>
+              </ol>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            {/* Input Fields - Only Name and Link */}
+            <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium mb-1">Kategorie</label>
-                <select
-                  value={newGift.category}
-                  onChange={e => setNewGift({ ...newGift, category: e.target.value })}
-                  className="input-field"
-                >
-                  {GIFT_CATEGORIES.map(cat => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Preis (optional)</label>
+                <label className="block text-sm font-medium mb-1">
+                  📝 Produktname (was möchtest du?)
+                </label>
                 <input
                   type="text"
-                  value={newGift.price}
-                  onChange={e => setNewGift({ ...newGift, price: e.target.value })}
-                  placeholder="z.B. 49€"
+                  value={newGift.name}
+                  onChange={e => setNewGift({ ...newGift, name: e.target.value })}
+                  placeholder="z.B. AirPods Pro, Thermoskanne, Mystery-Buch"
                   className="input-field"
                 />
               </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  🔗 Amazon-Produktlink
+                </label>
+                <input
+                  type="url"
+                  value={newGift.link}
+                  onChange={e => setNewGift({ ...newGift, link: e.target.value })}
+                  placeholder="https://amazon.de/dp/B08N5WRWNW"
+                  className="input-field font-mono text-xs"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  💡 Tipp: Der Link kann auch gekürzt sein (z.B. amazon.de/gp/product/ASIN)
+                </p>
+              </div>
+
+              <button
+                onClick={addGift}
+                disabled={loading}
+                className="btn-secondary w-full disabled:opacity-50"
+              >
+                {loading ? '✨ Wird hinzugefügt...' : '✨ Geschenk zur Liste hinzufügen'}
+              </button>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-1">Amazon-Link (optional)</label>
-              <input
-                type="url"
-                value={newGift.link}
-                onChange={e => setNewGift({ ...newGift, link: e.target.value })}
-                placeholder="https://amazon.de/dp/B08N5WRWNW"
-                className="input-field"
-              />
+            {/* Info Box */}
+            <div className="bg-yellow-50 border-l-4 border-yellow-500 p-3 rounded text-sm text-yellow-800">
+              ℹ️ <strong>Hinweis:</strong> Der Affiliate-Link wird automatisch hinzugefügt, damit der Organisator eine kleine Provision erhält!
             </div>
-
-            <button
-              onClick={addGift}
-              disabled={loading}
-              className="btn-secondary w-full disabled:opacity-50"
-            >
-              {loading ? 'Wird hinzugefügt...' : '✨ Geschenk hinzufügen'}
-            </button>
           </div>
         ) : (
           <p className="text-center text-gray-600 font-semibold">
@@ -281,26 +285,28 @@ export default function GiftList({ group, groupId, participantId }) {
               <div key={gift.id} className="bg-gray-50 p-4 rounded-lg border-l-4 border-green-500 hover:bg-gray-100 transition">
                 <div className="flex justify-between items-start gap-4">
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-2xl">{GIFT_CATEGORIES.find(c => c.id === gift.category)?.emoji || '✨'}</span>
-                      <h4 className="font-bold text-lg">{gift.name}</h4>
-                    </div>
-                    <div className="space-y-1 text-sm text-gray-600">
-                      <p><strong>Kategorie:</strong> {GIFT_CATEGORIES.find(c => c.id === gift.category)?.label}</p>
-                      {gift.price && <p><strong>Preis:</strong> {gift.price}</p>}
+                    <h4 className="font-bold text-lg mb-2">🎁 {gift.name}</h4>
+                    <div className="space-y-2">
                       {gift.link && (
                         <p>
-                          <strong>Link:</strong>{' '}
-                          <a href={gift.link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                            Auf Amazon anschauen
+                          <a
+                            href={gift.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:underline font-medium"
+                          >
+                            🔗 Auf Amazon anschauen
                           </a>
                         </p>
+                      )}
+                      {!gift.link && (
+                        <p className="text-sm text-gray-500 italic">Kein Link hinterlegt</p>
                       )}
                     </div>
                   </div>
                   <button
                     onClick={() => removeGift(gift.id)}
-                    className="btn-outline py-1 px-3 text-red-600 hover:bg-red-100"
+                    className="btn-outline py-1 px-3 text-red-600 hover:bg-red-100 flex-shrink-0"
                   >
                     🗑️
                   </button>
