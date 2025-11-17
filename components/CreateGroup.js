@@ -38,8 +38,7 @@ export default function CreateGroup({ onGroupCreated }) {
         throw new Error('Failed to create group');
       }
 
-      // Also save to localStorage for fallback
-      localStorage.setItem(`group_${id}`, JSON.stringify(group));
+      // Group saved to KV via API
       onGroupCreated(id);
       router.push(`/${id}`);
     } catch (err) {
