@@ -9,9 +9,14 @@ export default function Home() {
       <main className="container py-12">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-orange-500 to-amber-600 mb-2">
-            🎁 Julklapp Online
-          </h1>
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <h1 className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-orange-500 to-amber-600">
+              🎁 Julklapp Online
+            </h1>
+            <span className="inline-block bg-gradient-to-r from-red-600 to-orange-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
+              v1.0
+            </span>
+          </div>
           <p className="text-2xl font-bold text-gray-800 mb-4">
             Wichteln und Beschenken leicht gemacht...
           </p>
