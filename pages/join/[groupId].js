@@ -248,10 +248,10 @@ export default function JoinGroup() {
           />
           <div className="container mx-auto mt-8 max-w-2xl">
             <button
-              onClick={() => setStep(4)}
+              onClick={() => setStep(3)}
               className="w-full btn-primary"
             >
-              ✅ Ich bin fertig - warte auf Auslosung →
+              ✅ Geschenkeliste fertig - zu Ausschlüssen →
             </button>
           </div>
         </div>
@@ -259,27 +259,27 @@ export default function JoinGroup() {
     );
   }
 
-  // Step 3: Exclusions (ONLY if group is marked complete)
+  // Step 3: Exclusions (personal preferences - who NOT to buy for)
   if (step === 3 && selectedParticipant && !group.drawn) {
-    // This step only shows if group.isComplete is true
-    // Otherwise user goes to step 4 (waiting)
+    // This step allows participant to exclude people they don't want to buy for
+    // (e.g., their partner, family members)
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
         <div className="container mx-auto py-12 px-4 max-w-2xl">
           <div className="max-w-2xl mx-auto mb-6 bg-purple-50 border-l-4 border-purple-500 p-4 rounded">
-            <h2 className="font-bold text-purple-900 mb-2">🎁 Phase 2: Ausschlüsse definieren</h2>
+            <h2 className="font-bold text-purple-900 mb-2">🎁 Phase 2: Persönliche Ausschlüsse (optional)</h2>
             <p className="text-sm text-purple-800">
-              Der Organisator hat die Anmeldephase abgeschlossen. Definiere jetzt optional, wem du NICHT ein Geschenk kaufen möchtest.
+              Definiere jetzt, wem du NICHT ein Geschenk kaufen möchtest. Z.B. dein Partner, enge Familie, etc. Dies wird berücksichtigt bei der Auslosung.
             </p>
           </div>
 
-          <h1 className="text-3xl font-bold mb-6">🚫 Ausschlüsse (optional)</h1>
+          <h1 className="text-3xl font-bold mb-6">🚫 Wen möchtest du ausschließen?</h1>
 
-          {group.participants && group.participants.length >= 3 && (
+          {group.participants && group.participants.length >= 2 && (
             <div className="bg-white rounded-lg p-6 shadow-md mb-6">
               <p className="text-gray-700 mb-4">
-                Wähle maximal 2 Personen aus, denen du definitiv NICHT ein Geschenk kaufen möchtest (z.B. Partner, Familie).
+                Wähle bis zu {Math.max(1, Math.floor(group.participants.length / 2))} Person(en) aus, denen du definitiv NICHT ein Geschenk kaufen möchtest:
               </p>
 
               <div className="space-y-3">
@@ -292,8 +292,10 @@ export default function JoinGroup() {
                         checked={exclusions[p.id] || false}
                         onChange={(e) => {
                           const currentCount = Object.values(exclusions).filter(v => v).length;
-                          if (e.target.checked && currentCount >= 2) {
-                            alert('Du kannst maximal 2 Personen ausschließen');
+                          const maxExclusions = Math.max(1, Math.floor(group.participants.length / 2));
+
+                          if (e.target.checked && currentCount >= maxExclusions) {
+                            alert(`Du kannst maximal ${maxExclusions} Person(en) ausschließen`);
                             return;
                           }
                           setExclusions({
