@@ -151,10 +151,21 @@ export default function OrganizerDashboard() {
     return `${typeof window !== 'undefined' ? window.location.origin : ''}/join/${id}`;
   };
 
+  const getPairingsLink = () => {
+    return `${typeof window !== 'undefined' ? window.location.origin : ''}/${id}/pairings`;
+  };
+
   const [copiedType, setCopiedType] = useState(null);
 
   const copyToClipboard = (linkType = 'organizer') => {
-    const link = linkType === 'participant' ? getParticipantLink() : getOrganizerLink();
+    let link = '';
+    if (linkType === 'participant') {
+      link = getParticipantLink();
+    } else if (linkType === 'pairings') {
+      link = getPairingsLink();
+    } else {
+      link = getOrganizerLink();
+    }
     navigator.clipboard.writeText(link);
     setCopiedType(linkType);
     setTimeout(() => setCopiedType(null), 2000);
@@ -538,6 +549,74 @@ export default function OrganizerDashboard() {
             <strong>💡 Hinweis:</strong> Teile diesen Link per WhatsApp, Signal, Threema, Email oder andere Messenger, um deine Teilnehmer einzuladen!
           </div>
         </div>
+
+        {/* Pairings Share Section (after draw) */}
+        {group.drawn && (
+          <div className="card bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-300 shadow-lg mb-6">
+            <h3 className="section-title text-purple-900 mb-4">🎁 Paarungen teilen</h3>
+
+            <p className="text-sm text-gray-700 mb-4">
+              Teile diese Seite mit allen Teilnehmern, damit sie sehen können, wer wen beschenkt und die Wunschlisten einsehen können:
+            </p>
+
+            <div className="bg-white rounded border border-purple-300 p-4 mb-4 font-mono text-xs break-all">
+              {getPairingsLink()}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <button
+                onClick={() => copyToClipboard('pairings')}
+                className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg font-semibold transition"
+              >
+                {copiedType === 'pairings' ? '✅ Link kopiert!' : '📋 Link in Zwischenablage'}
+              </button>
+
+              <div className="relative group">
+                <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg font-semibold transition">
+                  📲 Link teilen
+                </button>
+                <div className="absolute hidden group-hover:flex bg-gray-900 text-white text-xs rounded-lg p-3 right-0 mt-2 w-48 z-10 flex-col gap-2">
+                  <a
+                    href={`https://wa.me/?text=${encodeURIComponent(`Schaut die Wichtel-Paarungen an! ${getPairingsLink()}`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-green-400 block"
+                  >
+                    💬 WhatsApp
+                  </a>
+                  <a
+                    href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`Schaut die Wichtel-Paarungen an! ${getPairingsLink()}`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-green-400 block"
+                  >
+                    💬 WhatsApp (App)
+                  </a>
+                  <a
+                    href={`mailto:?body=${encodeURIComponent(`Schaut die Wichtel-Paarungen an:\n\n${getPairingsLink()}`)}`}
+                    className="hover:text-blue-400 block"
+                  >
+                    📧 Email
+                  </a>
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  const text = `Schaut die Wichtel-Paarungen an! ${getPairingsLink()}`;
+                  navigator.share({ title: 'Wichtel-Paarungen', text: text }).catch(() => {});
+                }}
+                className="w-full bg-pink-600 hover:bg-pink-700 text-white py-2 rounded-lg font-semibold transition"
+              >
+                🔗 Share-Button
+              </button>
+            </div>
+
+            <div className="mt-4 p-3 bg-purple-100 border border-purple-300 rounded text-xs text-purple-900">
+              <strong>💡 Hinweis:</strong> Auf dieser Seite können deine Teilnehmer sehen, wer wen beschenkt. Klick auf einen Namen, um die Wunschliste zu sehen. Falls jemand sich überraschen lassen möchte, wird das dort angezeigt.
+            </div>
+          </div>
+        )}
 
         {/* Action Buttons */}
         <div className="card bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-orange-300 shadow-lg">
