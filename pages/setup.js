@@ -117,9 +117,10 @@ export default function Setup() {
       // Generate 3-digit PIN
       const organizerPin = String(Math.floor(Math.random() * 900) + 100);
 
-      // Filter empty participants
+      // Filter empty participants (exclude if organizer already in list)
       const validParticipants = participants
         .filter(p => p.name.trim())
+        .filter(p => !(participatesInGroup && p.name.trim() === organizerName.trim())) // Don't add organizer twice
         .map(p => ({
           id: Date.now().toString() + Math.random(),
           name: p.name.trim(),

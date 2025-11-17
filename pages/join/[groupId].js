@@ -34,6 +34,14 @@ export default function JoinGroup() {
     return () => clearInterval(interval);
   }, [groupId, orgParticipant]);
 
+  // Clear localStorage participant ID when flow is complete (Step 4)
+  // So user starts fresh on next visit with participant list
+  useEffect(() => {
+    if (step === 4 && groupId) {
+      localStorage.removeItem(`participant_${groupId}`);
+    }
+  }, [step, groupId]);
+
   const loadGroup = async () => {
     try {
       setLoading(true);
@@ -200,8 +208,8 @@ export default function JoinGroup() {
     );
   }
 
-  // Step 1.5: Add New Participant
-  if (step === 1.5) {
+  // Step 1.5a: Add New Participant (wenn noch nicht ausgewählt)
+  if (step === 1.5 && !selectedParticipant) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
         <div className="container mx-auto py-12 px-4 max-w-2xl">
@@ -258,7 +266,7 @@ export default function JoinGroup() {
                   localStorage.setItem(`participant_${groupId}`, newParticipant.id);
                   setGroup(updated);
                   setSelectedParticipant(newParticipant);
-                  setStep(3);
+                  setStep(1.5); // Go to gift choice, not directly to exclusions
                 }}
                 className="flex-1 btn-primary"
               >
@@ -545,7 +553,7 @@ export default function JoinGroup() {
     );
   }
 
-  // After draw: Show partner's gifts
+  // After draw: Show partner's gifts or surprise message
   if (group.drawn && selectedParticipant) {
     const partnerId = group.pairing?.[selectedParticipant.id];
     const partner = group.participants.find(p => p.id === partnerId);
@@ -561,6 +569,27 @@ export default function JoinGroup() {
       );
     }
 
+    // Check if partner has a gift list (gifts will be loaded by GiftList component)
+    // If no gifts and partner wanted surprise, show surprise message
+    const [partnerGifts, setPartnerGifts] = useState([]);
+
+    useEffect(() => {
+      const loadPartnerGifts = async () => {
+        try {
+          const response = await fetch(`/api/gifts/${groupId}?participantId=${partnerId}`);
+          const data = await response.json();
+          setPartnerGifts(data.gifts || []);
+        } catch (err) {
+          console.error('Error loading partner gifts:', err);
+        }
+      };
+      if (partnerId && group.drawn) {
+        loadPartnerGifts();
+      }
+    }, [partnerId, group.drawn, groupId]);
+
+    const partnerWantsSurprise = partnerGifts && partnerGifts.length === 0;
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
         <div className="container mx-auto py-12 px-4">
@@ -571,18 +600,46 @@ export default function JoinGroup() {
               <p className="text-sm mt-2 opacity-90">Budget: {group.budget}</p>
             </div>
 
-            {/* Partner's Gifts */}
-            <div className="bg-white rounded-lg p-6 shadow-md">
-              <h2 className="text-2xl font-bold mb-6">{partner.name}s Geschenkeliste</h2>
+            {partnerWantsSurprise ? (
+              // Partner wants surprise - show special message
+              <div className="bg-white rounded-lg p-8 shadow-md text-center">
+                <div className="text-6xl mb-4">🎉</div>
+                <h2 className="text-3xl font-bold mb-4 text-gray-900">Überraschungs-Zeit!</h2>
+                <p className="text-lg text-gray-700 mb-6">
+                  {partner.name} möchte sich überraschen lassen! 🎊
+                </p>
+                <p className="text-gray-600 mb-6 max-w-lg mx-auto">
+                  Diese Person hat bewusst keine Wunschliste angelegt und vertraut darauf, dass du das Richtige für sie auswählst. Das macht es zu einer echten Überraschung!
+                </p>
+                <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-6 mb-6">
+                  <p className="text-sm text-gray-700 font-semibold mb-3">
+                    💡 Tipps für die Überraschung:
+                  </p>
+                  <ul className="text-sm text-gray-600 space-y-2 text-left max-w-md mx-auto">
+                    <li>✨ Budget beachten: {group.budget}</li>
+                    <li>✨ Persönliche Interessen berücksichtigen</li>
+                    <li>✨ Kreativ und liebevoll auswählen</li>
+                    <li>✨ Die Überraschung ist das Geschenk!</li>
+                  </ul>
+                </div>
+                <p className="text-xs text-gray-500">
+                  Viel Spaß beim Einkaufen! 🛍️
+                </p>
+              </div>
+            ) : (
+              // Partner has submitted gift list - show it
+              <div className="bg-white rounded-lg p-6 shadow-md">
+                <h2 className="text-2xl font-bold mb-6">{partner.name}s Geschenkeliste</h2>
 
-              {/* Gifts will be loaded here */}
-              <GiftList
-                group={group}
-                groupId={groupId}
-                participantId={partnerId}
-                isViewing={true}
-              />
-            </div>
+                {/* Gifts will be loaded here */}
+                <GiftList
+                  group={group}
+                  groupId={groupId}
+                  participantId={partnerId}
+                  isViewing={true}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>

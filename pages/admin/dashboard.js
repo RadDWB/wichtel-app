@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { isAdminLoggedIn, clearAdminSession } from '../../lib/admin';
+import { getAllGroups, deleteGroup as deleteGroupKV } from '../../lib/kv';
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -23,17 +24,25 @@ export default function AdminDashboard() {
     loadGroups();
   }, []);
 
-  const loadGroups = () => {
+  const loadGroups = async () => {
     try {
       setLoading(true);
-      const allGroups = [];
+      let allGroups = [];
 
-      // Scan localStorage for groups
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key?.startsWith('group_')) {
-          const groupData = JSON.parse(localStorage.getItem(key));
-          allGroups.push(groupData);
+      // Try to load from KV first (primary storage)
+      try {
+        allGroups = await getAllGroups();
+        console.log('✅ Loaded groups from KV');
+      } catch (kvErr) {
+        console.warn('KV not available, trying localStorage:', kvErr);
+
+        // Fallback to localStorage
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key?.startsWith('group_')) {
+            const groupData = JSON.parse(localStorage.getItem(key));
+            allGroups.push(groupData);
+          }
         }
       }
 
@@ -66,9 +75,20 @@ export default function AdminDashboard() {
     router.push('/');
   };
 
-  const deleteGroup = (groupId) => {
+  const deleteGroup = async (groupId) => {
     if (window.confirm('🗑️ Wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden!')) {
+      try {
+        // Delete from KV (primary)
+        await deleteGroupKV(groupId);
+        console.log('✅ Group deleted from KV');
+      } catch (kvErr) {
+        console.warn('KV delete failed, using localStorage:', kvErr);
+      }
+
+      // Also delete from localStorage
       localStorage.removeItem(`group_${groupId}`);
+      localStorage.removeItem(`organizer_${groupId}`);
+
       loadGroups();
     }
   };
@@ -177,19 +197,33 @@ export default function AdminDashboard() {
                         {formatDate(group.createdAt)}
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex gap-2">
-                          <a
-                            href={`/admin/groups/${group.id}`}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm font-semibold"
-                          >
-                            👁️ Details
-                          </a>
-                          <button
-                            onClick={() => deleteGroup(group.id)}
-                            className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm font-semibold"
-                          >
-                            🗑️
-                          </button>
+                        <div className="space-y-2">
+                          <div className="flex gap-2">
+                            <a
+                              href={`/organizer/${group.id}`}
+                              className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm font-semibold flex-1 text-center"
+                            >
+                              🔐 Org-Dashboard
+                            </a>
+                            <a
+                              href={`/admin/groups/${group.id}`}
+                              className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm font-semibold"
+                            >
+                              👁️
+                            </a>
+                            <button
+                              onClick={() => deleteGroup(group.id)}
+                              className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm font-semibold"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                          {group.organizerPin && (
+                            <div className="bg-gray-700 rounded px-3 py-1 text-center">
+                              <p className="text-xs text-gray-300">PIN:</p>
+                              <p className="text-lg font-bold text-yellow-300 tracking-widest">{group.organizerPin}</p>
+                            </div>
+                          )}
                         </div>
                       </td>
                     </tr>

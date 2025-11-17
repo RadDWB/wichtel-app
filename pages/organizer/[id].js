@@ -11,15 +11,88 @@ export default function OrganizerDashboard() {
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [pinShown, setPinShown] = useState(!!showPin);
+  const [authenticated, setAuthenticated] = useState(false);
+  const [pinInput, setPinInput] = useState('');
+  const [pinError, setPinError] = useState('');
 
   useEffect(() => {
     if (id) {
-      loadGroupData();
+      // Check if authenticated via PIN
+      checkAuthentication();
       // Refresh data every 10 seconds
-      const interval = setInterval(loadGroupData, 10000);
+      const interval = setInterval(() => {
+        if (authenticated) {
+          loadGroupData();
+        }
+      }, 10000);
       return () => clearInterval(interval);
     }
-  }, [id]);
+  }, [id, authenticated]);
+
+  const checkAuthentication = () => {
+    // Check if coming from initial setup (showPin in URL)
+    if (showPin) {
+      setAuthenticated(true);
+      return;
+    }
+
+    // Check localStorage for verification
+    const stored = localStorage.getItem(`organizer_${id}`);
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (parsed.pin && parsed.verifiedAt) {
+          setAuthenticated(true);
+          return;
+        }
+      } catch (e) {
+        console.error('Invalid stored auth:', e);
+      }
+    }
+
+    // Not authenticated
+    setAuthenticated(false);
+  };
+
+  const handlePinSubmit = async (e) => {
+    e.preventDefault();
+    setPinError('');
+
+    if (!pinInput.trim()) {
+      setPinError('Bitte gib deine PIN ein');
+      return;
+    }
+
+    try {
+      // Verify PIN against group
+      let groupData = await getGroup(id);
+
+      if (!groupData) {
+        const saved = localStorage.getItem(`group_${id}`);
+        if (saved) {
+          groupData = JSON.parse(saved);
+        }
+      }
+
+      if (!groupData || groupData.organizerPin !== pinInput.trim()) {
+        setPinError('❌ PIN ist ungültig');
+        setPinInput('');
+        return;
+      }
+
+      // PIN correct
+      localStorage.setItem(`organizer_${id}`, JSON.stringify({
+        pin: pinInput.trim(),
+        verifiedAt: new Date().toISOString()
+      }));
+
+      setAuthenticated(true);
+      loadGroupData();
+    } catch (err) {
+      setPinError('Fehler beim Überprüfen der PIN');
+      console.error(err);
+    }
+  };
 
   const loadGroupData = async () => {
     try {
@@ -126,6 +199,63 @@ export default function OrganizerDashboard() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50 flex items-center justify-center">
         <p className="text-2xl text-gray-600">🔄 Lädt...</p>
+      </div>
+    );
+  }
+
+  // PIN authentication required (unless coming from initial setup)
+  if (!authenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="bg-white rounded-lg shadow-2xl p-8">
+            <div className="text-center mb-8">
+              <div className="text-5xl mb-4">🔐</div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard Zugang</h1>
+              <p className="text-gray-600">Gib deine PIN ein</p>
+            </div>
+
+            <form onSubmit={handlePinSubmit} className="space-y-6">
+              {pinError && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                  {pinError}
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Deine 3-stellige PIN
+                </label>
+                <input
+                  type="password"
+                  inputMode="numeric"
+                  maxLength="3"
+                  value={pinInput}
+                  onChange={(e) => setPinInput(e.target.value.replace(/[^0-9]/g, ''))}
+                  placeholder="●●●"
+                  className="input-field w-full text-center text-4xl font-bold tracking-widest"
+                  autoFocus
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  Diese PIN hast du beim Erstellen der Gruppe erhalten
+                </p>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-3 rounded-lg transition"
+              >
+                🔓 Dashboard entsperren
+              </button>
+
+              <Link href="/">
+                <a className="block text-center text-blue-600 hover:underline text-sm">
+                  ← Zurück zur Startseite
+                </a>
+              </Link>
+            </form>
+          </div>
+        </div>
       </div>
     );
   }

@@ -43,7 +43,12 @@ export default async function handler(req, res) {
 
   if (req.method === 'POST' || req.method === 'PUT') {
     try {
-      const { gifts } = req.body;
+      const { gifts, participantId: bodyParticipantId } = req.body;
+      const actualParticipantId = bodyParticipantId || participantId;
+
+      if (!actualParticipantId) {
+        return res.status(400).json({ error: 'participantId required' });
+      }
 
       if (!Array.isArray(gifts)) {
         return res.status(400).json({ error: 'gifts must be an array' });
@@ -54,14 +59,17 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Maximum 10 gifts allowed' });
       }
 
+      // Create correct cache key with actual participant ID
+      const correctCacheKey = `group:${groupId}:gifts:${actualParticipantId}`;
+
       // Save to in-memory fallback
-      giftStore[cacheKey] = gifts;
+      giftStore[correctCacheKey] = gifts;
 
       // Try to save to KV
       try {
         const { kv } = await import('@vercel/kv');
         if (kv) {
-          await kv.set(cacheKey, gifts);
+          await kv.set(correctCacheKey, gifts);
         }
       } catch (e) {
         console.log('KV not available, using fallback storage', e.message);
