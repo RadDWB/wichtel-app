@@ -264,7 +264,10 @@ export default function GiftIdeaBrowser({ budget, onSelectGifts }) {
 
           {searchError && (
             <div className="bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded mb-4">
-              ❌ {searchError}
+              <p>❌ {searchError}</p>
+              <p className="text-xs mt-2 text-red-700 opacity-80">
+                💡 Tipp: Du kannst Geschenke auch manuell unten im Formular hinzufügen!
+              </p>
             </div>
           )}
 
