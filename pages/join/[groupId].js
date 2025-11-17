@@ -19,6 +19,17 @@ export default function JoinGroup() {
     if (groupId) {
       loadGroup();
     }
+
+    // Refresh group status every 5 seconds to detect when it's marked as complete
+    const interval = setInterval(() => {
+      const saved = localStorage.getItem(`group_${groupId}`);
+      if (saved) {
+        const latest = JSON.parse(saved);
+        setGroup(latest);
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, [groupId]);
 
   const loadGroup = () => {
@@ -214,8 +225,51 @@ export default function JoinGroup() {
     );
   }
 
-  // Step 3: Exclusions
-  if (step === 3 && group.isComplete) {
+  // Step 2: Gifts (add gifts before exclusions)
+  if (step === 2 && selectedParticipant && !group.drawn) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="container mx-auto py-12 px-4">
+          <a href="/" className="text-red-600 hover:underline mb-4 inline-block">
+            ← Zurück
+          </a>
+          <GiftList
+            group={group}
+            groupId={groupId}
+            participantId={selectedParticipant.id}
+          />
+          <div className="container mx-auto mt-8 max-w-2xl">
+            <button
+              onClick={() => setStep(3)}
+              className="w-full btn-primary"
+            >
+              Weiter zu Ausschlüssen →
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Step 3: Exclusions (only if group is complete)
+  if (step === 3 && selectedParticipant && !group.drawn) {
+    if (!group.isComplete) {
+      // If group is not yet complete, skip to step 4
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50 flex items-center justify-center">
+          <div className="text-center max-w-2xl">
+            <h1 className="text-4xl font-bold mb-4">✅ Du bist angemeldet!</h1>
+            <p className="text-lg text-gray-700 mb-8">
+              Deine Geschenkeliste wurde gespeichert. Warte, bis alle Teilnehmer beigetreten sind und der Organisator die Anmeldephase abschließt.
+            </p>
+            <a href="/" className="btn-primary inline-block">
+              Zur Startseite
+            </a>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
         <div className="container mx-auto py-12 px-4 max-w-2xl">
@@ -255,44 +309,51 @@ export default function JoinGroup() {
             </div>
           )}
 
-          <button
-            onClick={() => {
-              // Save exclusions to group
-              const key = `${selectedParticipant?.id}`;
-              const updatedExclusions = { ...group.exclusions };
-              Object.entries(exclusions).forEach(([toId, isExcluded]) => {
-                if (isExcluded) {
-                  updatedExclusions[`${key}-${toId}`] = true;
-                }
-              });
+          <div className="flex gap-3">
+            <button
+              onClick={() => setStep(2)}
+              className="flex-1 btn-outline"
+            >
+              ← Zurück
+            </button>
+            <button
+              onClick={() => {
+                // Save exclusions to group
+                const key = `${selectedParticipant?.id}`;
+                const updatedExclusions = { ...group.exclusions };
+                Object.entries(exclusions).forEach(([toId, isExcluded]) => {
+                  if (isExcluded) {
+                    updatedExclusions[`${key}-${toId}`] = true;
+                  }
+                });
 
-              const updated = { ...group, exclusions: updatedExclusions };
-              localStorage.setItem(`group_${groupId}`, JSON.stringify(updated));
-              setGroup(updated);
-              setStep(4);
-            }}
-            className="w-full btn-primary"
-          >
-            ✅ Fertig!
-          </button>
+                const updated = { ...group, exclusions: updatedExclusions };
+                localStorage.setItem(`group_${groupId}`, JSON.stringify(updated));
+                setGroup(updated);
+                setStep(4);
+              }}
+              className="flex-1 btn-primary"
+            >
+              ✅ Fertig!
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
-  // Step 2: Gifts (visible when isComplete is false, or after joining)
-  if ((step === 2 || step === 4) && selectedParticipant && !group.drawn) {
+  // Step 4: Waiting for draw (or go home)
+  if (step === 4 && selectedParticipant && !group.drawn) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="container mx-auto py-12 px-4">
-          <a href="/" className="text-red-600 hover:underline mb-4 inline-block">
-            ← Zurück
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50 flex items-center justify-center">
+        <div className="text-center max-w-2xl">
+          <h1 className="text-4xl font-bold mb-4">✅ Du bist angemeldet!</h1>
+          <p className="text-lg text-gray-700 mb-8">
+            Deine Geschenkeliste und Ausschlüsse wurden gespeichert. Die Auslosung kann jetzt stattfinden!
+          </p>
+          <a href="/" className="btn-primary inline-block">
+            Zur Startseite
           </a>
-          <GiftList
-            group={group}
-            groupId={groupId}
-            participantId={selectedParticipant.id}
-          />
         </div>
       </div>
     );
