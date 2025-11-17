@@ -9,7 +9,7 @@ export default function Home() {
               🎁 Julklapp Online
             </h1>
             <span className="inline-block bg-gradient-to-r from-red-600 to-orange-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
-              v1.0
+              v1.1.0
             </span>
           </div>
           <p className="text-2xl font-bold text-gray-800 mb-4">

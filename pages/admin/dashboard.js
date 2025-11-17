@@ -99,7 +99,7 @@ export default function AdminDashboard() {
         <div className="container mx-auto flex justify-between items-center">
           <div>
             <h1 className="text-4xl font-bold text-white mb-1">🔐 Admin Dashboard</h1>
-            <p className="text-gray-400">Julklapp Online v1.0 - Gruppen Management</p>
+            <p className="text-gray-400">Julklapp Online v1.1.0 - Gruppen Management</p>
           </div>
           <button
             onClick={handleLogout}
