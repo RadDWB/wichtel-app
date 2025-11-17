@@ -35,7 +35,7 @@ export default function AdminLogin() {
           <div className="text-center mb-8">
             <div className="text-5xl mb-4">🔐</div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Panel</h1>
-            <p className="text-gray-600">Julklapp Online v1.2.0</p>
+            <p className="text-gray-600">Julklapp Online v1.3.0</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-6">
