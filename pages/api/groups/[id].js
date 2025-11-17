@@ -18,18 +18,23 @@ export default async function handler(req, res) {
 
   if (req.method === 'POST' || req.method === 'PUT') {
     try {
-      const { name, budget, participants, exclusions, drawn, pairing, drawnAt } = req.body;
-
       const group = {
         id,
-        name: name || 'Meine Wichtelrunde',
-        budget: budget || '20 €',
-        participants: participants || [],
-        exclusions: exclusions || {},
-        drawn: drawn || false,
-        pairing: pairing || null,
-        drawnAt: drawnAt || null,
-        createdAt: new Date().toISOString(),
+        // Pass through all fields from request, with defaults for new groups
+        name: req.body.name || 'Meine Wichtelrunde',
+        occasion: req.body.occasion || 'other',
+        budget: req.body.budget || '20 €',
+        endDate: req.body.endDate || null,
+        organizerName: req.body.organizerName || 'Organisator',
+        organizerEmail: req.body.organizerEmail || null,
+        participants: req.body.participants || [],
+        exclusions: req.body.exclusions || {},
+        drawn: req.body.drawn || false,
+        pairing: req.body.pairing || null,
+        drawnAt: req.body.drawnAt || null,
+        isComplete: req.body.isComplete || false,
+        invitationText: req.body.invitationText || null,
+        createdAt: req.body.createdAt || new Date().toISOString(),
       };
 
       await saveGroup(id, group);
