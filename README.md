@@ -1,16 +1,19 @@
-# 🎄 Wichtel App - Wichteln mit Amazon Affiliate Links
+# 🎁 Julklapp Online - Wichteln und Beschenken leicht gemacht
 
-Kostenlose Web-App zum Online-Wichteln mit Wunschlisten und Amazon Affiliate-Links.
+Kostenlose Web-App zum **Online-Wichteln** mit Geschenkelisten, Amazon-Links und fairem Auslosungs-Algorithmus.
+
+**Für Gruppen, Familien, Vereine, Freunde... zu allen Gelegenheiten, nicht nur Weihnachten!**
 
 ## ✨ Features
 
-- ✅ **Gruppen anlegen** - Mit Gruppenname und Budget
-- ✅ **Teilnehmerverwaltung** - Freunde einladen per Link
-- ✅ **Faire Auslosung** - Geheimer Algorithmus für zufällige Paarungen
-- ✅ **Wunschlisten** - Teilnehmer teilen Amazon-Links und freie Wünsche
-- ✅ **Amazon Affiliate** - Links werden automatisch mit Affiliate-Tag versehen
-- ✅ **Keine Registrierung** - 100% anonym & kostenlos
-- ✅ **Vercel KV** - Daten werden auf Vercel-Servern gespeichert
+- ✅ **Gruppen erstellen** - Mit Namen, Budget und beliebig vielen Teilnehmern
+- ✅ **Freunde einladen** - Per Link ohne Registrierung
+- ✅ **Faire Auslosung** - Intelligenter Algorithmus mit Ausschluss-Optionen (z.B. Partner)
+- ✅ **Geschenkelisten** - Bis zu 10 Geschenke pro Person mit Kategorien
+- ✅ **Amazon Integration** - Links werden automatisch mit Affiliate-Tag versehen
+- ✅ **Filterung** - Nach Kategorie & Preis suchen
+- ✅ **100% kostenlos** - Keine Registrierung, keine Datensammlung
+- ✅ **Vercel KV Backend** - Sichere Datenspeicherung auf Vercel-Servern
 
 ## 🚀 Installation & Lokale Entwicklung
 

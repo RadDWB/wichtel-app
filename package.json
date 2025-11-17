@@ -1,7 +1,8 @@
 {
-  "name": "wichtel-app",
-  "version": "1.0.0",
+  "name": "julklapp-online",
+  "version": "2.0.0",
   "private": true,
+  "description": "Julklapp Online - Wichteln und Beschenken leicht gemacht für Gruppen, Familien, Vereine und Freunde",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
