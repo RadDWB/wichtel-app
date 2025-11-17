@@ -56,25 +56,24 @@ export default function Home() {
             </a>
           </div>
 
-              {/* Instructions */}
-              <div className="card bg-gradient-to-br from-orange-50 to-amber-50 border-l-4 border-orange-500">
-                <h3 className="font-bold mb-3 text-orange-700">✨ In 3 Schritten zur Bescherung:</h3>
-                <ol className="space-y-3 text-sm text-gray-800">
-                  <li className="flex gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold">1</span>
-                    <span><strong>Gruppe erstellen</strong> – Mit Budget und Namen</span>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center font-bold">2</span>
-                    <span><strong>Freunde einladen</strong> – Link teilen, alle melden sich an</span>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 bg-amber-500 text-white rounded-full flex items-center justify-center font-bold">3</span>
-                    <span><strong>Auslosen & beschenken</strong> – Geschenkelisten anlegen, einkaufen, schenken!</span>
-                  </li>
-                </ol>
-              </div>
-            </div>
+          {/* Instructions */}
+          <div className="card bg-gradient-to-br from-orange-50 to-amber-50 border-l-4 border-orange-500">
+            <h3 className="font-bold mb-3 text-orange-700">✨ In 3 Schritten zur Bescherung:</h3>
+            <ol className="space-y-3 text-sm text-gray-800">
+              <li className="flex gap-3">
+                <span className="flex-shrink-0 w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold">1</span>
+                <span><strong>Gruppe erstellen</strong> – Mit Budget und Namen</span>
+              </li>
+              <li className="flex gap-3">
+                <span className="flex-shrink-0 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center font-bold">2</span>
+                <span><strong>Freunde einladen</strong> – Link teilen, alle melden sich an</span>
+              </li>
+              <li className="flex gap-3">
+                <span className="flex-shrink-0 w-6 h-6 bg-amber-500 text-white rounded-full flex items-center justify-center font-bold">3</span>
+                <span><strong>Auslosen & beschenken</strong> – Geschenkelisten anlegen, einkaufen, schenken!</span>
+              </li>
+            </ol>
+          </div>
         </div>
 
         {/* Footer */}
