@@ -28,9 +28,6 @@ export default function Setup() {
   // Step 5: Budget
   const [budget, setBudget] = useState('');
 
-  // Step 6: Invitation Text
-  const [invitationText, setInvitationText] = useState('');
-
   const handleOccasionSelect = (occasionId) => {
     setOccasion(occasionId);
     setGroupName(getDefaultName(occasionId));
@@ -39,7 +36,7 @@ export default function Setup() {
 
   const handleNext = () => {
     if (validateStep()) {
-      if (step === 6) {
+      if (step === 5) {
         handleCreateGroup();
       } else {
         setStep(step + 1);
@@ -80,12 +77,6 @@ export default function Setup() {
       case 5:
         if (!budget.trim()) {
           setError('Bitte gib ein Budget ein');
-          return false;
-        }
-        return true;
-      case 6:
-        if (!invitationText.trim()) {
-          setError('Bitte gib einen Einladungstext ein');
           return false;
         }
         return true;
@@ -151,12 +142,18 @@ export default function Setup() {
         drawn: false,
         createdAt: new Date().toISOString(),
         isComplete: false,
-        invitationText,
       };
 
-      // Save to Vercel KV (primary storage - no fallback)
-      await saveGroup(groupId, group);
-      console.log('✅ Group saved to KV');
+      // Save to Vercel KV (primary storage)
+      try {
+        await saveGroup(groupId, group);
+        console.log('✅ Group saved to KV');
+      } catch (kvErr) {
+        console.error('❌ KV save failed:', kvErr);
+        setError(`Fehler beim Speichern: ${kvErr.message}`);
+        setLoading(false);
+        return;
+      }
 
       // Save organizer session auth (localStorage only for session data)
       localStorage.setItem(`organizer_${groupId}`, JSON.stringify({ pin: organizerPin, createdAt: new Date().toISOString() }));
@@ -177,7 +174,7 @@ export default function Setup() {
         {/* Progress Bar */}
         <div className="mb-12">
           <div className="flex justify-between items-center mb-4">
-            {[1, 2, 3, 4, 5, 6].map((s) => (
+            {[1, 2, 3, 4, 5].map((s) => (
               <div
                 key={s}
                 className={`flex-1 h-2 mx-1 rounded-full ${
@@ -187,7 +184,7 @@ export default function Setup() {
             ))}
           </div>
           <p className="text-center text-gray-600">
-            Schritt {step} von 6
+            Schritt {step} von 5
           </p>
         </div>
 
@@ -377,28 +374,6 @@ export default function Setup() {
             </div>
           )}
 
-          {/* Step 6: Invitation Text */}
-          {step === 6 && (
-            <div>
-              <h2 className="text-3xl font-bold mb-6">📧 Einladungstext</h2>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Persönlicher Einladungstext
-                </label>
-                <textarea
-                  value={invitationText}
-                  onChange={(e) => setInvitationText(e.target.value)}
-                  placeholder="Hallo! Ich lade dich zu unserer Wichtelrunde ein. Klick auf den Link unten, um teilzunehmen!"
-                  rows={6}
-                  className="input-field w-full"
-                />
-                <p className="text-sm text-gray-600 mt-2">
-                  Der Einladungslink wird automatisch hinzugefügt.
-                </p>
-              </div>
-            </div>
-          )}
 
           {/* Navigation */}
           <div className="flex gap-4 mt-8">
