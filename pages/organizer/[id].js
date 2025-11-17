@@ -47,10 +47,17 @@ export default function OrganizerDashboard() {
     return `${typeof window !== 'undefined' ? window.location.origin : ''}/organizer/${id}`;
   };
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(getOrganizerLink());
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const getParticipantLink = () => {
+    return `${typeof window !== 'undefined' ? window.location.origin : ''}/join/${id}`;
+  };
+
+  const [copiedType, setCopiedType] = useState(null);
+
+  const copyToClipboard = (linkType = 'organizer') => {
+    const link = linkType === 'participant' ? getParticipantLink() : getOrganizerLink();
+    navigator.clipboard.writeText(link);
+    setCopiedType(linkType);
+    setTimeout(() => setCopiedType(null), 2000);
   };
 
   const sendViaEmail = () => {
@@ -135,10 +142,10 @@ export default function OrganizerDashboard() {
 
               <div className="space-y-2">
                 <button
-                  onClick={copyToClipboard}
+                  onClick={() => copyToClipboard('organizer')}
                   className="w-full btn-secondary bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-semibold transition"
                 >
-                  {copied ? '✅ Kopiert!' : '📋 Link kopieren'}
+                  {copiedType === 'organizer' ? '✅ Kopiert!' : '📋 Link kopieren'}
                 </button>
 
                 <button
@@ -273,12 +280,70 @@ export default function OrganizerDashboard() {
           </div>
         </div>
 
+        {/* Participant Link Section */}
+        <div className="card bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-300 shadow-lg mb-6">
+          <h3 className="section-title text-purple-900 mb-4">📤 Teilnehmer einladen</h3>
+
+          <p className="text-sm text-gray-700 mb-4">
+            Versende diesen Link an deine Freunde, Familie oder Kollegen, damit sie sich anmelden und ihre Wunschliste erstellen können:
+          </p>
+
+          <div className="bg-white rounded border border-purple-300 p-4 mb-4 font-mono text-xs break-all">
+            {getParticipantLink()}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <button
+              onClick={() => copyToClipboard('participant')}
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg font-semibold transition"
+            >
+              {copiedType === 'participant' ? '✅ Link kopiert!' : '📋 Link in Zwischenablage'}
+            </button>
+
+            <div className="relative group">
+              <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg font-semibold transition">
+                📲 Link teilen
+              </button>
+              <div className="absolute hidden group-hover:flex bg-gray-900 text-white text-xs rounded-lg p-3 right-0 mt-2 w-40 z-10 flex-col gap-2">
+                <a
+                  href={`https://wa.me/?text=${encodeURIComponent(`Wichtel Gruppe: ${getParticipantLink()}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-green-400"
+                >
+                  💬 WhatsApp
+                </a>
+                <a
+                  href={`mailto:?body=${encodeURIComponent(`Teilnahmelink: ${getParticipantLink()}`)}`}
+                  className="hover:text-blue-400"
+                >
+                  📧 Email
+                </a>
+                <button
+                  onClick={() => {
+                    const text = `Wichtel Gruppe: ${getParticipantLink()}`;
+                    navigator.clipboard.writeText(text);
+                    alert('Nachricht kopiert!');
+                  }}
+                  className="text-left hover:text-yellow-400"
+                >
+                  📌 Nachricht kopieren
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-4 p-3 bg-purple-100 border border-purple-300 rounded text-xs text-purple-900">
+            <strong>💡 Hinweis:</strong> Teile diesen Link per WhatsApp, Signal, Threema, Email oder andere Messenger, um deine Teilnehmer einzuladen!
+          </div>
+        </div>
+
         {/* Action Buttons */}
         <div className="card bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-orange-300 shadow-lg">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Link href={`/join/${id}`}>
               <a className="block text-center p-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold transition">
-                🔗 Teilnehmer-Link
+                🔗 Zum Beitritts-Link
               </a>
             </Link>
 

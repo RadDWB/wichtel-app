@@ -342,32 +342,49 @@ export default function JoinGroup() {
   // Step 4: Waiting for draw
   if (step === 4 && selectedParticipant && !group.drawn) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50 flex items-center justify-center">
-        <div className="text-center max-w-2xl">
-          <div className="bg-white rounded-lg p-8 shadow-lg">
-            <h1 className="text-4xl font-bold mb-4">✅ Du bist bereit!</h1>
-            <p className="text-lg text-gray-700 mb-6">
-              Deine Geschenkeliste und Ausschlüsse wurden gespeichert.
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
+        <div className="container mx-auto py-12 px-4 max-w-2xl">
+          <div className="bg-white rounded-lg p-8 shadow-lg mb-6">
+            <h1 className="text-4xl font-bold mb-4">✅ Du bist angemeldet!</h1>
+            <p className="text-lg text-gray-700 mb-8">
+              Großartig! Deine Ausschlüsse wurden gespeichert.
             </p>
+
+            {/* Big Button to Create Wishlist */}
+            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-300 rounded-lg p-6 mb-8">
+              <h2 className="text-2xl font-bold text-blue-900 mb-3">📝 Erstelle deine Wunschliste</h2>
+              <p className="text-gray-700 mb-6">
+                Jetzt ist es an der Zeit, deine Geschenkwünsche einzutragen! So weiß dein Wichtel, was du dir wünschst.
+              </p>
+              <button
+                onClick={() => setStep(2)}
+                className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold py-4 rounded-lg text-lg transition transform hover:scale-105"
+              >
+                ✨ Meine Wunschliste erstellen
+              </button>
+            </div>
 
             <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded mb-6">
               <p className="text-sm text-gray-600">
-                <strong>Das passiert jetzt:</strong>
+                <strong>Das passiert dann:</strong>
               </p>
               <ol className="text-sm text-gray-600 mt-2 space-y-1 text-left">
+                <li>📝 Du trägst deine Geschenkwünsche ein (1-10 Produkte)</li>
                 <li>✅ Du wartest, bis alle anderen Teilnehmer auch fertig sind</li>
                 <li>⏳ Der Organisator startet die Auslosung</li>
                 <li>🎁 Du erfährst dann, wen du beschenken darfst</li>
-                <li>🛍️ Du siehst die Geschenkeliste des Partners</li>
+                <li>🛍️ Du siehst die Geschenkeliste deines Partners und kannst einkaufen!</li>
               </ol>
             </div>
 
-            <p className="text-gray-600 mb-8">
-              Der Organisator wird euch per Nachricht Bescheid geben, sobald alle angemeldet sind.
-            </p>
+            <div className="bg-blue-50 border border-blue-200 rounded p-4 mb-6">
+              <p className="text-sm text-gray-700">
+                💡 <strong>Tipp:</strong> Der Organisator wird euch Bescheid geben, sobald alle fertig sind. Dann beginnt die Auslosung!
+              </p>
+            </div>
 
-            <a href="/" className="btn-primary inline-block">
-              Zur Startseite
+            <a href="/" className="btn-outline text-center block">
+              ← Zur Startseite
             </a>
           </div>
         </div>
