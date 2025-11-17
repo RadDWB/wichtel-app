@@ -1,19 +1,21 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { OCCASIONS } from '../../lib/occasions';
+import { getGroup, saveGroup, saveExclusions } from '../../lib/kv';
 import GiftList from '../../components/GiftList';
 
 export default function JoinGroup() {
   const router = useRouter();
-  const { groupId } = router.query;
+  const { groupId, orgParticipant } = router.query;
   const [group, setGroup] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [step, setStep] = useState(1); // 1: Join | 2: Gifts | 3: Exclusions | 4: Complete
+  const [step, setStep] = useState(1); // 1: Join | 1.5: GiftChoice | 2: Gifts | 3: Exclusions | 4: Complete
   const [selectedParticipant, setSelectedParticipant] = useState(null);
   const [nameEdit, setNameEdit] = useState('');
   const [emailEdit, setEmailEdit] = useState('');
   const [exclusions, setExclusions] = useState({});
+  const [wantsSurprise, setWantsSurprise] = useState(false); // Ich möchte überrascht werden
 
   useEffect(() => {
     if (groupId) {
@@ -30,24 +32,59 @@ export default function JoinGroup() {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [groupId]);
+  }, [groupId, orgParticipant]);
 
-  const loadGroup = () => {
+  const loadGroup = async () => {
     try {
       setLoading(true);
-      const saved = localStorage.getItem(`group_${groupId}`);
-      if (saved) {
-        setGroup(JSON.parse(saved));
+      let groupData = null;
+
+      // Try KV first (primary storage)
+      try {
+        groupData = await getGroup(groupId);
+        if (groupData) {
+          console.log('✅ Group loaded from KV');
+        }
+      } catch (kvErr) {
+        console.log('KV not available, trying localStorage:', kvErr);
+      }
+
+      // Fallback to localStorage
+      if (!groupData) {
+        const saved = localStorage.getItem(`group_${groupId}`);
+        if (saved) {
+          groupData = JSON.parse(saved);
+          console.log('✅ Group loaded from localStorage');
+        }
+      }
+
+      if (groupData) {
+        setGroup(groupData);
+
+        // Auto-select organizer if coming from organizer dashboard
+        if (orgParticipant) {
+          const orgParticipantObj = groupData.participants.find(p => p.id === orgParticipant);
+          if (orgParticipantObj) {
+            setSelectedParticipant(orgParticipantObj);
+            setNameEdit(orgParticipantObj.name);
+            setEmailEdit(orgParticipantObj.email || '');
+            setStep(1.5); // Go to gift choice
+            localStorage.setItem(`participant_${groupId}`, orgParticipant);
+            return;
+          }
+        }
 
         // Check if participant is already joined
         const participantId = localStorage.getItem(`participant_${groupId}`);
         if (participantId) {
-          const participant = JSON.parse(saved).participants.find(p => p.id === participantId);
+          const participant = groupData.participants.find(p => p.id === participantId);
           if (participant) {
             setSelectedParticipant(participant);
-            setStep(2);
+            setStep(1.5); // Go to gift choice
           }
         }
+      } else {
+        setError('❌ Gruppe nicht gefunden. Bitte überprüfe den Link.');
       }
     } catch (err) {
       console.error('Error:', err);
@@ -61,11 +98,11 @@ export default function JoinGroup() {
     setSelectedParticipant(participant);
     setNameEdit(participant.name);
     setEmailEdit(participant.email || '');
-    setStep(2);
+    setStep(1.5); // Go to gift choice first
     localStorage.setItem(`participant_${groupId}`, participant.id);
   };
 
-  const handleConfirmJoin = () => {
+  const handleConfirmJoin = async () => {
     if (!nameEdit.trim()) {
       setError('Bitte gib deinen Namen ein');
       return;
@@ -80,10 +117,19 @@ export default function JoinGroup() {
       ),
     };
 
+    try {
+      // Save to KV (primary)
+      await saveGroup(groupId, updated);
+      console.log('✅ Group updated in KV');
+    } catch (kvErr) {
+      console.warn('KV save failed, using localStorage:', kvErr);
+    }
+
+    // Also save to localStorage as fallback
     localStorage.setItem(`group_${groupId}`, JSON.stringify(updated));
     setGroup(updated);
     setSelectedParticipant({ ...selectedParticipant, name: nameEdit, email: emailEdit });
-    setStep(3);
+    setStep(1.5); // Go to gift choice first
   };
 
   if (loading) {
@@ -225,8 +271,75 @@ export default function JoinGroup() {
     );
   }
 
+  // Step 1.5: Gift Choice (Wunschliste oder überrascht werden)
+  if (step === 1.5 && selectedParticipant && !group.drawn) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
+        <div className="container mx-auto py-12 px-4 max-w-2xl">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">🎁 Was möchtest du?</h1>
+            <p className="text-gray-600 text-lg">
+              Entscheide dich: Möchtest du eine Wunschliste erstellen oder dich überraschen lassen?
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            {/* Option 1: Wunschliste erstellen */}
+            <button
+              onClick={() => {
+                setWantsSurprise(false);
+                setStep(2);
+              }}
+              className="block p-8 border-2 border-blue-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition bg-white shadow-md"
+            >
+              <div className="text-5xl mb-4">📝</div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">Wunschliste erstellen</h2>
+              <p className="text-gray-700 text-left">
+                Ich möchte meine eigene Liste erstellen und genau angeben, was ich mir wünsche.
+              </p>
+              <div className="mt-6 text-sm text-gray-600 text-left space-y-2">
+                <p>✅ Bis zu 10 Artikel</p>
+                <p>✅ Mit Amazon-Links</p>
+                <p>✅ Mit Kategorien</p>
+              </div>
+            </button>
+
+            {/* Option 2: Überrascht werden */}
+            <button
+              onClick={() => {
+                setWantsSurprise(true);
+                setStep(3); // Skip to exclusions directly
+              }}
+              className="block p-8 border-2 border-purple-300 rounded-lg hover:border-purple-600 hover:bg-purple-50 transition bg-white shadow-md"
+            >
+              <div className="text-5xl mb-4">🎉</div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">Überrascht werden</h2>
+              <p className="text-gray-700 text-left">
+                Ich möchte mich überraschen lassen und keineWunschliste angeben.
+              </p>
+              <div className="mt-6 text-sm text-gray-600 text-left space-y-2">
+                <p>✨ Keine Liste nötig</p>
+                <p>✨ Spannung bewahren</p>
+                <p>✨ Überraschungs-Spaß</p>
+              </div>
+            </button>
+          </div>
+
+          <div className="text-center">
+            <button
+              onClick={() => setStep(1)}
+              className="text-red-600 hover:underline text-sm"
+            >
+              ← Zurück zur Teilnehmerliste
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Step 2: Gifts (add gifts BEFORE group marked complete)
-  if (step === 2 && selectedParticipant && !group.drawn) {
+  if (step === 2 && selectedParticipant && !group.drawn && !wantsSurprise) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="container mx-auto py-12 px-4">
@@ -254,12 +367,20 @@ export default function JoinGroup() {
             participantId={selectedParticipant.id}
           />
           <div className="container mx-auto mt-8 max-w-2xl">
-            <button
-              onClick={() => setStep(3)}
-              className="w-full btn-primary"
-            >
-              ✅ Geschenkeliste fertig - zu Ausschlüssen →
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setStep(1)}
+                className="flex-1 btn-outline"
+              >
+                ← Zurück zur Teilnehmerliste
+              </button>
+              <button
+                onClick={() => setStep(3)}
+                className="flex-1 btn-primary"
+              >
+                ✅ Fertig - zu Ausschlüssen →
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -292,25 +413,38 @@ export default function JoinGroup() {
               <div className="space-y-3">
                 {group.participants
                   .filter(p => p.id !== selectedParticipant?.id)
-                  .map((p) => (
-                    <label key={p.id} className="flex items-center gap-3 p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
-                      <input
-                        type="radio"
-                        name="exclusion"
-                        checked={Object.keys(exclusions).filter(k => exclusions[k])[0] === p.id || false}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            // Clear all exclusions and set only this one
-                            setExclusions({
-                              [p.id]: true,
-                            });
-                          }
-                        }}
-                        className="w-4 h-4"
-                      />
-                      <span className="font-medium">{p.name}</span>
-                    </label>
-                  ))}
+                  .map((p) => {
+                    const hasExclusion = Object.keys(exclusions).some(k => exclusions[k]);
+                    const isThisSelected = Object.keys(exclusions).filter(k => exclusions[k])[0] === p.id;
+                    const isDisabled = hasExclusion && !isThisSelected;
+
+                    return (
+                      <label
+                        key={p.id}
+                        className={`flex items-center gap-3 p-3 border border-gray-300 rounded-lg ${
+                          isDisabled
+                            ? 'opacity-50 cursor-not-allowed bg-gray-100'
+                            : 'cursor-pointer hover:bg-gray-50'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="exclusion"
+                          checked={isThisSelected || false}
+                          onChange={(e) => {
+                            if (e.target.checked && !hasExclusion) {
+                              setExclusions({ [p.id]: true });
+                            }
+                          }}
+                          disabled={isDisabled}
+                          className="w-4 h-4"
+                        />
+                        <span className={`font-medium ${isDisabled ? 'text-gray-500' : 'text-gray-900'}`}>
+                          {p.name}
+                        </span>
+                      </label>
+                    );
+                  })}
               </div>
 
               {Object.keys(exclusions).some(k => exclusions[k]) && (
@@ -323,8 +457,8 @@ export default function JoinGroup() {
 
           <div className="flex gap-3">
             <button
-              onClick={() => {
-                // Save exclusions to group
+              onClick={async () => {
+                // Save exclusions to KV and group
                 const key = `${selectedParticipant?.id}`;
                 const updatedExclusions = { ...group.exclusions };
                 Object.entries(exclusions).forEach(([toId, isExcluded]) => {
@@ -334,6 +468,16 @@ export default function JoinGroup() {
                 });
 
                 const updated = { ...group, exclusions: updatedExclusions };
+
+                try {
+                  // Save to KV
+                  await saveGroup(groupId, updated);
+                  console.log('✅ Exclusions saved to KV');
+                } catch (kvErr) {
+                  console.warn('KV save failed, using localStorage:', kvErr);
+                }
+
+                // Also save to localStorage
                 localStorage.setItem(`group_${groupId}`, JSON.stringify(updated));
                 setGroup(updated);
                 setStep(4);

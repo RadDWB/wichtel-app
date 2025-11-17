@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { v4 as uuidv4 } from 'uuid';
 import { OCCASIONS, getDefaultName } from '../lib/occasions';
+import { saveGroup } from '../lib/kv';
 
 export default function Setup() {
   const router = useRouter();
@@ -113,6 +114,8 @@ export default function Setup() {
 
     try {
       const groupId = uuidv4().slice(0, 8);
+      // Generate 3-digit PIN
+      const organizerPin = String(Math.floor(Math.random() * 900) + 100);
 
       // Filter empty participants
       const validParticipants = participants
@@ -140,6 +143,8 @@ export default function Setup() {
         endDate,
         organizerName,
         organizerEmail,
+        organizerId: groupId, // For organizer access control
+        organizerPin, // 3-digit PIN for organizer
         participants: validParticipants,
         exclusions: {},
         drawn: false,
@@ -148,23 +153,21 @@ export default function Setup() {
         invitationText,
       };
 
-      // Save to API
-      const response = await fetch(`/api/groups/${groupId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(group),
-      });
-
-      if (!response.ok) {
-        throw new Error('Fehler beim Erstellen der Gruppe');
+      // Save to Vercel KV (primary storage)
+      try {
+        await saveGroup(groupId, group);
+        console.log('✅ Group saved to KV');
+      } catch (kvErr) {
+        console.error('❌ KV save failed:', kvErr);
+        // Continue anyway, localStorage fallback will work
       }
 
-      // Save to localStorage as fallback
+      // Also save to localStorage as fallback
       localStorage.setItem(`group_${groupId}`, JSON.stringify(group));
-      localStorage.setItem(`organizer_${groupId}`, organizerEmail);
+      localStorage.setItem(`organizer_${groupId}`, JSON.stringify({ pin: organizerPin, createdAt: new Date().toISOString() }));
 
-      // Redirect to organizer dashboard
-      router.push(`/organizer/${groupId}`);
+      // Redirect to organizer dashboard with PIN shown
+      router.push(`/organizer/${groupId}?showPin=${organizerPin}`);
     } catch (err) {
       console.error('Error creating group:', err);
       setError('Fehler beim Erstellen der Gruppe. Bitte versuche es später erneut.');

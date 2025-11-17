@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
+import { getGroup, getGifts } from '../../lib/kv';
 
 export default function OrganizerDashboard() {
   const router = useRouter();
-  const { id } = router.query;
+  const { id, showPin } = router.query;
   const [group, setGroup] = useState(null);
   const [gifts, setGifts] = useState({});
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [pinShown, setPinShown] = useState(!!showPin);
 
   useEffect(() => {
     if (id) {
@@ -19,20 +21,45 @@ export default function OrganizerDashboard() {
     }
   }, [id]);
 
-  const loadGroupData = () => {
+  const loadGroupData = async () => {
     try {
-      const groupData = localStorage.getItem(`group_${id}`);
-      if (groupData) {
-        const parsed = JSON.parse(groupData);
-        setGroup(parsed);
+      let groupData = null;
 
-        // Load gifts for each participant
+      // Try KV first (primary)
+      try {
+        groupData = await getGroup(id);
+        if (groupData) {
+          console.log('✅ Group loaded from KV');
+        }
+      } catch (kvErr) {
+        console.log('KV not available, trying localStorage:', kvErr);
+      }
+
+      // Fallback to localStorage
+      if (!groupData) {
+        const saved = localStorage.getItem(`group_${id}`);
+        if (saved) {
+          groupData = JSON.parse(saved);
+          console.log('✅ Group loaded from localStorage');
+        }
+      }
+
+      if (groupData) {
+        setGroup(groupData);
+
+        // Load gifts for each participant (from KV)
         const allGifts = {};
-        if (parsed.participants) {
-          parsed.participants.forEach((p) => {
-            const giftData = localStorage.getItem(`group:${id}:gifts:${p.id}`);
-            allGifts[p.id] = giftData ? JSON.parse(giftData) : [];
-          });
+        if (groupData.participants) {
+          for (const p of groupData.participants) {
+            try {
+              const giftData = await getGifts(id, p.id);
+              allGifts[p.id] = giftData || [];
+            } catch (err) {
+              // Fallback to localStorage
+              const localGifts = localStorage.getItem(`group:${id}:gifts:${p.id}`);
+              allGifts[p.id] = localGifts ? JSON.parse(localGifts) : [];
+            }
+          }
         }
         setGifts(allGifts);
       }
@@ -89,6 +116,12 @@ export default function OrganizerDashboard() {
     };
   };
 
+  // Check if organizer is participating
+  const getOrganizerParticipant = () => {
+    if (!group?.participants) return null;
+    return group.participants.find(p => p.id.startsWith('organizer-'));
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50 flex items-center justify-center">
@@ -115,6 +148,34 @@ export default function OrganizerDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
       <div className="container mx-auto py-12 px-4">
+        {/* PIN Alert - nur beim ersten Mal zeigen */}
+        {pinShown && showPin && (
+          <div className="max-w-2xl mx-auto mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-400 rounded-lg p-6 shadow-lg">
+            <div className="flex items-start gap-4">
+              <div className="text-4xl">✅</div>
+              <div className="flex-1">
+                <h3 className="text-2xl font-bold text-green-900 mb-2">🎉 Gruppe erstellt!</h3>
+                <p className="text-green-800 mb-4">
+                  Speichere deine persönliche PIN auf, um später auf diese Gruppe zuzugreifen:
+                </p>
+                <div className="bg-white border-2 border-green-300 rounded-lg p-4 mb-4">
+                  <p className="text-sm text-gray-600 font-semibold mb-2">Deine Gruppen-PIN:</p>
+                  <p className="text-5xl font-black text-green-600 text-center tracking-widest">{showPin}</p>
+                </div>
+                <p className="text-sm text-green-700">
+                  💡 <strong>Hinweis:</strong> Du brauchst diese PIN + deine Gruppen-ID, um dich später wieder anmelden zu können. Notiere sie dir oder mache einen Screenshot!
+                </p>
+                <button
+                  onClick={() => setPinShown(false)}
+                  className="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition"
+                >
+                  ✅ Verstanden
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-orange-500 to-amber-600 mb-2">
@@ -122,6 +183,7 @@ export default function OrganizerDashboard() {
           </h1>
           <p className="text-xl text-gray-700 mb-1">{group.name}</p>
           <p className="text-gray-600">Überblick über den Status deiner Wichtelgruppe</p>
+          <p className="text-sm text-gray-500 mt-2 font-mono">ID: {id}</p>
         </div>
 
         {/* Main Content Grid */}
@@ -349,7 +411,22 @@ export default function OrganizerDashboard() {
 
         {/* Action Buttons */}
         <div className="card bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-orange-300 shadow-lg">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className={`grid gap-4 ${getOrganizerParticipant() ? 'grid-cols-1 md:grid-cols-4' : 'grid-cols-1 md:grid-cols-3'}`}>
+            {/* Quick Access to Organizer's Own Gift List */}
+            {getOrganizerParticipant() && (
+              <div className="relative group">
+                <Link href={`/join/${id}?orgParticipant=${getOrganizerParticipant().id}`}>
+                  <a className="block text-center p-4 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition shadow-lg">
+                    🎁 Meine Wunschliste
+                  </a>
+                </Link>
+                <div className="absolute hidden group-hover:flex bg-gray-900 text-white text-xs rounded-lg p-3 left-0 mt-2 w-56 z-10 flex-col gap-1">
+                  <p className="font-semibold">Du nimmst auch teil!</p>
+                  <p>Klick hier, um deine eigene Wunschliste zu erstellen.</p>
+                </div>
+              </div>
+            )}
+
             <Link href={`/join/${id}`}>
               <a className="block text-center p-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold transition">
                 🔗 Zum Beitritts-Link
