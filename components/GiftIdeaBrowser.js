@@ -72,11 +72,21 @@ export default function GiftIdeaBrowser({ budget, onSelectGifts }) {
       }
     } catch (error) {
       console.error('Error loading products:', error);
-      setSearchError(
-        error.message === 'Failed to load products'
-          ? 'Amazon API wird überarbeitet. Bitte später erneut versuchen.'
-          : 'Fehler beim Laden von Produkten. Versuche später erneut.'
-      );
+
+      // Parse error message for better user feedback
+      let errorMessage = 'Fehler beim Laden von Produkten. Versuche später erneut.';
+
+      if (error.message?.includes('credentials') || error.message?.includes('not configured')) {
+        errorMessage = '⚠️ Amazon API nicht konfiguriert. Bitte kontaktiere den Admin.';
+      } else if (error.message?.includes('503')) {
+        errorMessage = '🔄 Amazon API ist momentan überlastet. Versuche in einer Minute erneut.';
+      } else if (error.message?.includes('401') || error.message?.includes('403')) {
+        errorMessage = '🔑 Amazon API Authentifizierung fehlgeschlagen. Überprüfe die Credentials.';
+      } else if (error.message?.includes('500')) {
+        errorMessage = '❌ Fehler bei der Produktsuche. Versuche später erneut.';
+      }
+
+      setSearchError(errorMessage);
       setAvailableGifts([]);
     } finally {
       setLoading(false);

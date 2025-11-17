@@ -63,25 +63,33 @@ export default async function handler(req, res) {
       products,
     });
   } catch (error) {
-    console.error('Error in Amazon search API:', error);
+    console.error('❌ Error in Amazon search API:', error);
 
     // Determine error type and provide appropriate response
     if (error.message.includes('Missing Amazon PA credentials')) {
+      console.error('⚠️ Missing credentials:', {
+        hasAccessKey: !!process.env.AMAZON_PA_ACCESS_KEY,
+        hasSecretKey: !!process.env.AMAZON_PA_SECRET_KEY,
+        hasPartnerTag: !!process.env.NEXT_PUBLIC_AMAZON_AFFILIATE_TAG,
+      });
       return res.status(500).json({
         error: 'Amazon PA API credentials not configured',
+        hint: 'Please add AMAZON_PA_ACCESS_KEY and AMAZON_PA_SECRET_KEY to environment variables',
         details: process.env.NODE_ENV === 'development' ? error.message : undefined,
       });
     }
 
     if (error.message.includes('Amazon API error')) {
       return res.status(503).json({
-        error: 'Amazon API temporary error. Please try again later.',
+        error: 'Amazon API returned an error. Please try again later.',
+        hint: 'This might be due to invalid credentials or API rate limiting',
         details: process.env.NODE_ENV === 'development' ? error.message : undefined,
       });
     }
 
     return res.status(500).json({
       error: error.message || 'Failed to search products',
+      hint: 'Check the server logs for more details',
       details: process.env.NODE_ENV === 'development' ? error.stack : undefined,
     });
   }
