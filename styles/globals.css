@@ -1,43 +1,117 @@
-/* ... Bestehender CSS-Code bleibt unverändert ... */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* Neue Styles für Teilnehmer-Anmeldung */
+/* Custom component styles */
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-lg font-semibold transition-colors duration-200 cursor-pointer;
+  }
+
+  .btn-primary {
+    @apply btn bg-red-500 text-white hover:bg-red-600;
+  }
+
+  .btn-secondary {
+    @apply btn bg-green-500 text-white hover:bg-green-600;
+  }
+
+  .btn-outline {
+    @apply btn border-2 border-gray-300 text-gray-700 hover:bg-gray-100;
+  }
+
+  .card {
+    @apply bg-white rounded-lg shadow-md p-6 mb-4;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500;
+  }
+
+  .section-title {
+    @apply text-2xl font-bold text-gray-800 mb-4;
+  }
+}
+
+/* Base styles */
+body {
+  @apply bg-gray-50 text-gray-900;
+}
+
+a {
+  @apply text-red-500 hover:text-red-600 underline;
+}
+
+/* Utility classes */
+.code {
+  @apply bg-gray-100 px-3 py-1 rounded font-mono text-sm inline-block;
+}
+
+.loading {
+  @apply text-center text-gray-600 py-8;
+}
+
+.container {
+  @apply max-w-4xl mx-auto px-4 py-8;
+}
+
+.form {
+  @apply space-y-4;
+}
+
+.form input,
+.form textarea {
+  @apply input-field;
+}
+
+.form button {
+  @apply btn-primary w-full;
+}
+
+.section {
+  @apply card;
+}
+
+.wishlist {
+  @apply space-y-2;
+}
+
+.wishlist li {
+  @apply bg-gray-50 p-3 rounded-lg border-l-4 border-red-500;
+}
+
+.success {
+  @apply bg-green-50 border-2 border-green-500 rounded-lg p-6 text-center;
+}
+
+.success h3 {
+  @apply text-green-700 text-xl font-bold mb-2;
+}
+
+.input-group {
+  @apply flex gap-2;
+}
+
+.input-group input {
+  @apply flex-1 input-field;
+}
+
+.input-group button {
+  @apply btn-primary;
+}
+
 .join-section {
-  text-align: center;
-  padding: 25px;
-  background: #e8f4fd;
-  border: 2px solid #3498db;
-  border-radius: 12px;
-  margin: 25px 0;
+  @apply card bg-blue-50 border-2 border-blue-500 text-center;
 }
 
 .join-section h3 {
-  color: #2980b9;
-  margin-bottom: 10px;
-}
-
-.join-section p {
-  margin-bottom: 15px;
-  color: #555;
+  @apply text-blue-700 font-bold mb-2;
 }
 
 .join-button {
-  background: #3498db !important;
-  font-size: 18px;
-  padding: 14px 28px;
-  font-weight: bold;
+  @apply btn-secondary w-full text-lg;
 }
 
-.join-button:hover {
-  background: #2980b9 !important;
-}
-
-.code {
-  background: #f1f1f1;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-family: monospace;
-  font-size: 1em;
-  display: inline-block;
-  margin-top: 10px;
-  word-break: break-all;
+.draw-button {
+  @apply btn-primary w-full py-3 text-lg disabled:opacity-50 disabled:cursor-not-allowed;
 }

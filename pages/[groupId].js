@@ -10,14 +10,44 @@ export default function GroupPage() {
   const { groupId } = router.query;
   const [group, setGroup] = useState(null);
   const [isParticipant, setIsParticipant] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (groupId) {
-      const saved = localStorage.getItem(`group_${groupId}`);
-      if (saved) {
-        setGroup(JSON.parse(saved));
-      } else {
-        router.push('/');
+      loadGroup();
+    }
+  }, [groupId]);
+
+  const loadGroup = async () => {
+    try {
+      setLoading(true);
+      setError('');
+
+      // Try to load from API first
+      try {
+        const response = await fetch(`/api/groups/${groupId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setGroup(data);
+          localStorage.setItem(`group_${groupId}`, JSON.stringify(data));
+        } else {
+          // Fall back to localStorage
+          const saved = localStorage.getItem(`group_${groupId}`);
+          if (saved) {
+            setGroup(JSON.parse(saved));
+          } else {
+            router.push('/');
+          }
+        }
+      } catch (apiErr) {
+        // Fall back to localStorage
+        const saved = localStorage.getItem(`group_${groupId}`);
+        if (saved) {
+          setGroup(JSON.parse(saved));
+        } else {
+          router.push('/');
+        }
       }
 
       // Prüfe, ob du schon als Teilnehmer angemeldet bist
@@ -25,15 +55,32 @@ export default function GroupPage() {
       if (savedParticipant) {
         setIsParticipant(true);
       }
+    } catch (err) {
+      console.error('Error loading group:', err);
+      setError('Fehler beim Laden der Gruppe');
+    } finally {
+      setLoading(false);
     }
-  }, [groupId, router]);
+  };
 
-  const saveGroup = (updated) => {
+  const saveGroup = async (updated) => {
+    try {
+      // Save to API
+      await fetch(`/api/groups/${groupId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated),
+      });
+    } catch (err) {
+      console.error('Error saving to API:', err);
+    }
+
+    // Always save to localStorage as fallback
     localStorage.setItem(`group_${groupId}`, JSON.stringify(updated));
     setGroup(updated);
   };
 
-  const joinAsParticipant = () => {
+  const joinAsParticipant = async () => {
     const name = prompt('Dein Name? (z.B. Max Mustermann)');
     if (name && name.trim()) {
       const newParticipant = { id: Date.now().toString(), name: name.trim(), email: null };
@@ -41,7 +88,7 @@ export default function GroupPage() {
         ...group,
         participants: [...group.participants, newParticipant],
       };
-      saveGroup(updated);
+      await saveGroup(updated);
       localStorage.setItem(`participant_${groupId}`, newParticipant.id);
       setIsParticipant(true);
       alert(`Willkommen, ${name.trim()}! Du bist jetzt Teil der Gruppe. Teile den Link weiter!`);
@@ -50,34 +97,77 @@ export default function GroupPage() {
     }
   };
 
-  if (!group) return <p className="loading">Lade Gruppe...</p>;
+  if (loading) return <p className="loading">🔄 Lade Gruppe...</p>;
+  if (error) return <div className="container"><p className="text-red-600">{error}</p></div>;
+  if (!group) return <p className="loading">Gruppe nicht gefunden</p>;
 
   return (
     <div className="container">
-      <h1>{group.name}</h1>
-      <p><strong>Budget:</strong> {group.budget}</p>
-      <p><strong>Teilnehmer:</strong> {group.participants.length}</p>
-      <p><strong>Gruppen-Link teilen:</strong> <code className="code">{typeof window !== 'undefined' ? `${window.location.origin}/${groupId}` : ''}</code></p>
+      {/* Header */}
+      <div className="card bg-gradient-to-r from-red-500 to-green-500 text-white mb-6">
+        <h1 className="text-4xl font-bold mb-2">🎄 {group.name}</h1>
+        <p className="text-lg opacity-90">Budget: <strong>{group.budget}</strong> • Teilnehmer: <strong>{group.participants.length}</strong></p>
+      </div>
 
+      {/* Share Link */}
+      <div className="card mb-6">
+        <h3 className="font-semibold mb-2">🔗 Gruppen-Link teilen</h3>
+        <div className="flex items-center gap-2">
+          <code className="code flex-1">
+            {typeof window !== 'undefined' ? `${window.location.origin}/${groupId}` : ''}
+          </code>
+          <button
+            onClick={() => {
+              const link = `${window.location.origin}/${groupId}`;
+              navigator.clipboard.writeText(link);
+              alert('Link kopiert!');
+            }}
+            className="btn-outline"
+          >
+            📋 Kopieren
+          </button>
+        </div>
+      </div>
+
+      {/* Participants List */}
+      <div className="card mb-6 bg-blue-50">
+        <h3 className="font-semibold mb-3">👥 Teilnehmer ({group.participants.length})</h3>
+        {group.participants.length > 0 ? (
+          <ul className="space-y-2">
+            {group.participants.map(p => (
+              <li key={p.id} className="bg-white p-2 rounded flex items-center gap-2">
+                <span className="text-blue-500">✓</span>
+                <span className="font-medium">{p.name}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-gray-500 italic">Noch keine Teilnehmer</p>
+        )}
+      </div>
+
+      {/* Main Content */}
       {!isParticipant ? (
         <div className="join-section">
-          <h3>Du bist noch nicht dabei!</h3>
-          <p>Klicke unten, um dich mit deinem Namen anzumelden. Kein Passwort nötig!</p>
-          <button onClick={joinAsParticipant} className="join-button">An der Gruppe teilnehmen</button>
+          <h3>🤝 Du bist noch nicht dabei!</h3>
+          <p className="text-gray-700 mb-4">Klicke unten, um dich mit deinem Namen anzumelden. Kein Passwort nötig!</p>
+          <button onClick={joinAsParticipant} className="join-button">
+            An der Gruppe teilnehmen
+          </button>
         </div>
       ) : (
-        <>
-          {/* Organisator-Features (immer sichtbar, aber nur nützlich für Ersteller) */}
+        <div className="space-y-6">
+          {/* Organisator-Features */}
           {!group.drawn && (
             <>
               <AddParticipants group={group} saveGroup={saveGroup} />
-              <DrawNames group={group} saveGroup={saveGroup} />
+              <DrawNames group={group} saveGroup={saveGroup} groupId={groupId} />
             </>
           )}
 
           {/* Nach Auslosung: Wunschzettel */}
           {group.drawn && <Wishlist group={group} groupId={groupId} />}
-        </>
+        </div>
       )}
     </div>
   );
