@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { getGroup, saveGroup } from '../../../lib/kv';
+import { getGroup, saveGroup } from '../../../lib/kv-client';
 
 export default function DrawPage() {
   const router = useRouter();

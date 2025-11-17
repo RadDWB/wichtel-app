@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { v4 as uuidv4 } from 'uuid';
 import { OCCASIONS, getDefaultName } from '../lib/occasions';
-import { saveGroup } from '../lib/kv';
 
 export default function Setup() {
   const router = useRouter();
@@ -144,13 +143,23 @@ export default function Setup() {
         isComplete: false,
       };
 
-      // Save to Vercel KV (primary storage)
+      // Save to Redis via API (server-side)
       try {
-        await saveGroup(groupId, group);
-        console.log('✅ Group saved to KV');
-      } catch (kvErr) {
-        console.error('❌ KV save failed:', kvErr);
-        setError(`Fehler beim Speichern: ${kvErr.message}`);
+        const response = await fetch('/api/groups/list', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ group }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to save group');
+        }
+
+        console.log('✅ Group saved to Redis');
+      } catch (err) {
+        console.error('❌ Save failed:', err);
+        setError(`Fehler beim Speichern: ${err.message}`);
         setLoading(false);
         return;
       }

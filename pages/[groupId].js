@@ -1,7 +1,7 @@
 // pages/[groupId].js
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { getGroup, saveGroup as saveGroupToKV } from '../lib/kv';
+import { getGroup, saveGroup as saveGroupToKV } from '../lib/kv-client';
 import AddParticipants from '../components/AddParticipants';
 import DrawNames from '../components/DrawNames';
 import GiftList from '../components/GiftList';

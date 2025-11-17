@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { OCCASIONS } from '../../lib/occasions';
-import { getGroup, saveGroup, saveExclusions } from '../../lib/kv';
+import { getGroup, saveGroup, saveExclusions } from '../../lib/kv-client';
 import GiftList from '../../components/GiftList';
 
 export default function JoinGroup() {

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { isAdminLoggedIn } from '../../../lib/admin';
-import { getGroup, getGifts } from '../../../lib/kv';
+import { getGroup, getGifts } from '../../../lib/kv-client';
 
 export default function AdminGroupDetails() {
   const router = useRouter();

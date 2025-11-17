@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { isAdminLoggedIn, clearAdminSession } from '../../lib/admin';
-import { getAllGroups, deleteGroup as deleteGroupKV } from '../../lib/kv';
+import { getAllGroups, deleteGroup as deleteGroupKV } from '../../lib/kv-client';
 
 export default function AdminDashboard() {
   const router = useRouter();

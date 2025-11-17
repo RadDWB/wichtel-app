@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { getGroup, getGifts } from '../../lib/kv';
+import { getGroup, getGifts } from '../../lib/kv-client';
 import GiftList from '../../components/GiftList';
 
 export default function PairingsPage() {
