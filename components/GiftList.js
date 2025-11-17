@@ -248,6 +248,9 @@ export default function GiftList({ group, groupId, participantId }) {
               <p className="text-xs bg-gray-200 rounded p-2 ml-11 font-mono mb-2">
                 https://amazon.de/dp/B08N5WRWNW
               </p>
+              <p className="text-xs text-blue-600 ml-11 mt-3">
+                📱 <strong>Mobile-Tipp:</strong> In der Amazon-App kannst du auch die „Teilen"-Funktion nutzen, um den Link zu kopieren!
+              </p>
             </div>
 
             {/* Step 4 - Input Fields */}

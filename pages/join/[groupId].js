@@ -234,6 +234,13 @@ export default function JoinGroup() {
             ← Zurück
           </a>
 
+          <div className="max-w-2xl mx-auto mb-6 bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-orange-300 rounded-lg p-6 shadow-md">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">🎁 {selectedParticipant.name}s Wunschliste</h1>
+            <p className="text-sm text-gray-600">
+              Das ist deine persönliche Seite. Hier trägst du deine Geschenkwünsche ein.
+            </p>
+          </div>
+
           <div className="max-w-2xl mx-auto mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
             <h2 className="font-bold text-blue-900 mb-2">📋 Phase 1: Geschenkeliste erstellen</h2>
             <p className="text-sm text-blue-800">
@@ -279,7 +286,7 @@ export default function JoinGroup() {
           {group.participants && group.participants.length >= 2 && (
             <div className="bg-white rounded-lg p-6 shadow-md mb-6">
               <p className="text-gray-700 mb-4">
-                Wähle bis zu {Math.max(1, Math.floor(group.participants.length / 2))} Person(en) aus, denen du definitiv NICHT ein Geschenk kaufen möchtest:
+                Wähle eine Person aus, der/dem du definitiv NICHT ein Geschenk kaufen möchtest (optional):
               </p>
 
               <div className="space-y-3">
@@ -288,20 +295,16 @@ export default function JoinGroup() {
                   .map((p) => (
                     <label key={p.id} className="flex items-center gap-3 p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
                       <input
-                        type="checkbox"
-                        checked={exclusions[p.id] || false}
+                        type="radio"
+                        name="exclusion"
+                        checked={Object.keys(exclusions).filter(k => exclusions[k])[0] === p.id || false}
                         onChange={(e) => {
-                          const currentCount = Object.values(exclusions).filter(v => v).length;
-                          const maxExclusions = Math.max(1, Math.floor(group.participants.length / 2));
-
-                          if (e.target.checked && currentCount >= maxExclusions) {
-                            alert(`Du kannst maximal ${maxExclusions} Person(en) ausschließen`);
-                            return;
+                          if (e.target.checked) {
+                            // Clear all exclusions and set only this one
+                            setExclusions({
+                              [p.id]: true,
+                            });
                           }
-                          setExclusions({
-                            ...exclusions,
-                            [p.id]: e.target.checked,
-                          });
                         }}
                         className="w-4 h-4"
                       />
@@ -309,6 +312,12 @@ export default function JoinGroup() {
                     </label>
                   ))}
               </div>
+
+              {Object.keys(exclusions).some(k => exclusions[k]) && (
+                <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm text-gray-700">
+                  ✅ Du hast folgende Person ausgeschlossen: <strong>{group.participants.find(p => p.id === Object.keys(exclusions).filter(k => exclusions[k])[0])?.name}</strong>
+                </div>
+              )}
             </div>
           )}
 
