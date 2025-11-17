@@ -4,6 +4,11 @@ export function drawNames(participants, exclusions = {}) {
   let attempts = 0;
   const maxAttempts = 100;
 
+  // Convert exclusions format: "fromId-toId" -> check if exclusion exists
+  const isExcluded = (fromId, toId) => {
+    return exclusions[`${fromId}-${toId}`] === true;
+  };
+
   while (attempts < maxAttempts) {
     shuffled = shuffle([...ids]);
     const pairing = {};
@@ -12,9 +17,8 @@ export function drawNames(participants, exclusions = {}) {
     for (let i = 0; i < ids.length; i++) {
       const giver = ids[i];
       const receiver = shuffled[i];
-      const giverExcludes = exclusions[giver] || [];
 
-      if (receiver === giver || giverExcludes.includes(receiver)) {
+      if (receiver === giver || isExcluded(giver, receiver)) {
         valid = false;
         break;
       }
