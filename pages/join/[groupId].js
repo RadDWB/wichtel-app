@@ -963,31 +963,68 @@ export default function JoinGroup() {
             </div>
 
             {partnerWantsSurprise ? (
-              // Partner wants surprise - show special message
-              <div className="bg-white rounded-lg p-8 shadow-md text-center">
-                <div className="text-6xl mb-4">🎉</div>
-                <h2 className="text-3xl font-bold mb-4 text-gray-900">Überraschungs-Zeit!</h2>
-                <p className="text-lg text-gray-700 mb-6">
-                  {partner.name} möchte sich überraschen lassen! 🎊
-                </p>
-                <p className="text-gray-600 mb-6 max-w-lg mx-auto">
-                  Diese Person hat bewusst keine Wunschliste angelegt und vertraut darauf, dass du das Richtige für sie auswählst. Das macht es zu einer echten Überraschung!
-                </p>
-                <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-6 mb-6">
-                  <p className="text-sm text-gray-700 font-semibold mb-3">
-                    💡 Tipps für die Überraschung:
+              // Partner wants surprise - show special message with Amazon shopping section
+              <>
+                <div className="bg-white rounded-lg p-8 shadow-md text-center mb-6">
+                  <div className="text-6xl mb-4">🎉</div>
+                  <h2 className="text-3xl font-bold mb-4 text-gray-900">Überraschungs-Zeit!</h2>
+                  <p className="text-lg text-gray-700 mb-6">
+                    {partner.name} möchte sich überraschen lassen! 🎊
                   </p>
-                  <ul className="text-sm text-gray-600 space-y-2 text-left max-w-md mx-auto">
-                    <li>✨ Budget beachten: {group.budget}</li>
-                    <li>✨ Persönliche Interessen berücksichtigen</li>
-                    <li>✨ Kreativ und liebevoll auswählen</li>
-                    <li>✨ Die Überraschung ist das Geschenk!</li>
-                  </ul>
+                  <p className="text-gray-600 mb-6 max-w-lg mx-auto">
+                    Diese Person hat bewusst keine Wunschliste angelegt und vertraut darauf, dass du das Richtige für sie auswählst. Das macht es zu einer echten Überraschung!
+                  </p>
+                  <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-6 mb-6">
+                    <p className="text-sm text-gray-700 font-semibold mb-3">
+                      💡 Tipps für die Überraschung:
+                    </p>
+                    <ul className="text-sm text-gray-600 space-y-2 text-left max-w-md mx-auto">
+                      <li>✨ Budget beachten: {group.budget}</li>
+                      <li>✨ Persönliche Interessen berücksichtigen</li>
+                      <li>✨ Kreativ und liebevoll auswählen</li>
+                      <li>✨ Die Überraschung ist das Geschenk!</li>
+                    </ul>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    Viel Spaß beim Einkaufen! 🛍️
+                  </p>
                 </div>
-                <p className="text-xs text-gray-500">
-                  Viel Spaß beim Einkaufen! 🛍️
-                </p>
-              </div>
+
+                {/* Amazon Shopping Section for Surprise */}
+                <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-400 rounded-lg p-6 shadow-md">
+                  <h3 className="text-2xl font-bold text-orange-900 mb-3">🛍️ Jetzt auf Amazon einkaufen!</h3>
+                  <p className="text-gray-700 mb-5">
+                    Stöbere auf Amazon.de nach tollen Geschenkideen im Budget von {group.budget}:
+                  </p>
+
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+                    {[
+                      { label: '1-5 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A100-500&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
+                      { label: '5-10 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A500-1000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
+                      { label: '10-15 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A1000-1500&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
+                      { label: '15-20 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A1500-2000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
+                      { label: '20-30 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A2000-3000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
+                      { label: '30-50 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A3000-5000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
+                      { label: '50-100 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A5000-10000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
+                      { label: 'Alle', link: 'https://www.amazon.de/s?k=geschenkideen&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' }
+                    ].map((range) => (
+                      <a
+                        key={range.label}
+                        href={range.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-center bg-orange-500 hover:bg-orange-600 text-white py-3 px-3 rounded-lg font-semibold transition transform hover:scale-105"
+                      >
+                        {range.label}
+                      </a>
+                    ))}
+                  </div>
+
+                  <p className="text-sm text-gray-600 text-center">
+                    💚 Alle Käufe über diese Links unterstützen uns durch Affiliate-Provisionen!
+                  </p>
+                </div>
+              </>
             ) : (
               // Partner has submitted gift list - show it
               <div className="bg-white rounded-lg p-6 shadow-md">
