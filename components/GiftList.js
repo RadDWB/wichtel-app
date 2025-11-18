@@ -4,6 +4,42 @@ import GiftIdeaBrowser from './GiftIdeaBrowser';
 
 const AMAZON_AFFILIATE_TAG = process.env.NEXT_PUBLIC_AMAZON_AFFILIATE_TAG || 'httpwwwspor03-21';
 
+// Amazon Affiliate Links mit verschiedenen Preisranges
+const AMAZON_PRICE_RANGES = [
+  {
+    label: '1-5 €',
+    link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A100-500&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl'
+  },
+  {
+    label: '5-10 €',
+    link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A500-1000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl'
+  },
+  {
+    label: '10-15 €',
+    link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A1000-1500&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl'
+  },
+  {
+    label: '15-20 €',
+    link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A1500-2000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl'
+  },
+  {
+    label: '20-30 €',
+    link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A2000-3000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl'
+  },
+  {
+    label: '30-50 €',
+    link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A3000-5000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl'
+  },
+  {
+    label: '50-100 €',
+    link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A5000-10000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl'
+  },
+  {
+    label: 'Alle Preise',
+    link: 'https://www.amazon.de/s?k=geschenkideen&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl'
+  }
+];
+
 export default function GiftList({ group, groupId, participantId, isViewing = false }) {
   const [gifts, setGifts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -258,9 +294,30 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
                 <span className="flex-shrink-0 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center font-bold text-sm">1</span>
                 <p className="font-semibold text-gray-800">Gehe auf <a href="https://amazon.de" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-bold">amazon.de</a></p>
               </div>
-              <p className="text-sm text-gray-600 ml-11">
+              <p className="text-sm text-gray-600 ml-11 mb-4">
                 Suche dein Wunschprodukt. Du kannst die Amazon-Filter nutzen, um den Preis auf dein Budget ({group.budget}) zu begrenzen.
               </p>
+
+              {/* Quick Amazon Links by Price */}
+              <div className="ml-11 bg-gradient-to-r from-orange-50 to-yellow-50 border-l-4 border-orange-400 p-4 rounded">
+                <p className="text-xs font-semibold text-orange-900 mb-3">💡 Oder nutze diese vorfilterten Links für dein Budget:</p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  {AMAZON_PRICE_RANGES.map((range) => (
+                    <a
+                      key={range.label}
+                      href={range.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs bg-orange-500 hover:bg-orange-600 text-white py-2 px-3 rounded font-semibold text-center transition"
+                    >
+                      {range.label}
+                    </a>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-600 mt-2">
+                  Alle Käufe über diese Links unterstützen uns! 🎁
+                </p>
+              </div>
             </div>
 
             {/* Step 2 */}

@@ -3,6 +3,15 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { getGroup, saveGroup } from '../../../lib/kv-client';
 
+// Amazon Affiliate Links with different budget ranges
+const AMAZON_AFFILIATE_LINKS = {
+  // Für verschiedene Preisranges - diese Links leiten zu gefilterten Suchergebnissen
+  all: 'https://www.amazon.de/s?k=geschenkideen&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl',
+  lowBudget: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A500-1500&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl', // 5-15€
+  mediumBudget: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A2000-3000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl', // 20-30€
+  highBudget: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A5000-10000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl', // 50-100€
+};
+
 export default function DrawPage() {
   const router = useRouter();
   const { id } = router.query;
@@ -58,6 +67,21 @@ export default function DrawPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Get appropriate Amazon link based on budget
+  const getAmazonLink = () => {
+    if (!group?.budget) return AMAZON_AFFILIATE_LINKS.all;
+
+    const budget = group.budget.toLowerCase();
+    if (budget.includes('5') || budget.includes('10') || budget.includes('15')) {
+      return AMAZON_AFFILIATE_LINKS.lowBudget;
+    } else if (budget.includes('20') || budget.includes('25') || budget.includes('30')) {
+      return AMAZON_AFFILIATE_LINKS.mediumBudget;
+    } else if (budget.includes('50') || budget.includes('100')) {
+      return AMAZON_AFFILIATE_LINKS.highBudget;
+    }
+    return AMAZON_AFFILIATE_LINKS.all;
   };
 
   const performDraw = async () => {
@@ -147,6 +171,25 @@ export default function DrawPage() {
                 <li>✅ Jeder kann direkt auf Amazon einkaufen</li>
                 <li>✅ Du bekommst Affiliate-Provisionen für jeden Kauf!</li>
               </ul>
+            </div>
+
+            {/* Prominent Amazon Affiliate Section */}
+            <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-400 rounded-lg p-6 mb-8 shadow-md">
+              <h2 className="text-2xl font-bold text-orange-900 mb-3">🛍️ Jetzt einkaufen gehen!</h2>
+              <p className="text-gray-700 mb-5">
+                Stöbere jetzt auf Amazon.de nach tollen Geschenkideen für deine Wichtel! Alle Käufe über diesen Link unterstützen uns.
+              </p>
+              <a
+                href={getAmazonLink()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block w-full md:w-auto text-center bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-4 px-8 rounded-lg transition transform hover:scale-105 shadow-lg text-lg"
+              >
+                🎁 Zu Amazon.de
+              </a>
+              <p className="text-xs text-gray-600 mt-3">
+                Mit deinem Budget: <strong>{group?.budget || 'Flexibel'}</strong>
+              </p>
             </div>
 
             <p className="text-gray-600 mb-4">

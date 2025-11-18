@@ -3,6 +3,15 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { getGroup, getGifts } from '../../lib/kv-client';
 
+// Amazon Affiliate Links with different budget ranges
+const AMAZON_AFFILIATE_LINKS = {
+  // Für verschiedene Preisranges - diese Links leiten zu gefilterten Suchergebnissen
+  all: 'https://www.amazon.de/s?k=geschenkideen&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl',
+  lowBudget: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A500-1500&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl', // 5-15€
+  mediumBudget: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A2000-3000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl', // 20-30€
+  highBudget: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A5000-10000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl', // 50-100€
+};
+
 export default function OrganizerDashboard() {
   const router = useRouter();
   const { id, showPin } = router.query;
@@ -89,6 +98,21 @@ export default function OrganizerDashboard() {
       setPinError('Fehler beim Überprüfen der PIN');
       console.error(err);
     }
+  };
+
+  // Get appropriate Amazon link based on budget
+  const getAmazonLink = () => {
+    if (!group?.budget) return AMAZON_AFFILIATE_LINKS.all;
+
+    const budget = group.budget.toLowerCase();
+    if (budget.includes('5') || budget.includes('10') || budget.includes('15')) {
+      return AMAZON_AFFILIATE_LINKS.lowBudget;
+    } else if (budget.includes('20') || budget.includes('25') || budget.includes('30')) {
+      return AMAZON_AFFILIATE_LINKS.mediumBudget;
+    } else if (budget.includes('50') || budget.includes('100')) {
+      return AMAZON_AFFILIATE_LINKS.highBudget;
+    }
+    return AMAZON_AFFILIATE_LINKS.all;
   };
 
   const loadGroupData = async () => {
@@ -701,6 +725,44 @@ export default function OrganizerDashboard() {
             </p>
           )}
         </div>
+
+        {/* Amazon Affiliate Section - Wenn Auslosung erfolgt ist */}
+        {group.drawn && (
+          <div className="card bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-400 shadow-lg">
+            <h3 className="section-title text-orange-900 mb-4">🛍️ Jetzt shoppen & Geschenke kaufen</h3>
+
+            <p className="text-gray-700 mb-6">
+              Die Auslosung ist abgeschlossen! Jetzt kanns ans Einkaufen gehen. Nutze diese vorfilterten Amazon-Links, um tollen Geschenkideen in deinem Budget zu finden:
+            </p>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                { label: '1-5 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A100-500&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
+                { label: '5-10 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A500-1000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
+                { label: '10-15 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A1000-1500&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
+                { label: '15-20 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A1500-2000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
+                { label: '20-30 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A2000-3000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
+                { label: '30-50 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A3000-5000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
+                { label: '50-100 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A5000-10000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
+                { label: 'Alle', link: 'https://www.amazon.de/s?k=geschenkideen&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' }
+              ].map((range) => (
+                <a
+                  key={range.label}
+                  href={range.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-center bg-orange-500 hover:bg-orange-600 text-white py-3 px-3 rounded-lg font-semibold transition transform hover:scale-105"
+                >
+                  {range.label}
+                </a>
+              ))}
+            </div>
+
+            <p className="text-sm text-gray-600 mt-6 text-center">
+              💚 Alle Käufe über diese Links unterstützen uns durch Affiliate-Provisionen!
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
