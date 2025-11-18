@@ -268,7 +268,7 @@ export default function JoinGroup() {
             <p className="text-sm mt-2 opacity-90">Organisiert von: {group.organizerName}</p>
           </div>
 
-          <div className="bg-white rounded-lg p-8 shadow-md">
+          <div className="bg-white rounded-lg p-8 shadow-md mb-8">
             <h2 className="text-2xl font-bold mb-2">Willkommen! 👋</h2>
             <p className="text-gray-600 mb-6">
               Klicke auf deinen Namen, um teilzunehmen. Wenn dein Name nicht in der Liste ist, kannst du dich auch neu hinzufügen.
@@ -296,6 +296,12 @@ export default function JoinGroup() {
             >
               + Ich bin nicht in der Liste - neu hinzufügen
             </button>
+          </div>
+
+          {/* Amazon Shopping Filter - Inspiration Section on Welcome Page */}
+          <div className="mb-8">
+            <p className="text-gray-700 mb-4 font-semibold">💡 Brauchst du Inspirationen zum Einkaufen?</p>
+            <AmazonFilterSelector />
           </div>
         </div>
       </div>

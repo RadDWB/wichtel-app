@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { getGroup, getGifts } from '../../lib/kv-client';
+import AmazonFilterSelector from '../../components/AmazonFilterSelector';
 
 // Amazon Affiliate Links with different budget ranges
 const AMAZON_AFFILIATE_LINKS = {
@@ -737,41 +738,14 @@ export default function OrganizerDashboard() {
           )}
         </div>
 
-        {/* Amazon Affiliate Section - Wenn Auslosung erfolgt ist */}
+        {/* Amazon Affiliate Section - Smart Filters for Gift Shopping */}
         {group.drawn && (
-          <div className="card bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-400 shadow-lg">
-            <h3 className="section-title text-orange-900 mb-4">🛍️ Jetzt shoppen & Geschenke kaufen</h3>
-
+          <div className="card">
+            <h3 className="section-title mb-4">🛍️ Jetzt shoppen & Geschenke kaufen</h3>
             <p className="text-gray-700 mb-6">
-              Die Auslosung ist abgeschlossen! Jetzt kanns ans Einkaufen gehen. Nutze diese vorfilterten Amazon-Links, um tollen Geschenkideen in deinem Budget zu finden:
+              Die Auslosung ist abgeschlossen! Nutze unsere intelligenten Filter, um die perfekten Geschenke zu finden:
             </p>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {[
-                { label: '1-5 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A100-500&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
-                { label: '5-10 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A500-1000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
-                { label: '10-15 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A1000-1500&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
-                { label: '15-20 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A1500-2000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
-                { label: '20-30 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A2000-3000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
-                { label: '30-50 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A3000-5000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
-                { label: '50-100 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A5000-10000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
-                { label: 'Alle', link: 'https://www.amazon.de/s?k=geschenkideen&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' }
-              ].map((range) => (
-                <a
-                  key={range.label}
-                  href={range.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-center bg-orange-500 hover:bg-orange-600 text-white py-3 px-3 rounded-lg font-semibold transition transform hover:scale-105"
-                >
-                  {range.label}
-                </a>
-              ))}
-            </div>
-
-            <p className="text-sm text-gray-600 mt-6 text-center">
-              💚 Alle Käufe über diese Links unterstützen uns durch Affiliate-Provisionen!
-            </p>
+            <AmazonFilterSelector />
           </div>
         )}
       </div>
