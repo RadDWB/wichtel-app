@@ -23,6 +23,7 @@ export default function JoinGroup() {
   const [pinVerificationError, setPinVerificationError] = useState(''); // Error message for PIN verification
   const stepRef = useRef(step); // Track step without causing effect re-runs
   const [showNoGiftsDialog, setShowNoGiftsDialog] = useState(false);
+  const [currentGifts, setCurrentGifts] = useState([]); // Store gifts for current participant during step 2
 
   // Update ref when step changes
   useEffect(() => {
@@ -53,6 +54,26 @@ export default function JoinGroup() {
       localStorage.removeItem(`participant_${groupId}`);
     }
   }, [step, groupId]);
+
+  // Load current gifts when entering step 2
+  useEffect(() => {
+    const loadCurrentGifts = async () => {
+      if (step !== 2 || !selectedParticipant || !groupId) return;
+
+      try {
+        const response = await fetch(`/api/gifts/${groupId}?participantId=${selectedParticipant.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setCurrentGifts(data.gifts || []);
+        }
+      } catch (err) {
+        console.error('Error loading gifts for step 2:', err);
+        setCurrentGifts([]);
+      }
+    };
+
+    loadCurrentGifts();
+  }, [step, selectedParticipant, groupId]);
 
   // Wenn Schritt 3 erreicht wird und noch keine Geschenke gespeichert sind,
   // zeigen wir einen Hinweis-Dialog (Überraschung oder Wunschliste später).
@@ -612,17 +633,17 @@ export default function JoinGroup() {
           <div className="max-w-2xl mx-auto mb-6 bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-orange-300 rounded-lg p-6 shadow-md">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">🎁 {selectedParticipant.name}s Wunschliste</h1>
             <p className="text-sm text-gray-600">
-              {gifts.length > 0
+              {currentGifts.length > 0
                 ? '✅ Du hast bereits eine Liste erstellt. Du kannst sie hier bearbeiten oder ergänzen.'
                 : 'Das ist deine persönliche Seite. Hier trägst du deine Geschenkwünsche ein.'}
             </p>
           </div>
 
           <div className="max-w-2xl mx-auto mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-            <h2 className="font-bold text-blue-900 mb-2">📋 {gifts.length > 0 ? 'Deine Wunschliste bearbeiten' : 'Schritt 1: Geschenkeliste erstellen'}</h2>
+            <h2 className="font-bold text-blue-900 mb-2">📋 {currentGifts.length > 0 ? 'Deine Wunschliste bearbeiten' : 'Schritt 1: Geschenkeliste erstellen'}</h2>
             <p className="text-sm text-blue-800">
-              {gifts.length > 0
-                ? `Du hast bereits ${gifts.length} Geschenk${gifts.length !== 1 ? 'e' : ''} auf deiner Liste. Du kannst diese bearbeiten, löschen oder weitere hinzufügen.`
+              {currentGifts.length > 0
+                ? `Du hast bereits ${currentGifts.length} Geschenk${currentGifts.length !== 1 ? 'e' : ''} auf deiner Liste. Du kannst diese bearbeiten, löschen oder weitere hinzufügen.`
                 : 'Erstelle deine Geschenkeliste. Sobald ALLE Teilnehmer ihre Listen fertig haben, wird der Organisator die Auslosung starten.'}
             </p>
           </div>
