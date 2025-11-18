@@ -672,10 +672,22 @@ export default function OrganizerDashboard() {
               🔗 Zum Beitritts-Link
             </Link>
 
-            {stats.percentage === 100 && !group.drawn && (
-              <Link href={`/organizer/${id}/draw`} className="block text-center p-4 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition">
-                🎲 Jetzt auslosen
-              </Link>
+            {!group.drawn && (
+              <>
+                {stats.percentage === 100 ? (
+                  <Link href={`/organizer/${id}/draw`} className="block text-center p-4 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition">
+                    🎲 Jetzt auslosen
+                  </Link>
+                ) : (
+                  <button
+                    disabled
+                    className="block w-full text-center p-4 bg-gray-400 text-white rounded-lg font-semibold cursor-not-allowed opacity-60"
+                    title={`${100 - stats.percentage}% der Teilnehmer müssen noch ihre Listen vervollständigen`}
+                  >
+                    🎲 Auslosen (warte auf {100 - Math.round(stats.percentage)}%)
+                  </button>
+                )}
+              </>
             )}
 
             <Link href="/" className="block text-center p-4 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-semibold transition">
@@ -683,9 +695,9 @@ export default function OrganizerDashboard() {
             </Link>
           </div>
 
-          {!group.drawn && (
+          {!group.drawn && stats.percentage < 100 && (
             <p className="text-center text-sm text-gray-700 mt-4">
-              ℹ️ Das Auslosen ist nur möglich, wenn alle Teilnehmer ihre Geschenkelisten eingegeben haben.
+              ℹ️ {Math.round(stats.percentage)}% abgeschlossen. Das Auslosen ist möglich, wenn alle Teilnehmer ihre Geschenkelisten eingegeben haben.
             </p>
           )}
         </div>
