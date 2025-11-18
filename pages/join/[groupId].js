@@ -28,14 +28,14 @@ export default function JoinGroup() {
       loadGroup();
     }
 
-    // Refresh group status every 5 seconds to detect when it's marked as complete
+    // Refresh group status every 15 seconds (reduced from 5s for mobile performance)
     // BUT: Only poll on steps 1, 3, 4 - NOT on step 2 (gift entry) to avoid form disruption
     const interval = setInterval(() => {
       // Check ref to see if we should poll (don't block on step change)
-      if (stepRef.current !== 2) {
+      if (stepRef.current !== 2 && stepRef.current !== 1.5) {
         loadGroup();
       }
-    }, 5000);
+    }, 15000);
 
     return () => clearInterval(interval);
   }, [groupId, orgParticipant]);

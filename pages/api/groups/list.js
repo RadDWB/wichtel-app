@@ -1,7 +1,7 @@
 // List all groups or filter by organizerId/PIN
 // This allows organizers to find their groups
 
-import { getGroup, getOrganizerGroups, getAllGroups } from '../../../lib/kv';
+import { getGroup, getOrganizerGroups, getAllGroups, deleteGroup } from '../../../lib/kv';
 
 // In-memory fallback for development
 const groupsStore = {};
@@ -56,6 +56,23 @@ export default async function handler(req, res) {
     } catch (error) {
       console.error('Error saving group:', error);
       return res.status(500).json({ error: 'Failed to save group' });
+    }
+  }
+
+  // DELETE: Delete a group
+  if (req.method === 'DELETE') {
+    try {
+      const { groupId } = req.query;
+
+      if (!groupId) {
+        return res.status(400).json({ error: 'groupId required' });
+      }
+
+      await deleteGroup(groupId);
+      return res.status(200).json({ success: true });
+    } catch (error) {
+      console.error('Error deleting group:', error);
+      return res.status(500).json({ error: 'Failed to delete group' });
     }
   }
 

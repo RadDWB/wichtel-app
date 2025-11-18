@@ -19,13 +19,17 @@ export default function OrganizerDashboard() {
     if (id) {
       // Check if authenticated via PIN
       checkAuthentication();
-      // Refresh data every 10 seconds
-      const interval = setInterval(() => {
-        if (authenticated) {
+      // Refresh data every 30 seconds (reduced from 10s to decrease flickering on mobile)
+      // Only poll when authenticated
+      let interval = null;
+      if (authenticated) {
+        interval = setInterval(() => {
           loadGroupData();
-        }
-      }, 10000);
-      return () => clearInterval(interval);
+        }, 30000);
+      }
+      return () => {
+        if (interval) clearInterval(interval);
+      };
     }
   }, [id, authenticated]);
 
