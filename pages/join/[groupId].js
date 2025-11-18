@@ -1,4 +1,5 @@
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 import { useEffect, useState, useRef } from 'react';
 import { OCCASIONS } from '../../lib/occasions';
 import { getGroup, saveGroup } from '../../lib/kv-client';
@@ -898,9 +899,16 @@ export default function JoinGroup() {
             </div>
 
 
-            <a href="/" className="text-center block text-blue-600 hover:underline font-semibold">
-              ← Zur Startseite
-            </a>
+            <div className="flex gap-3">
+              {orgParticipant && (
+                <Link href={`/organizer/${groupId}`} className="flex-1 text-center block p-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition">
+                  📊 Zum Dashboard
+                </Link>
+              )}
+              <Link href="/" className={`${orgParticipant ? 'flex-1' : 'w-full'} text-center block p-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold transition`}>
+                🏠 Zur Startseite
+              </Link>
+            </div>
           </div>
         </div>
       </div>
