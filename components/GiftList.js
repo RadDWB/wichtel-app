@@ -315,7 +315,7 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
                   ))}
                 </div>
                 <p className="text-xs text-gray-600 mt-2">
-                  Alle Käufe über diese Links unterstützen uns! 🎁
+                  Wir nehmen am Amazon Affiliate Programm teil – Sie unterstützen uns durch Ihre Käufe! 🎁
                 </p>
               </div>
             </div>

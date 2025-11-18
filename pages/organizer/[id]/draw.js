@@ -169,7 +169,7 @@ export default function DrawPage() {
                 <li>✅ Alle Teilnehmer können die Gruppe öffnen und sehen, wen sie beschenken</li>
                 <li>✅ Jeder sieht die Wunschliste des Partners mit Amazon-Links</li>
                 <li>✅ Jeder kann direkt auf Amazon einkaufen</li>
-                <li>✅ Du bekommst Affiliate-Provisionen für jeden Kauf!</li>
+                <li>✅ Wir nehmen am Amazon Affiliate Programm teil – Sie unterstützen uns durch Ihre Käufe!</li>
               </ul>
             </div>
 
@@ -177,7 +177,7 @@ export default function DrawPage() {
             <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-400 rounded-lg p-6 mb-8 shadow-md">
               <h2 className="text-2xl font-bold text-orange-900 mb-3">🛍️ Jetzt einkaufen gehen!</h2>
               <p className="text-gray-700 mb-5">
-                Stöbere jetzt auf Amazon.de nach tollen Geschenkideen für deine Wichtel! Alle Käufe über diesen Link unterstützen uns.
+                Stöbere jetzt auf Amazon.de nach tollen Geschenkideen für deine Wichtel! Wir nehmen am Amazon Affiliate Programm teil – Sie unterstützen uns durch Ihre Käufe.
               </p>
               <a
                 href={getAmazonLink()}

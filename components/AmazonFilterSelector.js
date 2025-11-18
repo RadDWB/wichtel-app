@@ -73,7 +73,7 @@ export default function AmazonFilterSelector() {
       </div>
 
       <p className="text-xs text-gray-600 text-center">
-        💚 Alle Käufe über diese Links unterstützen uns durch Affiliate-Provisionen!
+        💚 Wir nehmen am Amazon Affiliate Programm teil, Sie unterstützen uns durch Ihre Käufe!
       </p>
     </div>
   );
