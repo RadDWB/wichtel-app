@@ -24,6 +24,7 @@ export default function JoinGroup() {
   const stepRef = useRef(step); // Track step without causing effect re-runs
   const [showNoGiftsDialog, setShowNoGiftsDialog] = useState(false);
   const [currentGifts, setCurrentGifts] = useState([]); // Store gifts for current participant during step 2
+  const [organizerPin, setOrganizerPin] = useState(''); // Store organizer PIN to redirect back correctly
 
   // Update ref when step changes
   useEffect(() => {
@@ -33,6 +34,14 @@ export default function JoinGroup() {
   useEffect(() => {
     if (groupId) {
       loadGroup();
+
+      // Load organizer PIN from localStorage if available
+      if (orgParticipant) {
+        const savedPin = localStorage.getItem(`organizer_pin_${groupId}`);
+        if (savedPin) {
+          setOrganizerPin(savedPin);
+        }
+      }
     }
 
     // Refresh group status every 15 seconds (reduced from 5s for mobile performance)
@@ -656,7 +665,14 @@ export default function JoinGroup() {
           <div className="container mx-auto mt-8 max-w-2xl">
             <div className="flex gap-3 mb-6">
               <button
-                onClick={() => orgParticipant ? router.push(`/organizer/${groupId}`) : setStep(1)}
+                onClick={() => {
+                  if (orgParticipant) {
+                    const dashboardUrl = organizerPin ? `/organizer/${groupId}?showPin=${organizerPin}` : `/organizer/${groupId}`;
+                    router.push(dashboardUrl);
+                  } else {
+                    setStep(1);
+                  }
+                }}
                 className="flex-1 btn-outline"
               >
                 ← {orgParticipant ? 'Zum Dashboard' : 'Zur Teilnehmerliste'}
@@ -919,7 +935,7 @@ export default function JoinGroup() {
 
             <div className="flex gap-3">
               {orgParticipant && (
-                <Link href={`/organizer/${groupId}`} className="flex-1 text-center block p-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition">
+                <Link href={organizerPin ? `/organizer/${groupId}?showPin=${organizerPin}` : `/organizer/${groupId}`} className="flex-1 text-center block p-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition">
                   📊 Zum Dashboard
                 </Link>
               )}

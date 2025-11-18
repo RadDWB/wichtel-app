@@ -28,6 +28,12 @@ export default function OrganizerDashboard() {
     if (id) {
       // Check if authenticated via PIN
       checkAuthentication();
+
+      // Store showPin in localStorage so join page can redirect back correctly
+      if (showPin) {
+        localStorage.setItem(`organizer_pin_${id}`, showPin);
+      }
+
       // Refresh data every 30 seconds (reduced from 10s to decrease flickering on mobile)
       // Only poll when authenticated
       let interval = null;
@@ -40,7 +46,7 @@ export default function OrganizerDashboard() {
         if (interval) clearInterval(interval);
       };
     }
-  }, [id, authenticated]);
+  }, [id, authenticated, showPin]);
 
   const checkAuthentication = () => {
     // Check if coming from initial setup (showPin in URL)
