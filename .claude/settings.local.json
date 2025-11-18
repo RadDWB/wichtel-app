@@ -16,7 +16,8 @@
       "Bash(git tag:*)",
       "Bash(git rm:*)",
       "Bash(find:*)",
-      "Bash(powershell -Command \"cd ''c:\\Users\\rad3\\OneDrive\\Dokumente\\GithubNew\\StrichlisteRepo\\StrichlisteChat\\wichtel-app''; npm run dev\")"
+      "Bash(powershell -Command \"cd ''c:\\Users\\rad3\\OneDrive\\Dokumente\\GithubNew\\StrichlisteRepo\\StrichlisteChat\\wichtel-app''; npm run dev\")",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []

@@ -18,6 +18,7 @@ export default function JoinGroup() {
   const [wantsSurprise, setWantsSurprise] = useState(false); // Ich möchte überrascht werden
   const [participantPin, setParticipantPin] = useState(''); // Optional PIN for participant protection
   const [pinConfirmed, setPinConfirmed] = useState(false); // Track if PIN step is done
+  const [tempPin, setTempPin] = useState(''); // Temporary PIN during Step 4.5 setup
   const stepRef = useRef(step); // Track step without causing effect re-runs
   const [showNoGiftsDialog, setShowNoGiftsDialog] = useState(false);
 
@@ -694,6 +695,76 @@ export default function JoinGroup() {
     );
   }
 
+  // Step 4.5: Set PIN after completing list
+  if (step === 4.5 && selectedParticipant && !group.drawn) {
+    // Initialize tempPin from participantPin when entering this step
+    useEffect(() => {
+      if (step === 4.5) {
+        setTempPin(participantPin);
+      }
+    }, [step]);
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
+        <div className="container mx-auto py-12 px-4 max-w-2xl">
+          <div className="bg-white rounded-lg p-8 shadow-md">
+            <h2 className="text-3xl font-bold mb-6">🔐 PIN zum Schutz setzen</h2>
+
+            <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded mb-6">
+              <p className="text-sm text-green-800 mb-2">
+                <strong>💡 Warum eine PIN?</strong>
+              </p>
+              <p className="text-sm text-green-700">
+                Mit einer PIN schützt du deine Wunschliste vor ungewollten Änderungen auf diesem Gerät. Nur jemand mit der PIN kann deine Daten bearbeiten.
+              </p>
+            </div>
+
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium mb-2">PIN (4-6 Ziffern)</label>
+                <input
+                  type="password"
+                  value={tempPin}
+                  onChange={(e) => setTempPin(e.target.value)}
+                  placeholder="z.B. 1234"
+                  className="input-field w-full"
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  Leer lassen um die PIN zu überspringen
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setStep(4);
+                }}
+                className="flex-1 btn-outline"
+              >
+                ← Zurück
+              </button>
+              <button
+                onClick={() => {
+                  // Save PIN if provided
+                  if (tempPin.trim()) {
+                    localStorage.setItem(`participant_pin_${groupId}_${selectedParticipant.id}`, tempPin);
+                    setParticipantPin(tempPin);
+                    console.log('✅ PIN saved after list completion');
+                  }
+                  setStep(4);
+                }}
+                className="flex-1 btn-primary"
+              >
+                ✅ Speichern & Fertig
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Step 4: Waiting for draw
   if (step === 4 && selectedParticipant && !group.drawn) {
     return (
@@ -705,6 +776,23 @@ export default function JoinGroup() {
             <p className="text-lg text-gray-700 mb-8 text-center">
               Du bist angemeldet und alles wurde gespeichert. Jetzt geht's los! 🚀
             </p>
+
+            {/* PIN Security Warning if not set */}
+            {!participantPin && (
+              <div className="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4 mb-6">
+                <p className="text-sm text-yellow-900 mb-3">
+                  <strong>⚠️ Achtung:</strong> Ohne PIN kann jeder auf diesem Gerät deine Daten bearbeiten.
+                </p>
+                <button
+                  onClick={() => {
+                    setStep(4.5); // Go to PIN setup step
+                  }}
+                  className="text-sm bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded font-semibold"
+                >
+                  🔐 PIN jetzt setzen
+                </button>
+              </div>
+            )}
 
             {/* Big Button to Create Wishlist */}
             <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-300 rounded-lg p-6 mb-8">
