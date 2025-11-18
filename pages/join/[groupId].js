@@ -19,6 +19,7 @@ export default function JoinGroup() {
   const [participantPin, setParticipantPin] = useState(''); // Optional PIN for participant protection
   const [pinConfirmed, setPinConfirmed] = useState(false); // Track if PIN step is done
   const [tempPin, setTempPin] = useState(''); // Temporary PIN during Step 4.5 setup
+  const [pinVerificationError, setPinVerificationError] = useState(''); // Error message for PIN verification
   const stepRef = useRef(step); // Track step without causing effect re-runs
   const [showNoGiftsDialog, setShowNoGiftsDialog] = useState(false);
 
@@ -154,14 +155,22 @@ export default function JoinGroup() {
     setNameEdit(participant.name);
     setEmailEdit(participant.email || '');
     setParticipantPin(''); // Reset PIN field for new participant
-    setPinConfirmed(false); // Reset PIN confirmation to show PIN screen
-    setStep(1.5); // Go to PIN setup first
+    setTempPin(''); // Reset temp PIN
+    setPinVerificationError(''); // Clear any previous errors
     localStorage.setItem(`participant_${groupId}`, participant.id);
 
     // Load PIN if it exists in localStorage
     const storedPin = localStorage.getItem(`participant_pin_${groupId}_${participant.id}`);
     if (storedPin) {
-      setParticipantPin(storedPin);
+      // PIN exists - show verification screen
+      setParticipantPin(storedPin); // Store the correct PIN
+      setPinConfirmed(false); // Not confirmed yet
+      setStep(1.5); // Go to PIN verification screen
+    } else {
+      // No PIN set - skip to gift choice
+      setParticipantPin('');
+      setPinConfirmed(true); // Already "verified" since no PIN
+      setStep(1.5); // Go to gift choice
     }
   };
 
@@ -360,8 +369,88 @@ export default function JoinGroup() {
     );
   }
 
-  // Step 1.5a2: Confirm existing participant & set optional PIN
-  if (step === 1.5 && selectedParticipant && !pinConfirmed && !group.drawn) {
+  // Step 1.5a1: Verify PIN if participant has one set
+  if (step === 1.5 && selectedParticipant && !pinConfirmed && participantPin && !group.drawn) {
+    // Participant has a PIN - show verification screen
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
+        <div className="container mx-auto py-12 px-4 max-w-2xl">
+          <div className="bg-white rounded-lg p-8 shadow-md">
+            <h2 className="text-2xl font-bold mb-6">🔐 PIN erforderlich</h2>
+            <p className="text-gray-700 mb-6">
+              Du hast eine PIN für den Schutz deiner Daten gesetzt. Bitte gib deine PIN ein, um fortzufahren.
+            </p>
+
+            {pinVerificationError && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+                {pinVerificationError}
+              </div>
+            )}
+
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium mb-2">PIN</label>
+                <input
+                  type="password"
+                  value={tempPin}
+                  onChange={(e) => {
+                    setTempPin(e.target.value);
+                    setPinVerificationError(''); // Clear error when typing
+                  }}
+                  placeholder="Gib deine PIN ein"
+                  className="input-field w-full"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      // Verify on Enter key
+                      if (tempPin === participantPin) {
+                        setPinConfirmed(true);
+                        setTempPin('');
+                      } else {
+                        setPinVerificationError('❌ PIN ist falsch. Bitte versuche es erneut.');
+                      }
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setSelectedParticipant(null);
+                  setParticipantPin('');
+                  setTempPin('');
+                  setPinConfirmed(false);
+                  setPinVerificationError('');
+                  setStep(1);
+                }}
+                className="flex-1 btn-outline"
+              >
+                ← Zurück
+              </button>
+              <button
+                onClick={() => {
+                  if (tempPin === participantPin) {
+                    setPinConfirmed(true);
+                    setTempPin('');
+                    setPinVerificationError('');
+                  } else {
+                    setPinVerificationError('❌ PIN ist falsch. Bitte versuche es erneut.');
+                  }
+                }}
+                className="flex-1 btn-primary"
+              >
+                ✅ Bestätigen
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Step 1.5a2: Confirm existing participant & set optional PIN (NEW PARTICIPANTS ONLY)
+  if (step === 1.5 && selectedParticipant && !pinConfirmed && !participantPin && !group.drawn) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
         <div className="container mx-auto py-12 px-4 max-w-2xl">
