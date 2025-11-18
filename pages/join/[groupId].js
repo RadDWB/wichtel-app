@@ -16,6 +16,8 @@ export default function JoinGroup() {
   const [emailEdit, setEmailEdit] = useState('');
   const [exclusions, setExclusions] = useState({});
   const [wantsSurprise, setWantsSurprise] = useState(false); // Ich möchte überrascht werden
+  const [participantPin, setParticipantPin] = useState(''); // Optional PIN for participant protection
+  const [pinConfirmed, setPinConfirmed] = useState(false); // Track if PIN step is done
   const stepRef = useRef(step); // Track step without causing effect re-runs
   const [showNoGiftsDialog, setShowNoGiftsDialog] = useState(false);
 
@@ -150,8 +152,16 @@ export default function JoinGroup() {
     setSelectedParticipant(participant);
     setNameEdit(participant.name);
     setEmailEdit(participant.email || '');
-    setStep(1.5); // Go to gift choice first
+    setParticipantPin(''); // Reset PIN field for new participant
+    setPinConfirmed(false); // Reset PIN confirmation to show PIN screen
+    setStep(1.5); // Go to PIN setup first
     localStorage.setItem(`participant_${groupId}`, participant.id);
+
+    // Load PIN if it exists in localStorage
+    const storedPin = localStorage.getItem(`participant_pin_${groupId}_${participant.id}`);
+    if (storedPin) {
+      setParticipantPin(storedPin);
+    }
   };
 
   const handleConfirmJoin = async () => {
@@ -216,16 +226,10 @@ export default function JoinGroup() {
             <p className="text-sm mt-2 opacity-90">Organisiert von: {group.organizerName}</p>
           </div>
 
-          <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg mb-6">
-            <p className="text-sm text-gray-700">
-              <strong>👤 Du bist hier als Teilnehmer unterwegs.</strong> Das Organisator-Dashboard ist nur für die Person gedacht, die diese Gruppe erstellt hat.
-            </p>
-          </div>
-
           <div className="bg-white rounded-lg p-8 shadow-md">
-            <h2 className="text-2xl font-bold mb-6">Hallo! 👋</h2>
+            <h2 className="text-2xl font-bold mb-2">Willkommen! 👋</h2>
             <p className="text-gray-600 mb-6">
-              Klicke auf deinen Namen, um teilzunehmen. Wenn dein Name nicht in der Liste ist, kannst du auch neu hinzugefügt werden.
+              Klicke auf deinen Namen, um teilzunehmen. Wenn dein Name nicht in der Liste ist, kannst du dich auch neu hinzufügen.
             </p>
 
             <div className="space-y-3 mb-8">
@@ -286,6 +290,20 @@ export default function JoinGroup() {
                   className="input-field w-full"
                 />
               </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">PIN zum Schutz (optional)</label>
+                <input
+                  type="password"
+                  value={participantPin}
+                  onChange={(e) => setParticipantPin(e.target.value)}
+                  placeholder="z.B. 1234"
+                  className="input-field w-full"
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  Setze eine PIN, um deine Daten zu schützen. Ohne PIN kann jeder auf diesem Gerät deine Daten bearbeiten.
+                </p>
+              </div>
             </div>
 
             <div className="flex gap-3 mt-6">
@@ -316,9 +334,15 @@ export default function JoinGroup() {
                     await saveGroup(groupId, updated);
                     console.log('✅ New participant added to KV');
                     localStorage.setItem(`participant_${groupId}`, newParticipant.id);
+
+                    // Save PIN if provided
+                    if (participantPin.trim()) {
+                      localStorage.setItem(`participant_pin_${groupId}_${newParticipant.id}`, participantPin);
+                    }
+
                     setGroup(updated);
                     setSelectedParticipant(newParticipant);
-                    setStep(1.5); // Go to gift choice, not directly to exclusions
+                    setStep(1.5); // Go to gift choice
                   } catch (kvErr) {
                     console.error('❌ Failed to save new participant:', kvErr);
                     setError('Fehler beim Hinzufügen. Bitte versuche es später erneut.');
@@ -335,8 +359,71 @@ export default function JoinGroup() {
     );
   }
 
+  // Step 1.5a2: Confirm existing participant & set optional PIN
+  if (step === 1.5 && selectedParticipant && !pinConfirmed && !group.drawn) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
+        <div className="container mx-auto py-12 px-4 max-w-2xl">
+          <div className="bg-white rounded-lg p-8 shadow-md">
+            <h2 className="text-2xl font-bold mb-6">Hallo, {selectedParticipant.name}! 👋</h2>
+
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded mb-6">
+              <p className="text-sm text-blue-800">
+                <strong>💡 Optional:</strong> Schütze deine Daten mit einer PIN. So kann nur jemand mit der PIN deine Wunschliste ändern.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">PIN zum Schutz (optional)</label>
+                <input
+                  type="password"
+                  value={participantPin}
+                  onChange={(e) => setParticipantPin(e.target.value)}
+                  placeholder="z.B. 1234"
+                  className="input-field w-full"
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  Leer lassen um die Seite ohne PIN zu nutzen
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => {
+                  setSelectedParticipant(null);
+                  setParticipantPin('');
+                  setPinConfirmed(false);
+                  setStep(1);
+                }}
+                className="flex-1 btn-outline"
+              >
+                ← Zurück
+              </button>
+              <button
+                onClick={() => {
+                  // Save PIN if provided
+                  if (participantPin.trim()) {
+                    localStorage.setItem(`participant_pin_${groupId}_${selectedParticipant.id}`, participantPin);
+                    console.log('✅ PIN saved for participant');
+                  }
+                  setPinConfirmed(true); // Move to gift choice
+                  setWantsSurprise(undefined); // Reset surprise to show gift choice menu
+                }}
+                className="flex-1 btn-primary"
+              >
+                ✅ Weiter zu Wünschen →
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Step 1.5: Gift Choice (Wunschliste oder überrascht werden)
-  if (step === 1.5 && selectedParticipant && !group.drawn) {
+  if (step === 1.5 && selectedParticipant && pinConfirmed && !group.drawn) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
         <div className="container mx-auto py-12 px-4 max-w-2xl">
@@ -379,7 +466,7 @@ export default function JoinGroup() {
               <div className="text-5xl mb-4">🎉</div>
               <h2 className="text-2xl font-bold text-gray-900 mb-3">Überrascht werden</h2>
               <p className="text-gray-700 text-left">
-                Ich möchte mich überraschen lassen und keineWunschliste angeben.
+                Ich möchte mich überraschen lassen und keine Wunschliste angeben.
               </p>
               <div className="mt-6 text-sm text-gray-600 text-left space-y-2">
                 <p>✨ Keine Liste nötig</p>
