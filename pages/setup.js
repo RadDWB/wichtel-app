@@ -145,29 +145,18 @@ export default function Setup() {
 
       // Save to Redis via API (server-side)
       try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        const response = await fetch('/api/groups/list', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ group }),
+        });
 
-        try {
-          const response = await fetch('/api/groups/list', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ group }),
-            signal: controller.signal,
-          });
-
-          clearTimeout(timeoutId);
-
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Failed to save group');
-          }
-
-          console.log('✅ Group saved to Redis');
-        } catch (fetchErr) {
-          clearTimeout(timeoutId);
-          throw fetchErr;
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to save group');
         }
+
+        console.log('✅ Group saved to Redis');
       } catch (err) {
         console.error('❌ Save failed:', err);
         setError(`Fehler beim Speichern: ${err.message}`);
