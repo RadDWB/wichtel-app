@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState, useRef } from 'react';
 import { OCCASIONS } from '../../lib/occasions';
-import { getGroup, saveGroup, saveExclusions } from '../../lib/kv-client';
+import { getGroup, saveGroup } from '../../lib/kv-client';
 import GiftList from '../../components/GiftList';
 
 export default function JoinGroup() {
@@ -17,6 +17,7 @@ export default function JoinGroup() {
   const [exclusions, setExclusions] = useState({});
   const [wantsSurprise, setWantsSurprise] = useState(false); // Ich möchte überrascht werden
   const stepRef = useRef(step); // Track step without causing effect re-runs
+  const [showNoGiftsDialog, setShowNoGiftsDialog] = useState(false);
 
   // Update ref when step changes
   useEffect(() => {
@@ -47,6 +48,32 @@ export default function JoinGroup() {
       localStorage.removeItem(`participant_${groupId}`);
     }
   }, [step, groupId]);
+
+  // Wenn Schritt 3 erreicht wird und noch keine Geschenke gespeichert sind,
+  // zeigen wir einen Hinweis-Dialog (Überraschung oder Wunschliste später).
+  useEffect(() => {
+    const checkGiftsForDialog = async () => {
+      if (step !== 3 || !selectedParticipant || !groupId || wantsSurprise) return;
+
+      try {
+        const response = await fetch(`/api/gifts/${groupId}?participantId=${selectedParticipant.id}`);
+        if (!response.ok) return;
+
+        const data = await response.json();
+        const gifts = data.gifts || [];
+
+        if (gifts.length === 0) {
+          setShowNoGiftsDialog(true);
+        } else {
+          setShowNoGiftsDialog(false);
+        }
+      } catch (err) {
+        console.error('Error checking gifts for no-gifts dialog:', err);
+      }
+    };
+
+    checkGiftsForDialog();
+  }, [step, selectedParticipant, groupId, wantsSurprise]);
 
   const loadGroup = async () => {
     try {
@@ -187,6 +214,12 @@ export default function JoinGroup() {
             <h1 className="text-4xl font-bold mb-2">{occasion?.label}</h1>
             <p className="text-lg">{group.name}</p>
             <p className="text-sm mt-2 opacity-90">Organisiert von: {group.organizerName}</p>
+          </div>
+
+          <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg mb-6">
+            <p className="text-sm text-gray-700">
+              <strong>👤 Du bist hier als Teilnehmer unterwegs.</strong> Das Organisator-Dashboard ist nur für die Person gedacht, die diese Gruppe erstellt hat.
+            </p>
           </div>
 
           <div className="bg-white rounded-lg p-8 shadow-md">
@@ -371,6 +404,26 @@ export default function JoinGroup() {
 
   // Step 2: Gifts (add gifts BEFORE group marked complete)
   if (step === 2 && selectedParticipant && !group.drawn && !wantsSurprise) {
+    const handleGiftsNext = async () => {
+      try {
+        const response = await fetch(`/api/gifts/${groupId}?participantId=${selectedParticipant.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          const gifts = data.gifts || [];
+
+          if (gifts.length === 0) {
+            setShowNoGiftsDialog(true);
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('Error checking gifts before continuing:', err);
+        // Im Fehlerfall verhalten wir uns wie vorher und gehen weiter
+      }
+
+      setStep(3);
+    };
+
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="container mx-auto py-12 px-4">
@@ -398,7 +451,7 @@ export default function JoinGroup() {
             participantId={selectedParticipant.id}
           />
           <div className="container mx-auto mt-8 max-w-2xl">
-            <div className="flex gap-3">
+            <div className="flex gap-3 mb-6">
               <button
                 onClick={() => orgParticipant ? router.push(`/organizer/${groupId}`) : setStep(1)}
                 className="flex-1 btn-outline"
@@ -411,6 +464,18 @@ export default function JoinGroup() {
               >
                 ✅ Fertig - zu Ausschlüssen →
               </button>
+            </div>
+
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded text-sm text-gray-700">
+              <p className="mb-2">
+                <strong>💡 Wunschliste später ändern?</strong>
+              </p>
+              <p className="mb-2">
+                Du kannst die Wunschliste jederzeit über denselben Gruppen-Link wieder aufrufen und ergänzen oder ändern.
+              </p>
+              <p>
+                Auf diesem Gerät merkt sich die Seite dich automatisch – auf anderen Geräten öffne einfach wieder denselben Link.
+              </p>
             </div>
           </div>
         </div>
@@ -587,6 +652,18 @@ export default function JoinGroup() {
               </p>
             </div>
 
+            <div className="bg-cyan-50 border-l-4 border-cyan-500 p-4 rounded mb-6">
+              <p className="text-sm text-gray-700 mb-2">
+                <strong>📱 Später wieder einstieg:</strong>
+              </p>
+              <p className="text-sm text-gray-700 mb-2">
+                Du kannst den Link zur Gruppe jederzeit wieder öffnen, um deine Wunschliste zu bearbeiten.
+              </p>
+              <p className="text-sm text-gray-700">
+                Auf diesem Gerät merkt sich die Seite dich automatisch. Auf anderen Geräten nutze einfach wieder den Einladungslink.
+              </p>
+            </div>
+
             <a href="/" className="text-center block text-blue-600 hover:underline font-semibold">
               ← Zur Startseite
             </a>
@@ -612,26 +689,8 @@ export default function JoinGroup() {
       );
     }
 
-    // Check if partner has a gift list (gifts will be loaded by GiftList component)
-    // If no gifts and partner wanted surprise, show surprise message
-    const [partnerGifts, setPartnerGifts] = useState([]);
-
-    useEffect(() => {
-      const loadPartnerGifts = async () => {
-        try {
-          const response = await fetch(`/api/gifts/${groupId}?participantId=${partnerId}`);
-          const data = await response.json();
-          setPartnerGifts(data.gifts || []);
-        } catch (err) {
-          console.error('Error loading partner gifts:', err);
-        }
-      };
-      if (partnerId && group.drawn) {
-        loadPartnerGifts();
-      }
-    }, [partnerId, group.drawn, groupId]);
-
-    const partnerWantsSurprise = partnerGifts && partnerGifts.length === 0;
+    // If partner explicitly wants a surprise, show special message
+    const partnerWantsSurprise = partner?.wantsSurprise === true;
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">

@@ -484,6 +484,26 @@ export default function OrganizerDashboard() {
               ) : (
                 <p className="text-center text-gray-500 py-6">Keine Teilnehmer</p>
               )}
+
+              <div className="mt-6 p-4 bg-gray-50 border border-gray-300 rounded">
+                <p className="text-sm font-semibold text-gray-900 mb-3">📖 Legende:</p>
+                <div className="space-y-2 text-sm text-gray-700">
+                  <div className="flex items-start gap-3">
+                    <span className="text-lg">✅</span>
+                    <div>
+                      <p className="font-medium">X Geschenke</p>
+                      <p className="text-gray-600">Dieser Teilnehmer hat eine normale Wunschliste mit Geschenkideen angelegt.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="text-lg">🎉</span>
+                    <div>
+                      <p className="font-medium">Überraschung!</p>
+                      <p className="text-gray-600">Dieser Teilnehmer möchte sich überraschen lassen und hat bewusst keine Liste angelegt.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -495,6 +515,15 @@ export default function OrganizerDashboard() {
           <p className="text-sm text-gray-700 mb-4">
             Versende diesen Link an deine Freunde, Familie oder Kollegen, damit sie sich anmelden und ihre Wunschliste erstellen können:
           </p>
+
+          <div className="bg-red-50 border-l-4 border-red-500 p-3 mb-4 rounded text-sm text-gray-700">
+            <p>
+              <strong>⚠️ Das ist der Link für alle Teilnehmer!</strong>
+            </p>
+            <p>
+              Teilnehmer sollen nicht das Organisator-Dashboard benutzen. Sie nutzen NUR diesen Link zum Eintragen ihrer Daten.
+            </p>
+          </div>
 
           <div className="bg-white rounded border border-purple-300 p-4 mb-4 font-mono text-xs break-all">
             {getParticipantLink()}

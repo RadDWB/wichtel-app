@@ -399,7 +399,7 @@ export default function Setup() {
               disabled={loading}
               className="flex-1 btn-primary disabled:opacity-50"
             >
-              {step === 6
+              {step === 5
                 ? loading
                   ? '🔄 Wird erstellt...'
                   : '✅ Gruppe erstellen'
