@@ -986,35 +986,32 @@ export default function JoinGroup() {
             </div>
 
             {partnerWantsSurprise ? (
-              // Partner wants surprise - show special message with Amazon shopping section
+              // Partner wants surprise - show Amazon filters first, then surprise message
               <>
-                <div className="bg-white rounded-lg p-8 shadow-md text-center mb-6">
-                  <div className="text-6xl mb-4">🎉</div>
-                  <h2 className="text-3xl font-bold mb-4 text-gray-900">Überraschungs-Zeit!</h2>
-                  <p className="text-lg text-gray-700 mb-6">
-                    {partner.name} möchte sich überraschen lassen! 🎊
-                  </p>
-                  <p className="text-gray-600 mb-6 max-w-lg mx-auto">
-                    Diese Person hat bewusst keine Wunschliste angelegt und vertraut darauf, dass du das Richtige für sie auswählst. Das macht es zu einer echten Überraschung!
-                  </p>
-                  <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-6 mb-6">
-                    <p className="text-sm text-gray-700 font-semibold mb-3">
-                      💡 Tipps für die Überraschung:
-                    </p>
-                    <ul className="text-sm text-gray-600 space-y-2 text-left max-w-md mx-auto">
-                      <li>✨ Budget beachten: {group.budget}</li>
-                      <li>✨ Persönliche Interessen berücksichtigen</li>
-                      <li>✨ Kreativ und liebevoll auswählen</li>
-                      <li>✨ Die Überraschung ist das Geschenk!</li>
-                    </ul>
-                  </div>
-                  <p className="text-xs text-gray-500">
-                    Viel Spaß beim Einkaufen! 🛍️
-                  </p>
+                {/* Amazon Shopping Filters - Directly under header */}
+                <div className="mb-6">
+                  <AmazonFilterSelector
+                    preselectedPrice="20-30"
+                    compact={false}
+                  />
                 </div>
 
-                {/* Amazon Shopping Section for Surprise */}
-                <AmazonFilterSelector />
+                {/* Surprise Message Section */}
+                <div className="bg-white rounded-lg p-6 shadow-md text-center mb-6 border-l-4 border-purple-400">
+                  <div className="text-4xl mb-3">🎉</div>
+                  <h2 className="text-2xl font-bold mb-2 text-gray-900">Überraschungs-Zeit!</h2>
+
+                  <p className="text-sm text-gray-600 mb-4 max-w-lg mx-auto font-medium">
+                    {partner.name} hat sich bewusst für eine Überraschung entschieden und keine Wunschliste angelegt.
+                  </p>
+
+                  {/* Amazon Filter Explanation */}
+                  <div className="bg-purple-50 border-l-4 border-purple-400 p-4 text-left">
+                    <p className="text-xs text-gray-700 mb-2">
+                      Nutze die Filter oben, um perfekte Geschenkideen zu finden – bereits nach deinem Budget vorausgewählt! Kategorie und Zielgruppe helfen dir, das Richtige zu wählen.
+                    </p>
+                  </div>
+                </div>
               </>
             ) : (
               // Partner has submitted gift list - show it

@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { AUDIENCES, CATEGORIES, PRICE_LABELS, PRICE_RANGES, generateAmazonUrl } from '../lib/amazon-filters';
 
-export default function AmazonFilterSelector() {
+export default function AmazonFilterSelector({ preselectedPrice = null, compact = false }) {
   const [selectedAudience, setSelectedAudience] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedPrice, setSelectedPrice] = useState(preselectedPrice || null);
 
   const getAmazonLink = (priceRange) => {
     const priceRangeKey = PRICE_RANGES[priceRange] || null;
@@ -57,18 +58,27 @@ export default function AmazonFilterSelector() {
       {/* Price Range Buttons */}
       <div className="mb-4">
         <p className="text-sm font-semibold text-gray-900 mb-3">Budget:</p>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-          {PRICE_LABELS.map((price) => (
-            <a
-              key={price.range || 'all'}
-              href={getAmazonLink(price.range)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="py-3 px-4 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-semibold text-center transition transform hover:scale-105 shadow-md"
-            >
-              {price.label}
-            </a>
-          ))}
+        <div className={`grid ${compact ? 'grid-cols-3 md:grid-cols-4' : 'grid-cols-2 md:grid-cols-5'} gap-2`}>
+          {PRICE_LABELS.map((price) => {
+            const isSelected = selectedPrice === price.range;
+            const isPreselected = preselectedPrice === price.range;
+            return (
+              <a
+                key={price.range || 'all'}
+                href={getAmazonLink(price.range)}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setSelectedPrice(price.range)}
+                className={`py-3 px-4 rounded-lg font-semibold text-center transition transform hover:scale-105 shadow-md text-white ${
+                  isSelected || isPreselected
+                    ? 'bg-gradient-to-r from-orange-600 to-orange-700 ring-2 ring-orange-400 scale-105'
+                    : 'bg-orange-500 hover:bg-orange-600'
+                }`}
+              >
+                {price.label}
+              </a>
+            );
+          })}
         </div>
       </div>
 
