@@ -897,36 +897,6 @@ export default function JoinGroup() {
               </button>
             </div>
 
-            <div className="bg-purple-50 border-l-4 border-purple-500 p-4 rounded mb-6">
-              <p className="text-sm text-gray-700 mb-3">
-                <strong>📌 So läuft's ab:</strong>
-              </p>
-              <ol className="text-sm text-gray-600 space-y-2 text-left">
-                <li>✅ <strong>Jetzt:</strong> Du erstellst deine Wunschliste</li>
-                <li>⏳ <strong>Dann:</strong> Alle anderen tragen auch ihre Wünsche ein</li>
-                <li>🎲 <strong>Dann:</strong> Der Organisator startet die Auslosung</li>
-                <li>🎁 <strong>Dann:</strong> Du erfährst, wer dein Wichtel-Partner ist</li>
-                <li>🛍️ <strong>Zum Abschluss:</strong> Du siehst die Wunschliste deines Partners und kannst einkaufen gehen!</li>
-              </ol>
-            </div>
-
-            <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded mb-6">
-              <p className="text-sm text-gray-700">
-                ✨ <strong>Tipp:</strong> Schreib deine Wünsche ehrlich auf! Dein Wichtel wird es lieben, dir genau das zu schenken, das du dir wünschst. Je spezifischer, desto besser! 😊
-              </p>
-            </div>
-
-            <div className="bg-cyan-50 border-l-4 border-cyan-500 p-4 rounded mb-6">
-              <p className="text-sm text-gray-700 mb-2">
-                <strong>📱 Später wieder einstieg:</strong>
-              </p>
-              <p className="text-sm text-gray-700 mb-2">
-                Du kannst den Link zur Gruppe jederzeit wieder öffnen, um deine Wunschliste zu bearbeiten.
-              </p>
-              <p className="text-sm text-gray-700">
-                Auf diesem Gerät merkt sich die Seite dich automatisch. Auf anderen Geräten nutze einfach wieder den Einladungslink.
-              </p>
-            </div>
 
             <a href="/" className="text-center block text-blue-600 hover:underline font-semibold">
               ← Zur Startseite
