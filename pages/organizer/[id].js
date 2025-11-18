@@ -148,18 +148,23 @@ export default function OrganizerDashboard() {
       if (groupData) {
         setGroup(groupData);
 
-        // Load gifts for each participant (from KV)
+        // Load gifts for each participant in parallel (from KV)
         const allGifts = {};
-        if (groupData.participants) {
-          for (const p of groupData.participants) {
-            try {
-              const giftData = await getGifts(id, p.id);
-              allGifts[p.id] = giftData || [];
-            } catch (err) {
-              console.warn(`Failed to load gifts for ${p.id}:`, err);
-              allGifts[p.id] = [];
-            }
-          }
+        if (groupData.participants && groupData.participants.length > 0) {
+          // Load all gifts in parallel using Promise.all
+          const giftPromises = groupData.participants.map(p =>
+            getGifts(id, p.id)
+              .then(giftData => ({ participantId: p.id, gifts: giftData || [] }))
+              .catch(err => {
+                console.warn(`Failed to load gifts for ${p.id}:`, err);
+                return { participantId: p.id, gifts: [] };
+              })
+          );
+
+          const giftResults = await Promise.all(giftPromises);
+          giftResults.forEach(({ participantId, gifts }) => {
+            allGifts[participantId] = gifts;
+          });
         }
         setGifts(allGifts);
       }
