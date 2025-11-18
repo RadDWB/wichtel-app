@@ -787,13 +787,6 @@ export default function JoinGroup() {
 
   // Step 4.5: Set PIN after completing list
   if (step === 4.5 && selectedParticipant && !group.drawn) {
-    // Initialize tempPin from participantPin when entering this step
-    useEffect(() => {
-      if (step === 4.5) {
-        setTempPin(participantPin);
-      }
-    }, [step]);
-
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
         <div className="container mx-auto py-12 px-4 max-w-2xl">
