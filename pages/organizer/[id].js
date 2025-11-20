@@ -910,8 +910,8 @@ export default function OrganizerDashboard() {
                   </div>
 
                   <div className="p-4 border-t border-orange-300">
-                    <Link href={`/join/${id}`} className="block text-center p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition">
-                      🔗 Zur Teilnehmerliste
+                    <Link href={`/${id}/pairings`} className="block text-center p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition">
+                      🔗 Zur Paarungsliste
                     </Link>
                   </div>
                 </div>
