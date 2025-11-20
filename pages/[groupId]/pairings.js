@@ -4,6 +4,10 @@ import Link from 'next/link';
 import { getGroup, getGifts } from '../../lib/kv-client';
 import GiftList from '../../components/GiftList';
 
+export const getServerSideProps = async () => {
+  return { props: {} };
+};
+
 export default function PairingsPage() {
   const router = useRouter();
   const { groupId } = router.query;

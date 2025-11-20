@@ -3,6 +3,13 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { getGroup, saveGroup } from '../../../lib/kv-client';
 
+// Force SSR to prevent static generation errors
+export const getServerSideProps = async () => {
+  return {
+    props: {},
+  };
+};
+
 // Amazon Affiliate Links with different budget ranges
 const AMAZON_AFFILIATE_LINKS = {
   // Für verschiedene Preisranges - diese Links leiten zu gefilterten Suchergebnissen

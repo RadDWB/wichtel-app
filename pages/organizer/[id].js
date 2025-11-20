@@ -4,6 +4,13 @@ import Link from 'next/link';
 import { getGroup, getGifts } from '../../lib/kv-client';
 import AmazonFilterSelector from '../../components/AmazonFilterSelector';
 
+// Force SSR to prevent static generation errors
+export const getServerSideProps = async () => {
+  return {
+    props: {},
+  };
+};
+
 // Amazon Affiliate Links with different budget ranges
 const AMAZON_AFFILIATE_LINKS = {
   // Für verschiedene Preisranges - diese Links leiten zu gefilterten Suchergebnissen

@@ -6,6 +6,10 @@ import { getGroup, saveGroup } from '../../lib/kv-client';
 import GiftList from '../../components/GiftList';
 import AmazonFilterSelector from '../../components/AmazonFilterSelector';
 
+export const getServerSideProps = async () => {
+  return { props: {} };
+};
+
 export default function JoinGroup() {
   const router = useRouter();
   const { groupId, orgParticipant } = router.query;
