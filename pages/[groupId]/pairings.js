@@ -5,6 +5,7 @@ import { getGroup, getGifts } from '../../lib/kv-client';
 import GiftList from '../../components/GiftList';
 import { APP_VERSION } from '../../lib/constants';
 
+// Test deployment verification branch - should show version v2.0.0
 export const getServerSideProps = async () => {
   return { props: {} };
 };
