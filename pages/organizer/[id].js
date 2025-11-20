@@ -36,12 +36,33 @@ export default function OrganizerDashboard() {
 
   useEffect(() => {
     if (id) {
-      // Check if authenticated via PIN
-      checkAuthentication();
-
-      // Store showPin in localStorage so join page can redirect back correctly
+      // Store showPin in localStorage immediately
       if (showPin) {
         localStorage.setItem(`organizer_pin_${id}`, showPin);
+        // Also store in the organizer_ key for authentication
+        localStorage.setItem(`organizer_${id}`, JSON.stringify({
+          pin: showPin,
+          verifiedAt: new Date().toISOString()
+        }));
+        setAuthenticated(true);
+      } else {
+        // Check if authenticated via PIN from localStorage
+        const stored = localStorage.getItem(`organizer_${id}`);
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            if (parsed.pin && parsed.verifiedAt) {
+              setAuthenticated(true);
+            } else {
+              setAuthenticated(false);
+            }
+          } catch (e) {
+            console.error('Invalid stored auth:', e);
+            setAuthenticated(false);
+          }
+        } else {
+          setAuthenticated(false);
+        }
       }
     }
   }, [id, showPin]);
@@ -60,30 +81,6 @@ export default function OrganizerDashboard() {
     }
   }, [id, authenticated]);
 
-  const checkAuthentication = () => {
-    // Check if coming from initial setup (showPin in URL)
-    if (showPin) {
-      setAuthenticated(true);
-      return;
-    }
-
-    // Check localStorage for verification
-    const stored = localStorage.getItem(`organizer_${id}`);
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        if (parsed.pin && parsed.verifiedAt) {
-          setAuthenticated(true);
-          return;
-        }
-      } catch (e) {
-        console.error('Invalid stored auth:', e);
-      }
-    }
-
-    // Not authenticated
-    setAuthenticated(false);
-  };
 
   const handlePinSubmit = async (e) => {
     e.preventDefault();

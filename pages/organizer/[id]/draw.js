@@ -198,12 +198,9 @@ export default function DrawPage() {
               Leite deine Teilnehmer auf die Seite weiter, damit sie ihre Wichtel-Partner sehen können.
             </p>
 
-            <button
-              onClick={() => router.push(`/organizer/${id}`)}
-              className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition"
-            >
+            <Link href={`/organizer/${id}`} className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition">
               ← Zum Dashboard zurück
-            </button>
+            </Link>
           </div>
         </div>
       </div>
