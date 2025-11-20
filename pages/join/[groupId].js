@@ -203,26 +203,39 @@ export default function JoinGroup() {
   };
 
   const handleJoin = (participant) => {
-    setSelectedParticipant(participant);
-    setNameEdit(participant.name);
-    setEmailEdit(participant.email || '');
-    setParticipantPin(''); // Reset PIN field for new participant
-    setTempPin(''); // Reset temp PIN
-    setPinVerificationError(''); // Clear any previous errors
-    localStorage.setItem(`participant_${groupId}`, participant.id);
-
-    // Load PIN if it exists in localStorage
+    // Check if this participant was previously selected (indicated by localStorage)
+    const wasParticipantPreviouslySelected = localStorage.getItem(`participant_${groupId}`) === participant.id;
     const storedPin = localStorage.getItem(`participant_pin_${groupId}_${participant.id}`);
-    if (storedPin) {
-      // PIN exists - show verification screen
+
+    // If participant was previously selected and has a PIN, require verification
+    if (wasParticipantPreviouslySelected && storedPin) {
+      setSelectedParticipant(participant);
+      setNameEdit(participant.name);
+      setEmailEdit(participant.email || '');
       setParticipantPin(storedPin); // Store the correct PIN
       setPinConfirmed(false); // Not confirmed yet
+      setTempPin(''); // Reset PIN input
+      setPinVerificationError(''); // Clear any errors
       setStep(1.5); // Go to PIN verification screen
     } else {
-      // No PIN set - skip to gift choice
-      setParticipantPin('');
-      setPinConfirmed(true); // Already "verified" since no PIN
-      setStep(1.5); // Go to gift choice
+      // First time selecting this participant (or no PIN set) - proceed directly
+      setSelectedParticipant(participant);
+      setNameEdit(participant.name);
+      setEmailEdit(participant.email || '');
+      setParticipantPin(storedPin || ''); // Store PIN if it exists
+      setTempPin(''); // Reset PIN input
+      setPinVerificationError(''); // Clear any previous errors
+      localStorage.setItem(`participant_${groupId}`, participant.id);
+
+      if (storedPin) {
+        // PIN exists but first time selecting - still show verification
+        setPinConfirmed(false);
+        setStep(1.5); // Go to PIN verification screen
+      } else {
+        // No PIN set - skip to gift choice
+        setPinConfirmed(true); // Already "verified" since no PIN
+        setStep(1.5); // Go to gift choice
+      }
     }
   };
 
@@ -475,9 +488,10 @@ export default function JoinGroup() {
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
         <div className="container mx-auto py-12 px-4 max-w-2xl">
           <div className="bg-white rounded-lg p-8 shadow-md">
-            <h2 className="text-2xl font-bold mb-6">🔐 PIN erforderlich</h2>
+            <h2 className="text-2xl font-bold mb-2">🔐 PIN erforderlich</h2>
+            <p className="text-lg text-gray-900 mb-2 font-semibold">{selectedParticipant.name}</p>
             <p className="text-gray-700 mb-6">
-              Du hast eine PIN für den Schutz deiner Daten gesetzt. Bitte gib deine PIN ein, um fortzufahren.
+              Deine Daten sind mit einer PIN geschützt. Gib deine PIN ein, um deine Informationen zu bearbeiten.
             </p>
 
             {pinVerificationError && (
@@ -1016,40 +1030,83 @@ export default function JoinGroup() {
             <div className="text-5xl mb-4 text-center">🎉</div>
             <h1 className="text-4xl font-bold mb-4 text-center text-green-600">Glückwunsch!</h1>
             <p className="text-lg text-gray-700 mb-8 text-center">
-              Du bist angemeldet und alles wurde gespeichert. Jetzt geht's los! 🚀
+              Du bist angemeldet und alles wurde gespeichert. 🎊
             </p>
 
-            {/* PIN Security Warning if not set */}
-            {!participantPin && (
-              <div className="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-4 mb-6">
-                <p className="text-sm text-yellow-900 mb-3">
-                  <strong>⚠️ Achtung:</strong> Ohne PIN kann jeder auf diesem Gerät deine Daten bearbeiten.
-                </p>
+            {/* Primary: PIN Protection Section */}
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-300 rounded-lg p-6 mb-8">
+              <h2 className="text-2xl font-bold text-blue-900 mb-4 flex items-center gap-2">
+                🔐 PIN erstellen - Schritt 3
+              </h2>
+
+              <div className="space-y-4 text-gray-700">
+                <p className="font-semibold text-lg">Wofür brauchst du eine PIN?</p>
+
+                <div className="space-y-3 bg-white rounded p-4 border border-blue-200">
+                  <div className="flex gap-3">
+                    <span className="text-xl min-w-fit">📝</span>
+                    <div>
+                      <p className="font-semibold text-gray-900">3(a) Wunschliste bearbeiten</p>
+                      <p className="text-sm text-gray-600">Deine PIN schützt deine Wunschliste bis zur Auslosung. Damit können nur du – und nicht jeder auf diesem Gerät – deine Geschenke ändern. (Optional)</p>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-gray-200"></div>
+
+                  <div className="flex gap-3">
+                    <span className="text-xl min-w-fit">👁️</span>
+                    <div>
+                      <p className="font-semibold text-gray-900">3(b) Wichtelpartner nach Auslosung sehen</p>
+                      <p className="text-sm text-gray-600">Nach der Auslosung brauchst du deine PIN, um deinen Wichtelpartner und dessen Wunschliste zu sehen. Nur so wird die Überraschung bewahrt!</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {!participantPin ? (
                 <button
                   onClick={() => {
                     setStep(4.5); // Go to PIN setup step
                   }}
-                  className="text-sm bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded font-semibold"
+                  className="w-full mt-6 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold py-4 rounded-lg text-lg transition transform hover:scale-105"
                 >
-                  🔐 PIN jetzt setzen
+                  🔐 PIN jetzt erstellen
                 </button>
-              </div>
-            )}
+              ) : (
+                <div className="mt-6 p-4 bg-green-50 border border-green-300 rounded-lg text-green-900 font-semibold text-center">
+                  ✅ PIN gespeichert! Du bist geschützt.
+                </div>
+              )}
+            </div>
 
-            {/* Big Button to Create Wishlist */}
-            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-300 rounded-lg p-6 mb-8">
-              <h2 className="text-2xl font-bold text-blue-900 mb-3">📝 Deine Wunschliste</h2>
-              <p className="text-gray-700 mb-6">
-                Jetzt trag deine Geschenkwünsche ein! Schreib auf, was du dir wünschst, damit dein Wichtel weiß, was dich glücklich macht. 🎁
+            {/* Secondary: What Happens Next */}
+            <div className="bg-orange-50 border-2 border-orange-300 rounded-lg p-6 mb-8">
+              <h2 className="text-2xl font-bold text-orange-900 mb-4">❓ Wie geht es nun weiter?</h2>
+              <div className="space-y-3 text-gray-700">
+                <p>
+                  <span className="font-semibold text-orange-900">Warten auf Auslosung:</span> Der Organisator wird die Gruppen auslosen und dir dann mitteilen, wen du beschenken darfst.
+                </p>
+                <p>
+                  <span className="font-semibold text-orange-900">Nach der Auslosung:</span> Du erhältst einen Link zu deinem Wichtelpartner und kannst mit deiner PIN seine Wunschliste einsehen.
+                </p>
+                <p>
+                  <span className="font-semibold text-orange-900">Geschenk besorgen:</span> Nutze die Wunschliste oder unsere Amazon-Filter, um das perfekte Geschenk zu finden! 🎁
+                </p>
+              </div>
+            </div>
+
+            {/* Optional: Edit Wishlist - Secondary Action */}
+            <div className="bg-green-50 border-l-4 border-green-500 rounded-lg p-4 mb-8">
+              <p className="text-sm text-gray-700 mb-3">
+                <span className="font-semibold">Hinweis:</span> Du kannst deine Wunschliste jederzeit bearbeiten, bis die Auslosung stattfindet. Dies ist optional.
               </p>
               <button
                 onClick={() => setStep(2)}
-                className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-bold py-4 rounded-lg text-lg transition transform hover:scale-105"
+                className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 rounded-lg transition"
               >
-                ✨ Wunschliste jetzt erstellen
+                ✏️ Zur Wunschliste
               </button>
             </div>
-
 
             <div className="flex gap-3">
               {orgParticipant && (
