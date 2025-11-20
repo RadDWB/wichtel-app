@@ -45,6 +45,12 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
   const [showFiltersModal, setShowFiltersModal] = useState(false);
   const [newGift, setNewGift] = useState({ name: '', link: '', category: 'other', price: '' });
 
+  // Filter selection states
+  const [selectedPrice, setSelectedPrice] = useState(null);
+  const [selectedAge, setSelectedAge] = useState(null);
+  const [selectedGender, setSelectedGender] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
   useEffect(() => {
     loadGifts();
   }, [groupId, participantId]);
@@ -317,7 +323,7 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
         </div>
       </div>
 
-      {/* FILTER MODAL - SCHRITT 1 */}
+      {/* FILTER MODAL - SCHRITT 1 - REORGANISIERT */}
       {showFiltersModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-lg max-w-4xl w-full my-8 shadow-2xl">
@@ -328,56 +334,87 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
               </button>
             </div>
             <div className="p-8 space-y-6 max-h-96 overflow-y-auto">
-              {/* BUDGET FILTER */}
-              <div className="bg-orange-50 border-l-4 border-orange-400 p-4 rounded">
-                <h4 className="text-lg font-bold text-orange-900 mb-4">💰 Nach Budget ({group.budget}):</h4>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                  {AMAZON_FILTERS.price.map((range) => (
-                    <a key={range.label} href={range.link} target="_blank" rel="noopener noreferrer" onClick={() => setShowFiltersModal(false)} className="text-sm bg-orange-500 hover:bg-orange-600 text-white py-3 px-2 rounded font-semibold text-center transition">
-                      {range.label}
-                    </a>
+              {/* CATEGORY FILTER - OBEN */}
+              <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded">
+                <h4 className="text-lg font-bold text-green-900 mb-4">🏷️ Nach Kategorie (optional):</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-2">
+                  {AMAZON_FILTERS.category.map((cat) => (
+                    <button
+                      key={cat.label}
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`text-sm py-3 px-3 rounded font-semibold text-center transition ${
+                        selectedCategory?.label === cat.label
+                          ? 'bg-green-600 text-white ring-2 ring-green-300'
+                          : 'bg-green-500 hover:bg-green-600 text-white'
+                      }`}
+                    >
+                      {cat.label}
+                    </button>
                   ))}
                 </div>
               </div>
 
               {/* AGE FILTER */}
               <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
-                <h4 className="text-lg font-bold text-blue-900 mb-4">👥 Nach Altersbereich:</h4>
+                <h4 className="text-lg font-bold text-blue-900 mb-4">👥 Nach Altersbereich (optional):</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-2">
                   {AMAZON_FILTERS.age.map((age) => (
-                    <a key={age.label} href={age.link} target="_blank" rel="noopener noreferrer" onClick={() => setShowFiltersModal(false)} className="text-sm bg-blue-500 hover:bg-blue-600 text-white py-3 px-3 rounded font-semibold text-center transition">
+                    <button
+                      key={age.label}
+                      onClick={() => setSelectedAge(age)}
+                      className={`text-sm py-3 px-3 rounded font-semibold text-center transition ${
+                        selectedAge?.label === age.label
+                          ? 'bg-blue-600 text-white ring-2 ring-blue-300'
+                          : 'bg-blue-500 hover:bg-blue-600 text-white'
+                      }`}
+                    >
                       {age.label}
-                    </a>
+                    </button>
                   ))}
                 </div>
               </div>
 
               {/* GENDER FILTER */}
               <div className="bg-purple-50 border-l-4 border-purple-400 p-4 rounded">
-                <h4 className="text-lg font-bold text-purple-900 mb-4">👫 Nach Geschlecht:</h4>
+                <h4 className="text-lg font-bold text-purple-900 mb-4">👫 Nach Geschlecht (optional):</h4>
                 <div className="grid grid-cols-2 gap-2">
                   {AMAZON_FILTERS.gender.map((gender) => (
-                    <a key={gender.label} href={gender.link} target="_blank" rel="noopener noreferrer" onClick={() => setShowFiltersModal(false)} className="text-sm bg-purple-500 hover:bg-purple-600 text-white py-3 px-3 rounded font-semibold text-center transition">
+                    <button
+                      key={gender.label}
+                      onClick={() => setSelectedGender(gender)}
+                      className={`text-sm py-3 px-3 rounded font-semibold text-center transition ${
+                        selectedGender?.label === gender.label
+                          ? 'bg-purple-600 text-white ring-2 ring-purple-300'
+                          : 'bg-purple-500 hover:bg-purple-600 text-white'
+                      }`}
+                    >
                       {gender.label}
-                    </a>
+                    </button>
                   ))}
                 </div>
               </div>
 
-              {/* CATEGORY FILTER */}
-              <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded">
-                <h4 className="text-lg font-bold text-green-900 mb-4">🏷️ Nach Kategorie:</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-2">
-                  {AMAZON_FILTERS.category.map((cat) => (
-                    <a key={cat.label} href={cat.link} target="_blank" rel="noopener noreferrer" onClick={() => setShowFiltersModal(false)} className="text-sm bg-green-500 hover:bg-green-600 text-white py-3 px-3 rounded font-semibold text-center transition">
-                      {cat.label}
+              {/* BUDGET FILTER - UNTEN - INITIIERT DEN LINK */}
+              <div className="bg-orange-50 border-l-4 border-orange-400 p-4 rounded border-2 border-orange-300">
+                <h4 className="text-lg font-bold text-orange-900 mb-4">💰 Nach Budget ({group.budget}) - Wähle um zu Amazon zu gehen:</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                  {AMAZON_FILTERS.price.map((range) => (
+                    <a
+                      key={range.label}
+                      href={range.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setShowFiltersModal(false)}
+                      className="text-sm bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white py-3 px-2 rounded font-bold text-center transition shadow-md"
+                    >
+                      {range.label}
                     </a>
                   ))}
                 </div>
               </div>
 
               <p className="text-sm text-gray-600 text-center bg-gray-100 p-4 rounded">
-                💡 Klick auf einen Filter, um zur Amazon.de Geschenke-Übersicht zu gehen. Die Links sind vorausgewählt mit Geschenkideen!
+                💡 Wähle optional Kategorie, Alter und Geschlecht, dann klick auf einen Preis um zur Amazon.de Geschenke-Übersicht zu gehen!
               </p>
             </div>
           </div>
