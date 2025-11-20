@@ -739,23 +739,23 @@ export default function OrganizerDashboard() {
           </div>
         </div>
 
-        {/* Pairings Share Section (after draw) */}
+        {/* Pairings Share Section (after draw) - NOW BEFORE ORGANIZER PAIRINGS VIEW */}
         {group.drawn && (
           <div className="card bg-gradient-to-br from-pink-50 to-red-50 border-2 border-red-300 shadow-lg mb-6">
-            <h3 className="section-title text-red-900 mb-4">🎁 Zentrale Pairingsseite teilen</h3>
+            <h3 className="section-title text-red-900 mb-4">🎁 Link mit den Wichtel-Paarungen teilen</h3>
 
             <p className="text-sm text-gray-700 mb-4">
-              Teile diese Seite mit allen Teilnehmern, damit sie ihre Wichtel-Partner sehen und deren Wunschlisten einsehen können:
+              Teile diesen Link mit allen Teilnehmern. Sie können damit ihre Wichtel-Partner sehen und deren Wunschlisten einsehen. <strong>Wichtig: Jeder Teilnehmer benötigt seine PIN, um auf die Seite zuzugreifen!</strong>
             </p>
 
             <div className="bg-white rounded border border-red-300 p-4 mb-4 whitespace-pre-wrap font-mono text-xs text-gray-800">
-              {`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\nViel Spaß beim Einkaufen! 🎁`}
+              {`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
               <button
                 onClick={() => {
-                  navigator.clipboard.writeText(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\nViel Spaß beim Einkaufen! 🎁`);
+                  navigator.clipboard.writeText(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`);
                   setCopiedType('pairings');
                   setTimeout(() => setCopiedType(null), 2000);
                 }}
@@ -770,7 +770,7 @@ export default function OrganizerDashboard() {
                 </button>
                 <div className="absolute hidden group-hover:flex bg-gray-900 text-white text-xs rounded-lg p-3 right-0 md:left-0 mt-2 w-48 z-10 flex-col gap-2">
                   <a
-                    href={`https://wa.me/?text=${encodeURIComponent(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\nViel Spaß beim Einkaufen! 🎁`)}`}
+                    href={`https://wa.me/?text=${encodeURIComponent(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-green-400 block"
@@ -778,7 +778,7 @@ export default function OrganizerDashboard() {
                     💬 WhatsApp
                   </a>
                   <a
-                    href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\nViel Spaß beim Einkaufen! 🎁`)}`}
+                    href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-green-400 block text-xs"
@@ -786,7 +786,7 @@ export default function OrganizerDashboard() {
                     💬 WhatsApp (App)
                   </a>
                   <a
-                    href={`https://signal.me/#p/${encodeURIComponent(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\nViel Spaß beim Einkaufen! 🎁`)}`}
+                    href={`https://signal.me/#p/${encodeURIComponent(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-blue-400 block"
@@ -794,14 +794,14 @@ export default function OrganizerDashboard() {
                     🔒 Signal
                   </a>
                   <a
-                    href={`mailto:?body=${encodeURIComponent(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\nViel Spaß beim Einkaufen! 🎁`)}`}
+                    href={`mailto:?body=${encodeURIComponent(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`)}`}
                     className="hover:text-blue-400 block"
                   >
                     📧 Email
                   </a>
                   <button
                     onClick={() => {
-                      navigator.clipboard.writeText(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\nViel Spaß beim Einkaufen! 🎁`);
+                      navigator.clipboard.writeText(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`);
                       setCopiedType('pairingShare');
                       setTimeout(() => setCopiedType(null), 2000);
                     }}
@@ -814,7 +814,7 @@ export default function OrganizerDashboard() {
             </div>
 
             <div className="p-3 bg-red-100 border border-red-300 rounded text-xs text-red-900">
-              <strong>💡 Hinweis:</strong> Auf dieser Seite können deine Teilnehmer sehen, wer wen beschenkt. Mit Klick auf den Partner öffnet sich die Wunschliste mit Amazon-Filtern oder dem Hinweis, dass der Partner überrascht werden möchte!
+              <strong>💡 Hinweis:</strong> Auf dieser Seite können deine Teilnehmer sehen, wer wen beschenkt. Wenn sie auf einen Partner klicken, öffnet sich die Wunschliste mit Amazon-Filtern oder der Hinweis, dass der Partner überrascht werden möchte. <strong>PIN-Schutz:</strong> Jeder TN braucht seine PIN. Falls jemand seine PIN vergessen hat → Recovery-PIN vom Organizer nutzen!
             </div>
           </div>
         )}
