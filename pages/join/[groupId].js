@@ -206,39 +206,34 @@ export default function JoinGroup() {
   };
 
   const handleJoin = (participant) => {
+    // Store participant ID first (before checking anything)
+    localStorage.setItem(`participant_${groupId}`, participant.id);
+
     // Check if this participant was previously selected (indicated by localStorage)
-    const wasParticipantPreviouslySelected = localStorage.getItem(`participant_${groupId}`) === participant.id;
+    const previousParticipantId = localStorage.getItem(`participant_${groupId}`);
+    const wasParticipantPreviouslySelected = previousParticipantId === participant.id;
     const storedPin = localStorage.getItem(`participant_pin_${groupId}_${participant.id}`);
+
+    // Set participant data
+    setSelectedParticipant(participant);
+    setNameEdit(participant.name);
+    setEmailEdit(participant.email || '');
+    setParticipantPin(storedPin || ''); // Store PIN if it exists
+    setTempPin(''); // Reset PIN input
+    setPinVerificationError(''); // Clear any previous errors
 
     // If participant was previously selected and has a PIN, require verification
     if (wasParticipantPreviouslySelected && storedPin) {
-      setSelectedParticipant(participant);
-      setNameEdit(participant.name);
-      setEmailEdit(participant.email || '');
-      setParticipantPin(storedPin); // Store the correct PIN
       setPinConfirmed(false); // Not confirmed yet
-      setTempPin(''); // Reset PIN input
-      setPinVerificationError(''); // Clear any errors
+      setStep(1.5); // Go to PIN verification screen
+    } else if (storedPin) {
+      // PIN exists but first time selecting - still show verification
+      setPinConfirmed(false);
       setStep(1.5); // Go to PIN verification screen
     } else {
-      // First time selecting this participant (or no PIN set) - proceed directly
-      setSelectedParticipant(participant);
-      setNameEdit(participant.name);
-      setEmailEdit(participant.email || '');
-      setParticipantPin(storedPin || ''); // Store PIN if it exists
-      setTempPin(''); // Reset PIN input
-      setPinVerificationError(''); // Clear any previous errors
-      localStorage.setItem(`participant_${groupId}`, participant.id);
-
-      if (storedPin) {
-        // PIN exists but first time selecting - still show verification
-        setPinConfirmed(false);
-        setStep(1.5); // Go to PIN verification screen
-      } else {
-        // No PIN set - skip to gift choice
-        setPinConfirmed(true); // Already "verified" since no PIN
-        setStep(1.5); // Go to gift choice
-      }
+      // No PIN set - skip to gift choice
+      setPinConfirmed(true); // Already "verified" since no PIN
+      setStep(1.5); // Go to gift choice
     }
   };
 
