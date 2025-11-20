@@ -197,57 +197,85 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
 
       {/* Add Gift Manual Form */}
       <div className="card bg-green-50 border-l-4 border-green-500">
-        <h3 className="section-title">🎁 Geschenk hinzufügen</h3>
+        <h3 className="section-title">🎁 Eigenes Amazon-Produkt hinzufügen</h3>
         <p className="text-gray-600 mb-6 text-sm">
           Maximal {10 - gifts.length} Geschenke mehr möglich (Budget: {group.budget})
         </p>
 
         {gifts.length < 10 ? (
           <div className="space-y-6">
-            {/* Quick Amazon Links by Price - optional section */}
-            <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border-l-4 border-orange-400 p-4 rounded">
-              <p className="text-xs font-semibold text-orange-900 mb-3">🛍️ Für Amazon-Geschenke: Nutze diese vorfilterten Links für dein Budget ({group.budget}):</p>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                {AMAZON_PRICE_RANGES.map((range) => (
-                  <a
-                    key={range.label}
-                    href={range.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs bg-orange-500 hover:bg-orange-600 text-white py-2 px-3 rounded font-semibold text-center transition"
-                  >
-                    {range.label}
-                  </a>
-                ))}
+            {/* Step 1 */}
+            <div className="border-b pb-6">
+              <div className="flex gap-3 mb-3">
+                <span className="flex-shrink-0 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center font-bold text-sm">1</span>
+                <p className="font-semibold text-gray-800">Gehe auf <a href="https://amazon.de" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-bold">amazon.de</a></p>
               </div>
-              <p className="text-xs text-gray-600 mt-2">
-                Wir nehmen am Amazon Affiliate Programm teil – Sie unterstützen uns durch Ihre Käufe! 🎁
+              <p className="text-sm text-gray-600 ml-11 mb-4">
+                Suche dein Wunschprodukt. Du kannst die Amazon-Filter nutzen, um den Preis auf dein Budget ({group.budget}) zu begrenzen. Du kannst auch nach Kategorie, Alter, Geschlecht und anderen Eigenschaften filtern.
+              </p>
+
+              {/* Quick Amazon Links by Price */}
+              <div className="ml-11 bg-gradient-to-r from-orange-50 to-yellow-50 border-l-4 border-orange-400 p-4 rounded">
+                <p className="text-xs font-semibold text-orange-900 mb-3">💡 Oder nutze diese vorfilterten Links für dein Budget ({group.budget}):</p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  {AMAZON_PRICE_RANGES.map((range) => (
+                    <a
+                      key={range.label}
+                      href={range.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs bg-orange-500 hover:bg-orange-600 text-white py-2 px-3 rounded font-semibold text-center transition"
+                    >
+                      {range.label}
+                    </a>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-600 mt-2">
+                  Wir nehmen am Amazon Affiliate Programm teil – Sie unterstützen uns durch Ihre Käufe! 🎁
+                </p>
+              </div>
+            </div>
+
+            {/* Step 2 */}
+            <div className="border-b pb-6">
+              <div className="flex gap-3 mb-3">
+                <span className="flex-shrink-0 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center font-bold text-sm">2</span>
+                <p className="font-semibold text-gray-800">Wähle dein Produkt aus</p>
+              </div>
+              <p className="text-sm text-gray-600 ml-11">
+                Klicke auf das Produkt, das dir gefällt, und öffne die Produktseite.
               </p>
             </div>
 
-            {/* Input Fields */}
+            {/* Step 3 */}
+            <div className="border-b pb-6">
+              <div className="flex gap-3 mb-3">
+                <span className="flex-shrink-0 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center font-bold text-sm">3</span>
+                <p className="font-semibold text-gray-800">Kopiere den Link</p>
+              </div>
+              <p className="text-sm text-gray-600 ml-11 mb-3">
+                Markiere die URL in der Adresszeile deines Browsers und kopiere sie. Beispiel:
+              </p>
+              <p className="text-xs bg-gray-200 rounded p-2 ml-11 font-mono mb-3">
+                https://amazon.de/dp/B08N5WRWNW
+              </p>
+              <p className="text-xs text-blue-600 ml-11">
+                📱 <strong>Mobile-Tipp:</strong> In der Amazon-App kannst du auch die „Teilen"-Funktion nutzen, um den Link zu kopieren!
+              </p>
+            </div>
+
+            {/* Step 4 - Input Fields */}
             <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-              <p className="font-semibold text-gray-800 mb-4">Füge ein Geschenk hinzu:</p>
+              <div className="flex gap-3 mb-4">
+                <span className="flex-shrink-0 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center font-bold text-sm">4</span>
+                <p className="font-semibold text-gray-800">Trage den Link und Namen hier ein</p>
+              </div>
 
-              <div className="space-y-4">
-                {/* Name Input */}
+              <div className="space-y-4 ml-11">
+                {/* Link Input */}
                 <div>
                   <label className="block text-sm font-medium mb-2 text-gray-700">
-                    📝 Geschenk-Name:
-                  </label>
-                  <input
-                    type="text"
-                    value={newGift.name}
-                    onChange={e => setNewGift({ ...newGift, name: e.target.value })}
-                    placeholder="z.B. AirPods Pro, Thermoskanne, Mystery-Buch"
-                    className="input-field w-full"
-                  />
-                </div>
-
-                {/* Link Input - Optional */}
-                <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-700">
-                    🔗 Amazon-Link (optional):
+                    🔗 Kopiere den Link unten ein (optional):
                   </label>
                   <input
                     type="url"
@@ -257,8 +285,22 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
                     className="input-field font-mono text-xs w-full"
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    💡 Du kannst auch ein Geschenk eintragen, ohne einen Link anzugeben!
+                    💡 Du kannst auch ein Geschenk eintragen, ohne einen Link anzugeben! Es ist jedoch für deinen Partner viel einfacher, wenn du einen Link hier reinkopierst.
                   </p>
+                </div>
+
+                {/* Name Input */}
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">
+                    📝 Gib dem Geschenk einen aussagekräftigen Namen:
+                  </label>
+                  <input
+                    type="text"
+                    value={newGift.name}
+                    onChange={e => setNewGift({ ...newGift, name: e.target.value })}
+                    placeholder="z.B. AirPods Pro, Thermoskanne, Mystery-Buch"
+                    className="input-field w-full"
+                  />
                 </div>
 
                 {/* Button */}
