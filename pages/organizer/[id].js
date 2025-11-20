@@ -561,10 +561,6 @@ export default function OrganizerDashboard() {
             </p>
           </div>
 
-          <div className="bg-white rounded border border-purple-300 p-4 mb-4 font-mono text-xs break-all">
-            {getParticipantLink()}
-          </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <button
               onClick={() => copyToClipboard('participant')}
@@ -579,7 +575,7 @@ export default function OrganizerDashboard() {
               </button>
               <div className="absolute hidden group-hover:flex bg-gray-900 text-white text-xs rounded-lg p-3 right-0 mt-2 w-48 z-10 flex-col gap-2">
                 <a
-                  href={`https://wa.me/?text=${encodeURIComponent(`Wichtelgruppe "${group?.name}": ${getParticipantLink()}`)}`}
+                  href={`https://wa.me/?text=${encodeURIComponent(getInvitationText(getParticipantLink()))}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-green-400 block"
@@ -587,7 +583,7 @@ export default function OrganizerDashboard() {
                   💬 WhatsApp
                 </a>
                 <a
-                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`Wichtelgruppe "${group?.name}": ${getParticipantLink()}`)}`}
+                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(getInvitationText(getParticipantLink()))}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-green-400 block text-xs"
@@ -595,15 +591,14 @@ export default function OrganizerDashboard() {
                   💬 WhatsApp (App)
                 </a>
                 <a
-                  href={`mailto:?body=${encodeURIComponent(`Wichtelgruppe "${group?.name}":\n\n${getParticipantLink()}`)}`}
+                  href={`mailto:?body=${encodeURIComponent(getInvitationText(getParticipantLink()))}`}
                   className="hover:text-blue-400 block"
                 >
                   📧 Email
                 </a>
                 <button
                   onClick={() => {
-                    const text = `Wichtelgruppe "${group?.name}": ${getParticipantLink()}`;
-                    navigator.clipboard.writeText(text);
+                    navigator.clipboard.writeText(getInvitationText(getParticipantLink()));
                     setCopiedType('share');
                     setTimeout(() => setCopiedType(null), 2000);
                   }}

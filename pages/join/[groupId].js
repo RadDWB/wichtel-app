@@ -26,6 +26,8 @@ export default function JoinGroup() {
   const [showNoGiftsDialog, setShowNoGiftsDialog] = useState(false);
   const [currentGifts, setCurrentGifts] = useState([]); // Store gifts for current participant during step 2
   const [organizerPin, setOrganizerPin] = useState(''); // Store organizer PIN to redirect back correctly
+  const [showOptOutDialog, setShowOptOutDialog] = useState(false); // Show opt-out confirmation dialog
+  const [optOutCandidate, setOptOutCandidate] = useState(null); // Participant who wants to opt out
 
   // Update ref when step changes
   useEffect(() => {
@@ -234,6 +236,36 @@ export default function JoinGroup() {
     }
   };
 
+  const handleOptOut = async (participant) => {
+    if (!participant) return;
+
+    try {
+      // Remove participant from group
+      const updated = {
+        ...group,
+        participants: group.participants.filter(p => p.id !== participant.id),
+      };
+
+      // Save to KV
+      await saveGroup(groupId, updated);
+      console.log('✅ Participant removed from group');
+
+      // Clear localStorage
+      localStorage.removeItem(`participant_${groupId}`);
+      localStorage.removeItem(`participant_pin_${groupId}_${participant.id}`);
+
+      setGroup(updated);
+      setShowOptOutDialog(false);
+      setOptOutCandidate(null);
+
+      // Show success message
+      alert(`✅ ${participant.name} wurde erfolgreich abgemeldet.`);
+    } catch (err) {
+      console.error('❌ Failed to remove participant:', err);
+      setError('Fehler beim Abmelden. Bitte versuche es später erneut.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
@@ -298,12 +330,75 @@ export default function JoinGroup() {
             </button>
           </div>
 
+          {/* Opt-Out Section */}
+          <div className="bg-white rounded-lg p-6 shadow-md mb-8">
+            <h3 className="text-lg font-bold mb-3 text-gray-900">🚫 Möchtest du nicht teilnehmen?</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Wenn du dich aus dieser Wichtelgruppe abmelden möchtest, wähle deinen Namen aus der Liste:
+            </p>
+
+            {group.participants && group.participants.length > 0 ? (
+              <div className="space-y-2 mb-4">
+                {group.participants.map((p) => (
+                  <button
+                    key={`opt-out-${p.id}`}
+                    onClick={() => {
+                      setOptOutCandidate(p);
+                      setShowOptOutDialog(true);
+                    }}
+                    className="w-full p-3 border border-red-300 rounded-lg hover:border-red-500 hover:bg-red-50 transition text-left text-sm text-gray-900"
+                  >
+                    ❌ {p.name} abmelden
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-sm">Noch keine Teilnehmer vorhanden</p>
+            )}
+
+            <p className="text-xs text-gray-500 mt-4">
+              💡 Du kannst auch direkt den Organisator kontaktieren: {group.organizerName}
+            </p>
+          </div>
+
           {/* Amazon Shopping Filter - Inspiration Section on Welcome Page */}
           <div className="mb-8">
             <p className="text-gray-700 mb-4 font-semibold">💡 Brauchst du Inspirationen zum Einkaufen?</p>
             <AmazonFilterSelector />
           </div>
         </div>
+
+        {/* Opt-Out Confirmation Dialog */}
+        {showOptOutDialog && optOutCandidate && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg p-8 max-w-md w-full shadow-xl">
+              <h3 className="text-2xl font-bold mb-4 text-gray-900">🚫 Abmeldung bestätigen</h3>
+              <p className="text-gray-700 mb-6">
+                Möchtest du <strong>{optOutCandidate.name}</strong> wirklich aus der Wichtelgruppe "{group.name}" abmelden?
+              </p>
+              <p className="text-sm text-gray-600 mb-6">
+                Diese Aktion kann nicht rückgängig gemacht werden. Du kannst dich aber später erneut über den Einladungslink anmelden.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowOptOutDialog(false);
+                    setOptOutCandidate(null);
+                  }}
+                  className="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-900 rounded-lg font-semibold transition"
+                >
+                  Abbrechen
+                </button>
+                <button
+                  onClick={() => handleOptOut(optOutCandidate)}
+                  className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition"
+                >
+                  ✅ Ja, abmelden
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
