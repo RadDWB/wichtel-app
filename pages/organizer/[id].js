@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { getGroup, getGifts } from '../../lib/kv-client';
 import AmazonFilterSelector from '../../components/AmazonFilterSelector';
-import { DEFAULT_INVITATION_TEXT, APP_VERSION } from '../../lib/constants';
+import { APP_VERSION, getInvitationText } from '../../lib/constants';
 
 // Force SSR to prevent static generation errors
 export const getServerSideProps = async () => {
@@ -676,25 +676,25 @@ export default function OrganizerDashboard() {
 
         {/* Invitation Text Template Section */}
         <div className="card bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 shadow-lg mb-6">
-          <h3 className="section-title text-green-900 mb-4">📝 Einladungstext-Vorlage</h3>
+          <h3 className="section-title text-green-900 mb-4">📝 Einladungstext mit Link</h3>
 
           <p className="text-sm text-gray-700 mb-4">
-            Kopiere diesen Text und verwende ihn als Vorlage für deine Einladung. Du kannst ihn natürlich auch gerne anpassen:
+            Kopiere diesen Text - der Link ist bereits enthalten! Du kannst ihn noch anpassen, wenn du möchtest:
           </p>
 
           <div className="bg-white rounded border border-green-300 p-4 mb-4 whitespace-pre-wrap font-mono text-xs text-gray-800 max-h-48 overflow-y-auto">
-            {DEFAULT_INVITATION_TEXT}
+            {getInvitationText(getParticipantLink())}
           </div>
 
           <button
             onClick={() => {
-              navigator.clipboard.writeText(DEFAULT_INVITATION_TEXT);
+              navigator.clipboard.writeText(getInvitationText(getParticipantLink()));
               setCopiedType('invitation');
               setTimeout(() => setCopiedType(null), 2000);
             }}
             className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-semibold transition"
           >
-            {copiedType === 'invitation' ? '✅ Text kopiert!' : '📋 Einladungstext kopieren'}
+            {copiedType === 'invitation' ? '✅ Text mit Link kopiert!' : '📋 Text mit Link kopieren'}
           </button>
         </div>
 
