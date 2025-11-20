@@ -812,7 +812,7 @@ export default function JoinGroup() {
                 onClick={() => setStep(3)}
                 className="flex-1 btn-primary"
               >
-                ✅ Weiter → Schritt 2 (optional Ausschluss)
+                ✅ Weiter → Hier kannst du eine Person als Wichtelpartner ausschließen
               </button>
             </div>
 
