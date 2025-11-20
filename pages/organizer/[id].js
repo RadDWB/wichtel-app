@@ -562,6 +562,10 @@ export default function OrganizerDashboard() {
             </p>
           </div>
 
+          <div className="bg-white rounded border border-purple-300 p-4 mb-4 font-mono text-xs break-all">
+            {getParticipantLink()}
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <button
               onClick={() => copyToClipboard('participant')}
