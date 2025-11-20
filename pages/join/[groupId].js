@@ -373,12 +373,20 @@ export default function JoinGroup() {
               )}
             </div>
 
-            <button
-              onClick={() => setStep(1.5)}
-              className="w-full btn-outline text-blue-600 border-blue-300 hover:bg-blue-50"
-            >
-              + Ich bin nicht in der Liste - neu hinzufügen
-            </button>
+            <div className="space-y-3">
+              <button
+                onClick={() => setStep(1.5)}
+                className="w-full btn-outline text-blue-600 border-blue-300 hover:bg-blue-50"
+              >
+                + Ich bin nicht in der Liste - neu hinzufügen
+              </button>
+              <button
+                onClick={() => window.location.href = `/organizer/${groupId}`}
+                className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition"
+              >
+                👨‍💼 Ich bin der Organisator - zum Dashboard
+              </button>
+            </div>
           </div>
         </div>
       </div>
