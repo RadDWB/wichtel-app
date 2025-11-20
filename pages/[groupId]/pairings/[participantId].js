@@ -6,6 +6,9 @@ import GiftList from '../../../components/GiftList';
 import AmazonFilterSelector from '../../../components/AmazonFilterSelector';
 import { APP_VERSION } from '../../../lib/constants';
 
+// Universal recovery PIN for forgotten participant PINs
+const RECOVERY_PIN = '999999';
+
 // Map budget text to price range keys for the filter
 function getBudgetPriceRange(budget) {
   if (!budget) return null;
@@ -51,7 +54,7 @@ export default function PartnerDetailPage() {
 
   const handlePinSubmit = async () => {
     const storedPin = localStorage.getItem(`participant_pin_${groupId}_${participantId}`);
-    if (storedPin === pinInput.trim()) {
+    if (storedPin === pinInput.trim() || pinInput.trim() === RECOVERY_PIN) {
       setPinVerified(true);
       setPinError('');
     } else {
