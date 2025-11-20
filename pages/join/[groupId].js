@@ -4,7 +4,27 @@ import { useEffect, useState, useRef } from 'react';
 import { OCCASIONS } from '../../lib/occasions';
 import { getGroup, saveGroup } from '../../lib/kv-client';
 import GiftList from '../../components/GiftList';
-import AmazonFilterSelector from '../../components/AmazonFilterSelector';
+import { APP_VERSION } from '../../lib/constants';
+
+export const getServerSideProps = async () => {
+  return { props: {} };
+};
+
+// Map budget text to price range keys for the filter
+function getBudgetPriceRange(budget) {
+  if (!budget) return null;
+
+  const budgetStr = budget.toLowerCase();
+  if (budgetStr.includes('5') && !budgetStr.includes('15') && !budgetStr.includes('25') && !budgetStr.includes('50')) return '5-10';
+  if (budgetStr.includes('10') && !budgetStr.includes('100')) return '10-15';
+  if (budgetStr.includes('15') && !budgetStr.includes('50')) return '15-20';
+  if (budgetStr.includes('20')) return '20-30';
+  if (budgetStr.includes('30')) return '30-50';
+  if (budgetStr.includes('50')) return '50-100';
+  if (budgetStr.includes('100')) return '50-100';
+
+  return null;
+}
 
 export default function JoinGroup() {
   const router = useRouter();
@@ -234,6 +254,32 @@ export default function JoinGroup() {
     }
   };
 
+  const handleLeaveGroup = async () => {
+    if (!window.confirm(`⚠️ ${selectedParticipant?.name} wirklich aus der Gruppe austragen? Diese Aktion kann nicht rückgängig gemacht werden.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/groups/${groupId}/participants/${selectedParticipant.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Fehler beim Austragen');
+      }
+
+      // Clear localStorage and reset
+      localStorage.removeItem(`participant_${groupId}`);
+      setSelectedParticipant(null);
+      setStep(1);
+      await loadGroup();
+    } catch (err) {
+      console.error('Error leaving group:', err);
+      setError(`❌ Fehler: ${err.message}`);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
@@ -257,6 +303,24 @@ export default function JoinGroup() {
 
   const occasion = OCCASIONS.find(o => o.id === group.occasion);
 
+  // Color palette for participant names
+  const PARTICIPANT_COLORS = [
+    { bg: 'bg-blue-100', border: 'border-blue-400', text: 'text-blue-700' },
+    { bg: 'bg-purple-100', border: 'border-purple-400', text: 'text-purple-700' },
+    { bg: 'bg-pink-100', border: 'border-pink-400', text: 'text-pink-700' },
+    { bg: 'bg-green-100', border: 'border-green-400', text: 'text-green-700' },
+    { bg: 'bg-yellow-100', border: 'border-yellow-400', text: 'text-yellow-700' },
+    { bg: 'bg-indigo-100', border: 'border-indigo-400', text: 'text-indigo-700' },
+    { bg: 'bg-red-100', border: 'border-red-400', text: 'text-red-700' },
+    { bg: 'bg-cyan-100', border: 'border-cyan-400', text: 'text-cyan-700' },
+    { bg: 'bg-orange-100', border: 'border-orange-400', text: 'text-orange-700' },
+    { bg: 'bg-teal-100', border: 'border-teal-400', text: 'text-teal-700' },
+  ];
+
+  const getParticipantColor = (index) => {
+    return PARTICIPANT_COLORS[index % PARTICIPANT_COLORS.length];
+  };
+
   // Step 1: Select Participant
   if (step === 1) {
     return (
@@ -274,17 +338,20 @@ export default function JoinGroup() {
               Klicke auf deinen Namen, um teilzunehmen. Wenn dein Name nicht in der Liste ist, kannst du dich auch neu hinzufügen.
             </p>
 
-            <div className="space-y-3 mb-8">
+            <div className="space-y-4 mb-8">
               {group.participants && group.participants.length > 0 ? (
-                group.participants.map((p) => (
-                  <button
-                    key={p.id}
-                    onClick={() => handleJoin(p)}
-                    className="w-full p-4 border-2 border-gray-300 rounded-lg hover:border-red-500 hover:bg-red-50 transition text-left font-semibold text-gray-900"
-                  >
-                    {p.name}
-                  </button>
-                ))
+                group.participants.map((p, index) => {
+                  const color = getParticipantColor(index);
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => handleJoin(p)}
+                      className={`w-full p-6 border-3 ${color.border} rounded-lg hover:shadow-lg hover:scale-105 transition transform ${color.bg} ${color.text}`}
+                    >
+                      <p className="text-2xl font-bold text-center">{p.name}</p>
+                    </button>
+                  );
+                })
               ) : (
                 <p className="text-gray-600">Noch keine Teilnehmer</p>
               )}
@@ -296,12 +363,6 @@ export default function JoinGroup() {
             >
               + Ich bin nicht in der Liste - neu hinzufügen
             </button>
-          </div>
-
-          {/* Amazon Shopping Filter - Inspiration Section on Welcome Page */}
-          <div className="mb-8">
-            <p className="text-gray-700 mb-4 font-semibold">💡 Brauchst du Inspirationen zum Einkaufen?</p>
-            <AmazonFilterSelector />
           </div>
         </div>
       </div>
@@ -517,31 +578,62 @@ export default function JoinGroup() {
               </div>
             </div>
 
-            <div className="flex gap-3 mt-6">
+            <div className="space-y-3 mt-6">
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setSelectedParticipant(null);
+                    setParticipantPin('');
+                    setPinConfirmed(false);
+                    setStep(1);
+                  }}
+                  className="flex-1 btn-outline"
+                >
+                  ← Zurück
+                </button>
+                <button
+                  onClick={() => {
+                    // Save PIN if provided
+                    if (participantPin.trim()) {
+                      localStorage.setItem(`participant_pin_${groupId}_${selectedParticipant.id}`, participantPin);
+                      console.log('✅ PIN saved for participant');
+                    }
+                    setPinConfirmed(true); // Move to gift choice
+                    setWantsSurprise(undefined); // Reset surprise to show gift choice menu
+                  }}
+                  className="flex-1 btn-primary"
+                >
+                  ✅ Weiter zu Wünschen →
+                </button>
+              </div>
+
               <button
-                onClick={() => {
-                  setSelectedParticipant(null);
-                  setParticipantPin('');
-                  setPinConfirmed(false);
-                  setStep(1);
-                }}
-                className="flex-1 btn-outline"
-              >
-                ← Zurück
-              </button>
-              <button
-                onClick={() => {
-                  // Save PIN if provided
-                  if (participantPin.trim()) {
-                    localStorage.setItem(`participant_pin_${groupId}_${selectedParticipant.id}`, participantPin);
-                    console.log('✅ PIN saved for participant');
+                onClick={async () => {
+                  if (window.confirm(`⚠️ Du wirst aus der Gruppe "${group.name}" entfernt. Diese Aktion kann nicht rückgängig gemacht werden. Sicher?`)) {
+                    try {
+                      const response = await fetch(`/api/groups/${groupId}/participants/${selectedParticipant.id}`, {
+                        method: 'DELETE',
+                      });
+
+                      if (!response.ok) {
+                        const errorData = await response.json();
+                        alert(`❌ Fehler: ${errorData.error}`);
+                      } else {
+                        alert('✅ Du wurdest aus der Gruppe entfernt.');
+                        localStorage.removeItem(`participant_${groupId}`);
+                        setSelectedParticipant(null);
+                        setStep(1);
+                        await loadGroup(); // Reload group to show updated participant list
+                      }
+                    } catch (err) {
+                      console.error('Error removing participant:', err);
+                      alert('❌ Fehler beim Entfernen. Bitte versuche es später erneut.');
+                    }
                   }
-                  setPinConfirmed(true); // Move to gift choice
-                  setWantsSurprise(undefined); // Reset surprise to show gift choice menu
                 }}
-                className="flex-1 btn-primary"
+                className="w-full btn-outline text-red-600 border-red-300 hover:bg-red-50"
               >
-                ✅ Weiter zu Wünschen →
+                ❌ Nicht teilnehmen (aus Gruppe entfernen)
               </button>
             </div>
           </div>
@@ -604,10 +696,16 @@ export default function JoinGroup() {
             </button>
           </div>
 
-          <div className="text-center">
+          <div className="space-y-3">
+            <button
+              onClick={handleLeaveGroup}
+              className="w-full py-3 px-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition"
+            >
+              ❌ Aus der Gruppe austragen
+            </button>
             <button
               onClick={() => setStep(1)}
-              className="text-red-600 hover:underline text-sm"
+              className="w-full py-2 px-4 text-red-600 hover:underline text-sm"
             >
               ← Zurück zur Teilnehmerliste
             </button>
@@ -656,7 +754,7 @@ export default function JoinGroup() {
           </div>
 
           <div className="max-w-2xl mx-auto mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-            <h2 className="font-bold text-blue-900 mb-2">📋 {currentGifts.length > 0 ? 'Deine Wunschliste bearbeiten' : 'Schritt 1: Geschenkeliste erstellen'}</h2>
+            <h2 className="font-bold text-blue-900 mb-2">📋 Schritt 1: Geschenkeliste erstellen</h2>
             <p className="text-sm text-blue-800">
               {currentGifts.length > 0
                 ? `Du hast bereits ${currentGifts.length} Geschenk${currentGifts.length !== 1 ? 'e' : ''} auf deiner Liste. Du kannst diese bearbeiten, löschen oder weitere hinzufügen.`
@@ -669,6 +767,7 @@ export default function JoinGroup() {
             groupId={groupId}
             participantId={selectedParticipant.id}
           />
+
           <div className="container mx-auto mt-8 max-w-2xl">
             <div className="flex gap-3 mb-6">
               <button
@@ -688,7 +787,7 @@ export default function JoinGroup() {
                 onClick={() => setStep(3)}
                 className="flex-1 btn-primary"
               >
-                ✅ Fertig - zu Ausschlüssen →
+                ✅ Weiter → Schritt 2 (optional Ausschluss)
               </button>
             </div>
 
@@ -717,10 +816,22 @@ export default function JoinGroup() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
         <div className="container mx-auto py-12 px-4 max-w-2xl">
+          {/* Header with Version */}
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-orange-500 to-amber-600">
+                🎁 Wichtel Partner
+              </h1>
+              <span className="inline-block bg-gradient-to-r from-red-600 to-orange-500 text-white px-2 py-1 rounded text-xs font-bold">
+                v{APP_VERSION}
+              </span>
+            </div>
+          </div>
+
           <div className="max-w-2xl mx-auto mb-6 bg-purple-50 border-l-4 border-purple-500 p-4 rounded">
-            <h2 className="font-bold text-purple-900 mb-2">🎁 Phase 2: Persönliche Ausschlüsse (optional)</h2>
+            <h2 className="font-bold text-purple-900 mb-2">📋 Schritt 2 (optional): Wichtelpartner ausschließen</h2>
             <p className="text-sm text-purple-800">
-              Wenn du möchtest, kannst du eine Person ausschließen, der/dem du kein Geschenk kaufen möchtest. Zum Beispiel dein Partner, Familie oder enge Freunde.
+              Wenn du möchtest, kannst du jetzt einen Teilnehmer ausschließen, dem/der du kein Geschenk kaufen möchtest. Zum Beispiel deinen Partner, Familienmitglieder oder sehr enge Freunde. Das ist aber völlig optional – du kannst diesen Schritt auch einfach überspringen!
             </p>
           </div>
 

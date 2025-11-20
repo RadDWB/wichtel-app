@@ -3,6 +3,10 @@ import { useRouter } from 'next/router';
 import { v4 as uuidv4 } from 'uuid';
 import { OCCASIONS, getDefaultName } from '../lib/occasions';
 
+export const getServerSideProps = async () => {
+  return { props: {} };
+};
+
 export default function Setup() {
   const router = useRouter();
   const [step, setStep] = useState(1);

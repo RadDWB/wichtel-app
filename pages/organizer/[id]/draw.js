@@ -3,6 +3,13 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { getGroup, saveGroup } from '../../../lib/kv-client';
 
+// Force SSR to prevent static generation errors
+export const getServerSideProps = async () => {
+  return {
+    props: {},
+  };
+};
+
 // Amazon Affiliate Links with different budget ranges
 const AMAZON_AFFILIATE_LINKS = {
   // Für verschiedene Preisranges - diese Links leiten zu gefilterten Suchergebnissen
@@ -116,11 +123,6 @@ export default function DrawPage() {
 
       setGroup(updatedGroup);
       setSuccess(true);
-
-      // Auto-redirect to dashboard after 5 seconds
-      setTimeout(() => {
-        router.push(`/organizer/${id}`);
-      }, 5000);
     } catch (err) {
       console.error('Error performing draw:', err);
       setError(err.message || 'Fehler beim Auslosen');
@@ -192,12 +194,8 @@ export default function DrawPage() {
               </p>
             </div>
 
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600 mb-8">
               Leite deine Teilnehmer auf die Seite weiter, damit sie ihre Wichtel-Partner sehen können.
-            </p>
-
-            <p className="text-sm text-gray-500 mb-8 animate-pulse">
-              Weitergeleitet zum Dashboard in Kürze...
             </p>
 
             <Link href={`/organizer/${id}`} className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition">

@@ -3,6 +3,14 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { getGroup, getGifts } from '../../lib/kv-client';
 import AmazonFilterSelector from '../../components/AmazonFilterSelector';
+import { APP_VERSION, getInvitationText } from '../../lib/constants';
+
+// Force SSR to prevent static generation errors
+export const getServerSideProps = async () => {
+  return {
+    props: {},
+  };
+};
 
 // Amazon Affiliate Links with different budget ranges
 const AMAZON_AFFILIATE_LINKS = {
@@ -24,55 +32,55 @@ export default function OrganizerDashboard() {
   const [authenticated, setAuthenticated] = useState(false);
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState('');
+  const [deletingParticipantId, setDeletingParticipantId] = useState(null);
 
   useEffect(() => {
     if (id) {
-      // Check if authenticated via PIN
-      checkAuthentication();
-
-      // Store showPin in localStorage so join page can redirect back correctly
+      // Store showPin in localStorage immediately
       if (showPin) {
         localStorage.setItem(`organizer_pin_${id}`, showPin);
+        // Also store in the organizer_ key for authentication
+        localStorage.setItem(`organizer_${id}`, JSON.stringify({
+          pin: showPin,
+          verifiedAt: new Date().toISOString()
+        }));
+        setAuthenticated(true);
+      } else {
+        // Check if authenticated via PIN from localStorage
+        const stored = localStorage.getItem(`organizer_${id}`);
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            if (parsed.pin && parsed.verifiedAt) {
+              setAuthenticated(true);
+            } else {
+              setAuthenticated(false);
+            }
+          } catch (e) {
+            console.error('Invalid stored auth:', e);
+            setAuthenticated(false);
+          }
+        } else {
+          setAuthenticated(false);
+        }
       }
+    }
+  }, [id, showPin]);
+
+  // Separate effect for loading data when authenticated
+  useEffect(() => {
+    if (id && authenticated) {
+      loadGroupData();
 
       // Refresh data every 30 seconds (reduced from 10s to decrease flickering on mobile)
-      // Only poll when authenticated
-      let interval = null;
-      if (authenticated) {
-        interval = setInterval(() => {
-          loadGroupData();
-        }, 30000);
-      }
-      return () => {
-        if (interval) clearInterval(interval);
-      };
-    }
-  }, [id, authenticated, showPin]);
+      const interval = setInterval(() => {
+        loadGroupData();
+      }, 30000);
 
-  const checkAuthentication = () => {
-    // Check if coming from initial setup (showPin in URL)
-    if (showPin) {
-      setAuthenticated(true);
-      return;
+      return () => clearInterval(interval);
     }
+  }, [id, authenticated]);
 
-    // Check localStorage for verification
-    const stored = localStorage.getItem(`organizer_${id}`);
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        if (parsed.pin && parsed.verifiedAt) {
-          setAuthenticated(true);
-          return;
-        }
-      } catch (e) {
-        console.error('Invalid stored auth:', e);
-      }
-    }
-
-    // Not authenticated
-    setAuthenticated(false);
-  };
 
   const handlePinSubmit = async (e) => {
     e.preventDefault();
@@ -219,6 +227,33 @@ export default function OrganizerDashboard() {
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
 
+  const handleDeleteParticipant = async (participantId, participantName) => {
+    if (!window.confirm(`⚠️ ${participantName} wirklich aus der Gruppe entfernen? Diese Aktion kann nicht rückgängig gemacht werden.`)) {
+      return;
+    }
+
+    setDeletingParticipantId(participantId);
+
+    try {
+      const response = await fetch(`/api/groups/${id}/participants/${participantId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Fehler beim Löschen');
+      }
+
+      // Refresh group data
+      await loadGroupData();
+    } catch (err) {
+      console.error('Error deleting participant:', err);
+      alert(`❌ Fehler: ${err.message}`);
+    } finally {
+      setDeletingParticipantId(null);
+    }
+  };
+
   const getParticipantStatus = (participantId) => {
     const participant = group?.participants?.find(p => p.id === participantId);
     const hasList = gifts[participantId] && gifts[participantId].length > 0;
@@ -360,9 +395,14 @@ export default function OrganizerDashboard() {
 
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-orange-500 to-amber-600 mb-2">
-            🎯 Organisator Dashboard
-          </h1>
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-orange-500 to-amber-600">
+              🎯 Organisator Dashboard
+            </h1>
+            <span className="inline-block bg-gradient-to-r from-red-600 to-orange-500 text-white px-2 py-1 rounded text-xs font-bold">
+              v{APP_VERSION}
+            </span>
+          </div>
           <p className="text-xl text-gray-700 mb-1">{group.name}</p>
           <p className="text-gray-600">Überblick über den Status deiner Wichtelgruppe</p>
           <p className="text-sm text-gray-500 mt-2 font-mono">ID: {id}</p>
@@ -492,25 +532,39 @@ export default function OrganizerDashboard() {
                           )}
                         </div>
 
-                        <div className="text-right">
-                          {status.hasGifts ? (
-                            <div className="flex items-center gap-2">
-                              <span className="text-2xl">{status.wantsSurprise ? '🎉' : '✅'}</span>
-                              <div>
-                                <p className={`font-bold ${status.wantsSurprise ? 'text-purple-600' : 'text-green-600'}`}>
-                                  {status.wantsSurprise ? 'Überraschung!' : `${status.giftCount} Geschenke`}
-                                </p>
-                                <p className="text-xs text-gray-500">Fertig</p>
+                        <div className="flex items-center gap-4">
+                          <div className="text-right">
+                            {status.hasGifts ? (
+                              <div className="flex items-center gap-2">
+                                <span className="text-2xl">{status.wantsSurprise ? '🎉' : '✅'}</span>
+                                <div>
+                                  <p className={`font-bold ${status.wantsSurprise ? 'text-purple-600' : 'text-green-600'}`}>
+                                    {status.wantsSurprise ? 'Überraschung!' : `${status.giftCount} Geschenke`}
+                                  </p>
+                                  <p className="text-xs text-gray-500">Fertig</p>
+                                </div>
                               </div>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2">
-                              <span className="text-2xl">⏳</span>
-                              <div>
-                                <p className="font-bold text-orange-600">Ausstehend</p>
-                                <p className="text-xs text-gray-500">Keine Liste</p>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <span className="text-2xl">⏳</span>
+                                <div>
+                                  <p className="font-bold text-orange-600">Ausstehend</p>
+                                  <p className="text-xs text-gray-500">Keine Liste</p>
+                                </div>
                               </div>
-                            </div>
+                            )}
+                          </div>
+
+                          {/* Delete button */}
+                          {!group.drawn && (
+                            <button
+                              onClick={() => handleDeleteParticipant(participant.id, participant.name)}
+                              disabled={deletingParticipantId === participant.id}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50 p-2 rounded transition disabled:opacity-50"
+                              title="Teilnehmer löschen"
+                            >
+                              {deletingParticipantId === participant.id ? '🔄' : '🗑️'}
+                            </button>
                           )}
                         </div>
                       </div>
@@ -544,42 +598,37 @@ export default function OrganizerDashboard() {
           </div>
         </div>
 
-        {/* Participant Link Section */}
-        <div className="card bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-300 shadow-lg mb-6">
-          <h3 className="section-title text-purple-900 mb-4">📤 Teilnehmer einladen</h3>
+        {/* Invitation Text Template Section */}
+        <div className="card bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 shadow-lg mb-6">
+          <h3 className="section-title text-green-900 mb-4">📝 Einladungstext mit Link</h3>
 
           <p className="text-sm text-gray-700 mb-4">
-            Versende diesen Link an deine Freunde, Familie oder Kollegen, damit sie sich anmelden und ihre Wunschliste erstellen können:
+            Kopiere diesen Text - der Link ist bereits enthalten! Du kannst ihn noch anpassen, wenn du möchtest:
           </p>
 
-          <div className="bg-red-50 border-l-4 border-red-500 p-3 mb-4 rounded text-sm text-gray-700">
-            <p>
-              <strong>⚠️ Das ist der Link für alle Teilnehmer!</strong>
-            </p>
-            <p>
-              Teilnehmer sollen nicht das Organisator-Dashboard benutzen. Sie nutzen NUR diesen Link zum Eintragen ihrer Daten.
-            </p>
+          <div className="bg-white rounded border border-green-300 p-4 mb-4 whitespace-pre-wrap font-mono text-xs text-gray-800 max-h-48 overflow-y-auto">
+            {getInvitationText(getParticipantLink())}
           </div>
 
-          <div className="bg-white rounded border border-purple-300 p-4 mb-4 font-mono text-xs break-all">
-            {getParticipantLink()}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
             <button
-              onClick={() => copyToClipboard('participant')}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg font-semibold transition"
+              onClick={() => {
+                navigator.clipboard.writeText(getInvitationText(getParticipantLink()));
+                setCopiedType('invitation');
+                setTimeout(() => setCopiedType(null), 2000);
+              }}
+              className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-semibold transition"
             >
-              {copiedType === 'participant' ? '✅ Link kopiert!' : '📋 Link in Zwischenablage'}
+              {copiedType === 'invitation' ? '✅ Text kopiert!' : '📋 Text kopieren'}
             </button>
 
             <div className="relative group">
-              <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg font-semibold transition">
-                📲 Link teilen
+              <button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-semibold transition">
+                📲 Teilen
               </button>
-              <div className="absolute hidden group-hover:flex bg-gray-900 text-white text-xs rounded-lg p-3 right-0 mt-2 w-48 z-10 flex-col gap-2">
+              <div className="absolute hidden group-hover:flex bg-gray-900 text-white text-xs rounded-lg p-3 right-0 md:left-0 mt-2 w-48 z-10 flex-col gap-2">
                 <a
-                  href={`https://wa.me/?text=${encodeURIComponent(`Wichtelgruppe "${group?.name}": ${getParticipantLink()}`)}`}
+                  href={`https://wa.me/?text=${encodeURIComponent(getInvitationText(getParticipantLink()))}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-green-400 block"
@@ -587,7 +636,7 @@ export default function OrganizerDashboard() {
                   💬 WhatsApp
                 </a>
                 <a
-                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`Wichtelgruppe "${group?.name}": ${getParticipantLink()}`)}`}
+                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(getInvitationText(getParticipantLink()))}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-green-400 block text-xs"
@@ -595,59 +644,79 @@ export default function OrganizerDashboard() {
                   💬 WhatsApp (App)
                 </a>
                 <a
-                  href={`mailto:?body=${encodeURIComponent(`Wichtelgruppe "${group?.name}":\n\n${getParticipantLink()}`)}`}
+                  href={`https://signal.me/#p/${encodeURIComponent(getInvitationText(getParticipantLink()))}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-blue-400 block"
+                >
+                  🔒 Signal
+                </a>
+                <a
+                  href={`https://threema.id`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-blue-400 block"
+                  title="Kopiere den Text manuell in Threema"
+                >
+                  🔐 Threema
+                </a>
+                <a
+                  href={`mailto:?body=${encodeURIComponent(getInvitationText(getParticipantLink()))}`}
                   className="hover:text-blue-400 block"
                 >
                   📧 Email
                 </a>
                 <button
                   onClick={() => {
-                    const text = `Wichtelgruppe "${group?.name}": ${getParticipantLink()}`;
-                    navigator.clipboard.writeText(text);
+                    navigator.clipboard.writeText(getInvitationText(getParticipantLink()));
                     setCopiedType('share');
                     setTimeout(() => setCopiedType(null), 2000);
                   }}
                   className="text-left hover:text-yellow-400 block"
                 >
-                  {copiedType === 'share' ? '✅ Kopiert!' : '📌 Text kopieren'}
+                  {copiedType === 'share' ? '✅ Kopiert!' : '📌 Kopieren'}
                 </button>
               </div>
             </div>
           </div>
 
-          <div className="mt-4 p-3 bg-purple-100 border border-purple-300 rounded text-xs text-purple-900">
-            <strong>💡 Hinweis:</strong> Teile diesen Link per WhatsApp, Signal, Threema, Email oder andere Messenger, um deine Teilnehmer einzuladen!
+          <div className="p-3 bg-green-100 border border-green-300 rounded text-xs text-green-900">
+            <strong>💡 Hinweis:</strong> Teile diesen Text per WhatsApp, Signal, Threema, Email oder andere Messenger, um deine Teilnehmer einzuladen!
           </div>
         </div>
 
         {/* Pairings Share Section (after draw) */}
         {group.drawn && (
-          <div className="card bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-300 shadow-lg mb-6">
-            <h3 className="section-title text-purple-900 mb-4">🎁 Paarungen teilen</h3>
+          <div className="card bg-gradient-to-br from-pink-50 to-red-50 border-2 border-red-300 shadow-lg mb-6">
+            <h3 className="section-title text-red-900 mb-4">🎁 Zentrale Pairingsseite teilen</h3>
 
             <p className="text-sm text-gray-700 mb-4">
-              Teile diese Seite mit allen Teilnehmern, damit sie sehen können, wer wen beschenkt und die Wunschlisten einsehen können:
+              Teile diese Seite mit allen Teilnehmern, damit sie ihre Wichtel-Partner sehen und deren Wunschlisten einsehen können:
             </p>
 
-            <div className="bg-white rounded border border-purple-300 p-4 mb-4 font-mono text-xs break-all">
-              {getPairingsLink()}
+            <div className="bg-white rounded border border-red-300 p-4 mb-4 whitespace-pre-wrap font-mono text-xs text-gray-800">
+              {`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\nViel Spaß beim Einkaufen! 🎁`}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
               <button
-                onClick={() => copyToClipboard('pairings')}
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg font-semibold transition"
+                onClick={() => {
+                  navigator.clipboard.writeText(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\nViel Spaß beim Einkaufen! 🎁`);
+                  setCopiedType('pairings');
+                  setTimeout(() => setCopiedType(null), 2000);
+                }}
+                className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-semibold transition"
               >
-                {copiedType === 'pairings' ? '✅ Link kopiert!' : '📋 Link in Zwischenablage'}
+                {copiedType === 'pairings' ? '✅ Text kopiert!' : '📋 Text kopieren'}
               </button>
 
               <div className="relative group">
-                <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg font-semibold transition">
-                  📲 Link teilen
+                <button className="w-full bg-orange-600 hover:bg-orange-700 text-white py-2 rounded-lg font-semibold transition">
+                  📲 Teilen
                 </button>
-                <div className="absolute hidden group-hover:flex bg-gray-900 text-white text-xs rounded-lg p-3 right-0 mt-2 w-48 z-10 flex-col gap-2">
+                <div className="absolute hidden group-hover:flex bg-gray-900 text-white text-xs rounded-lg p-3 right-0 md:left-0 mt-2 w-48 z-10 flex-col gap-2">
                   <a
-                    href={`https://wa.me/?text=${encodeURIComponent(`Schaut die Wichtel-Paarungen an! ${getPairingsLink()}`)}`}
+                    href={`https://wa.me/?text=${encodeURIComponent(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\nViel Spaß beim Einkaufen! 🎁`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-green-400 block"
@@ -655,35 +724,43 @@ export default function OrganizerDashboard() {
                     💬 WhatsApp
                   </a>
                   <a
-                    href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`Schaut die Wichtel-Paarungen an! ${getPairingsLink()}`)}`}
+                    href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\nViel Spaß beim Einkaufen! 🎁`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="hover:text-green-400 block"
+                    className="hover:text-green-400 block text-xs"
                   >
                     💬 WhatsApp (App)
                   </a>
                   <a
-                    href={`mailto:?body=${encodeURIComponent(`Schaut die Wichtel-Paarungen an:\n\n${getPairingsLink()}`)}`}
+                    href={`https://signal.me/#p/${encodeURIComponent(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\nViel Spaß beim Einkaufen! 🎁`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-blue-400 block"
+                  >
+                    🔒 Signal
+                  </a>
+                  <a
+                    href={`mailto:?body=${encodeURIComponent(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\nViel Spaß beim Einkaufen! 🎁`)}`}
                     className="hover:text-blue-400 block"
                   >
                     📧 Email
                   </a>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\nViel Spaß beim Einkaufen! 🎁`);
+                      setCopiedType('pairingShare');
+                      setTimeout(() => setCopiedType(null), 2000);
+                    }}
+                    className="text-left hover:text-yellow-400 block"
+                  >
+                    {copiedType === 'pairingShare' ? '✅ Kopiert!' : '📌 Kopieren'}
+                  </button>
                 </div>
               </div>
-
-              <button
-                onClick={() => {
-                  const text = `Schaut die Wichtel-Paarungen an! ${getPairingsLink()}`;
-                  navigator.share({ title: 'Wichtel-Paarungen', text: text }).catch(() => {});
-                }}
-                className="w-full bg-pink-600 hover:bg-pink-700 text-white py-2 rounded-lg font-semibold transition"
-              >
-                🔗 Share-Button
-              </button>
             </div>
 
-            <div className="mt-4 p-3 bg-purple-100 border border-purple-300 rounded text-xs text-purple-900">
-              <strong>💡 Hinweis:</strong> Auf dieser Seite können deine Teilnehmer sehen, wer wen beschenkt. Klick auf einen Namen, um die Wunschliste zu sehen. Falls jemand sich überraschen lassen möchte, wird das dort angezeigt.
+            <div className="p-3 bg-red-100 border border-red-300 rounded text-xs text-red-900">
+              <strong>💡 Hinweis:</strong> Auf dieser Seite können deine Teilnehmer sehen, wer wen beschenkt. Mit Klick auf den Partner öffnet sich die Wunschliste mit Amazon-Filtern oder dem Hinweis, dass der Partner überrascht werden möchte!
             </div>
           </div>
         )}
@@ -737,6 +814,53 @@ export default function OrganizerDashboard() {
             </p>
           )}
         </div>
+
+        {/* Organizer Pairings View (with warning) */}
+        {group.drawn && (
+          <div className="card bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-orange-400">
+            <h3 className="section-title mb-4">👥 Alle Paarungen anschauen (Organizer-Ansicht)</h3>
+
+            <div className="bg-red-100 border-l-4 border-red-500 p-4 mb-6">
+              <p className="text-red-900 font-bold mb-2">⚠️ Warnung: Überraschungen können ruiniert werden!</p>
+              <p className="text-red-800 text-sm">
+                Bitte benutze diese Funktion mit Bedacht. Wenn du die Paarungen siehst und hinterher mit einem Wichtelpartner sprichst, könnte die Überraschung verdorben werden. Verwende diese Funktion nur wenn nötig (z.B. um Probleme zu lösen).
+              </p>
+            </div>
+
+            <p className="text-gray-700 mb-4">
+              Hier kannst du eine Zusammenfassung aller Wichtelpaarungen anschauen:
+            </p>
+
+            <div className="space-y-3 mb-6">
+              {group.pairing && Object.entries(group.pairing).map(([giverId, receiverId]) => {
+                const giver = group.participants.find(p => p.id === giverId);
+                const receiver = group.participants.find(p => p.id === receiverId);
+                const receiverWantsSurprise = !gifts[receiverId] || gifts[receiverId].length === 0;
+
+                return (
+                  <div key={giverId} className="bg-white p-4 rounded-lg border-l-4 border-blue-400 hover:shadow-md transition">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <p className="text-gray-900 font-bold">{giver?.name || 'Unbekannt'} 🎁</p>
+                        <p className="text-gray-600 text-sm">↓</p>
+                        <p className="text-gray-900 font-bold">{receiver?.name || 'Unbekannt'} {receiverWantsSurprise ? '🎉 (Überraschung!)' : '📋'}</p>
+                      </div>
+                      {receiverWantsSurprise && (
+                        <span className="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-semibold">
+                          Überraschung
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <Link href={`/${id}/pairings`} className="block text-center p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition">
+              🔗 Zur öffentlichen Paarungsseite
+            </Link>
+          </div>
+        )}
 
         {/* Amazon Affiliate Section - Smart Filters for Gift Shopping */}
         {group.drawn && (

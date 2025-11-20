@@ -2,6 +2,10 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { getGroup } from '../../lib/kv-client';
 
+export const getServerSideProps = async () => {
+  return { props: {} };
+};
+
 export default function GroupEntryPoint() {
   const router = useRouter();
   const { groupId } = router.query;
