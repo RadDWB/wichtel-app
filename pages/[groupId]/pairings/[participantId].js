@@ -203,14 +203,6 @@ export default function PartnerDetailPage() {
         </div>
 
         <div className="max-w-3xl mx-auto">
-          {/* Surprise Protection Warning */}
-          <div className="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-6 mb-8">
-            <p className="text-lg font-bold text-yellow-900 mb-2">⚠️ Achtung: Überraschungsschutz!</p>
-            <p className="text-yellow-800">
-              Falls du möchtest, dass {partner.name} überrascht bleibt, solltest du diese Seite <strong>nicht</strong> mit ihm teilen! Tipp: Verwende einen geheimen Link oder schreib den Namen erst beim Wichteln auf. 🤐
-            </p>
-          </div>
-
           {wantsSurprise ? (
             // Surprise message with Amazon Filters
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
