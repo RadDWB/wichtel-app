@@ -303,6 +303,24 @@ export default function JoinGroup() {
 
   const occasion = OCCASIONS.find(o => o.id === group.occasion);
 
+  // Color palette for participant names
+  const PARTICIPANT_COLORS = [
+    { bg: 'bg-blue-100', border: 'border-blue-400', text: 'text-blue-700' },
+    { bg: 'bg-purple-100', border: 'border-purple-400', text: 'text-purple-700' },
+    { bg: 'bg-pink-100', border: 'border-pink-400', text: 'text-pink-700' },
+    { bg: 'bg-green-100', border: 'border-green-400', text: 'text-green-700' },
+    { bg: 'bg-yellow-100', border: 'border-yellow-400', text: 'text-yellow-700' },
+    { bg: 'bg-indigo-100', border: 'border-indigo-400', text: 'text-indigo-700' },
+    { bg: 'bg-red-100', border: 'border-red-400', text: 'text-red-700' },
+    { bg: 'bg-cyan-100', border: 'border-cyan-400', text: 'text-cyan-700' },
+    { bg: 'bg-orange-100', border: 'border-orange-400', text: 'text-orange-700' },
+    { bg: 'bg-teal-100', border: 'border-teal-400', text: 'text-teal-700' },
+  ];
+
+  const getParticipantColor = (index) => {
+    return PARTICIPANT_COLORS[index % PARTICIPANT_COLORS.length];
+  };
+
   // Step 1: Select Participant
   if (step === 1) {
     return (
@@ -320,17 +338,20 @@ export default function JoinGroup() {
               Klicke auf deinen Namen, um teilzunehmen. Wenn dein Name nicht in der Liste ist, kannst du dich auch neu hinzufügen.
             </p>
 
-            <div className="space-y-3 mb-8">
+            <div className="space-y-4 mb-8">
               {group.participants && group.participants.length > 0 ? (
-                group.participants.map((p) => (
-                  <button
-                    key={p.id}
-                    onClick={() => handleJoin(p)}
-                    className="w-full p-4 border-2 border-gray-300 rounded-lg hover:border-red-500 hover:bg-red-50 transition text-left font-semibold text-gray-900"
-                  >
-                    {p.name}
-                  </button>
-                ))
+                group.participants.map((p, index) => {
+                  const color = getParticipantColor(index);
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => handleJoin(p)}
+                      className={`w-full p-6 border-3 ${color.border} rounded-lg hover:shadow-lg hover:scale-105 transition transform ${color.bg} ${color.text}`}
+                    >
+                      <p className="text-2xl font-bold text-center">{p.name}</p>
+                    </button>
+                  );
+                })
               ) : (
                 <p className="text-gray-600">Noch keine Teilnehmer</p>
               )}
