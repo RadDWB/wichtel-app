@@ -36,6 +36,7 @@ export default function OrganizerDashboard() {
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState('');
   const [deletingParticipantId, setDeletingParticipantId] = useState(null);
+  const [showPairingsAccordion, setShowPairingsAccordion] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -835,6 +836,67 @@ export default function OrganizerDashboard() {
           </div>
         )}
 
+        {/* Organizer Pairings View (Accordion with Spoiler Warning) - ACCORDION VERSION */}
+        {group.drawn && (
+          <div className="card bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-orange-400 mb-6">
+            <button
+              onClick={() => setShowPairingsAccordion(!showPairingsAccordion)}
+              className="w-full text-left p-4 hover:bg-orange-100 transition flex items-center justify-between"
+            >
+              <h3 className="section-title mb-0">👥 Alle Paarungen anschauen (Organizer-Ansicht)</h3>
+              <span className="text-2xl transition" style={{ transform: showPairingsAccordion ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+            </button>
+
+            {showPairingsAccordion && (
+              <>
+                <div className="border-t border-orange-300">
+                  <div className="bg-red-100 border-l-4 border-red-500 p-4 m-4">
+                    <p className="text-red-900 font-bold mb-2">⚠️ Achtung: Spoiler-Warnung für Organisator!</p>
+                    <p className="text-red-800 text-sm">
+                      Wenn du die Überraschung selbst erleben möchtest und nicht wissen willst, wer wen beschenkt, scrolle hier <strong>nicht runter</strong>! Nutze diese Funktion nur, wenn du die Zuordnungen tatsächlich sehen musst (z.B. zur Fehlersuche).
+                    </p>
+                  </div>
+
+                  <p className="text-gray-700 px-4 pt-2">
+                    Hier kannst du eine Zusammenfassung aller Wichtelpaarungen anschauen:
+                  </p>
+
+                  <div className="space-y-3 p-4">
+                    {group.pairing && Object.entries(group.pairing).map(([giverId, receiverId]) => {
+                      const giver = group.participants.find(p => p.id === giverId);
+                      const receiver = group.participants.find(p => p.id === receiverId);
+                      const receiverWantsSurprise = !gifts[receiverId] || gifts[receiverId].length === 0;
+
+                      return (
+                        <div key={giverId} className="bg-white p-4 rounded-lg border-l-4 border-blue-400 hover:shadow-md transition">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <p className="text-gray-900 font-bold">{giver?.name || 'Unbekannt'} 🎁</p>
+                              <p className="text-gray-600 text-sm">↓</p>
+                              <p className="text-gray-900 font-bold">{receiver?.name || 'Unbekannt'} {receiverWantsSurprise ? '🎉 (Überraschung!)' : '📋'}</p>
+                            </div>
+                            {receiverWantsSurprise && (
+                              <span className="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-semibold">
+                                Überraschung
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="p-4 border-t border-orange-300">
+                    <Link href={`/join/${id}`} className="block text-center p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition">
+                      🔗 Zur Teilnehmerliste
+                    </Link>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
         {/* Action Buttons */}
         <div className="card bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-orange-300 shadow-lg">
           <div className={`grid gap-4 ${getOrganizerParticipant() ? 'grid-cols-1 md:grid-cols-4' : 'grid-cols-1 md:grid-cols-3'}`}>
@@ -885,52 +947,6 @@ export default function OrganizerDashboard() {
           )}
         </div>
 
-        {/* Organizer Pairings View (with warning) */}
-        {group.drawn && (
-          <div className="card bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-orange-400">
-            <h3 className="section-title mb-4">👥 Alle Paarungen anschauen (Organizer-Ansicht)</h3>
-
-            <div className="bg-red-100 border-l-4 border-red-500 p-4 mb-6">
-              <p className="text-red-900 font-bold mb-2">⚠️ Achtung: Spoiler-Warnung für Organisator!</p>
-              <p className="text-red-800 text-sm">
-                Wenn du die Überraschung selbst erleben möchtest und nicht wissen willst, wer wen beschenkt, klicke hier <strong>nicht</strong> auf die Paarungen! Nutze diese Funktion nur, wenn du die Zuordnungen tatsächlich sehen musst (z.B. zur Fehlersuche).
-              </p>
-            </div>
-
-            <p className="text-gray-700 mb-4">
-              Hier kannst du eine Zusammenfassung aller Wichtelpaarungen anschauen:
-            </p>
-
-            <div className="space-y-3 mb-6">
-              {group.pairing && Object.entries(group.pairing).map(([giverId, receiverId]) => {
-                const giver = group.participants.find(p => p.id === giverId);
-                const receiver = group.participants.find(p => p.id === receiverId);
-                const receiverWantsSurprise = !gifts[receiverId] || gifts[receiverId].length === 0;
-
-                return (
-                  <div key={giverId} className="bg-white p-4 rounded-lg border-l-4 border-blue-400 hover:shadow-md transition">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <p className="text-gray-900 font-bold">{giver?.name || 'Unbekannt'} 🎁</p>
-                        <p className="text-gray-600 text-sm">↓</p>
-                        <p className="text-gray-900 font-bold">{receiver?.name || 'Unbekannt'} {receiverWantsSurprise ? '🎉 (Überraschung!)' : '📋'}</p>
-                      </div>
-                      {receiverWantsSurprise && (
-                        <span className="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-semibold">
-                          Überraschung
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            <Link href={`/${id}/pairings`} className="block text-center p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition">
-              🔗 Zur öffentlichen Paarungsseite
-            </Link>
-          </div>
-        )}
 
         {/* Amazon Affiliate Section - Smart Filters for Gift Shopping */}
         {group.drawn && (
