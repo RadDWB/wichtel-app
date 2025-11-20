@@ -33,12 +33,32 @@ export default function PartnerDetailPage() {
   const [partner, setPartner] = useState(null);
   const [gifts, setGifts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [pinRequired, setPinRequired] = useState(false);
+  const [pinVerified, setPinVerified] = useState(false);
+  const [pinInput, setPinInput] = useState('');
+  const [pinError, setPinError] = useState('');
 
   useEffect(() => {
     if (groupId && participantId) {
       loadData();
+      // Check if participant has a PIN set
+      const storedPin = localStorage.getItem(`participant_pin_${groupId}_${participantId}`);
+      if (storedPin) {
+        setPinRequired(true);
+      }
     }
   }, [groupId, participantId]);
+
+  const handlePinSubmit = async () => {
+    const storedPin = localStorage.getItem(`participant_pin_${groupId}_${participantId}`);
+    if (storedPin === pinInput.trim()) {
+      setPinVerified(true);
+      setPinError('');
+    } else {
+      setPinError('❌ PIN ist falsch');
+      setPinInput('');
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -116,6 +136,52 @@ export default function PartnerDetailPage() {
     );
   }
 
+  // PIN verification screen if PIN is required and not verified
+  if (pinRequired && !pinVerified) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-lg p-8 shadow-lg max-w-md w-full">
+          <div className="text-center mb-6">
+            <div className="text-5xl mb-4">🔐</div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">PIN erforderlich</h2>
+            <p className="text-gray-600">
+              Diese Liste ist mit einer PIN geschützt. Gib deine PIN ein, um fortzufahren.
+            </p>
+          </div>
+
+          {pinError && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+              {pinError}
+            </div>
+          )}
+
+          <div className="space-y-4 mb-6">
+            <input
+              type="password"
+              value={pinInput}
+              onChange={(e) => setPinInput(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handlePinSubmit()}
+              placeholder="Gib deine 4-6 stellige PIN ein"
+              className="w-full border-2 border-gray-300 rounded-lg p-3 text-lg font-mono text-center"
+              autoFocus
+            />
+          </div>
+
+          <button
+            onClick={handlePinSubmit}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition mb-4"
+          >
+            ✅ PIN prüfen
+          </button>
+
+          <Link href={`/${groupId}/pairings`} className="block text-center text-blue-600 hover:underline text-sm">
+            ← Zurück zur Paarungsliste
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
       <div className="container mx-auto py-12 px-4">
@@ -134,6 +200,14 @@ export default function PartnerDetailPage() {
         </div>
 
         <div className="max-w-3xl mx-auto">
+          {/* Surprise Protection Warning */}
+          <div className="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-6 mb-8">
+            <p className="text-lg font-bold text-yellow-900 mb-2">⚠️ Achtung: Überraschungsschutz!</p>
+            <p className="text-yellow-800">
+              Falls du möchtest, dass {partner.name} überrascht bleibt, solltest du diese Seite <strong>nicht</strong> mit ihm teilen! Tipp: Verwende einen geheimen Link oder schreib den Namen erst beim Wichteln auf. 🤐
+            </p>
+          </div>
+
           {wantsSurprise ? (
             // Surprise message with Amazon Filters
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
