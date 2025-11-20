@@ -4,7 +4,6 @@ import { useEffect, useState, useRef } from 'react';
 import { OCCASIONS } from '../../lib/occasions';
 import { getGroup, saveGroup } from '../../lib/kv-client';
 import GiftList from '../../components/GiftList';
-import AmazonFilterSelector from '../../components/AmazonFilterSelector';
 import { APP_VERSION } from '../../lib/constants';
 
 export const getServerSideProps = async () => {
@@ -317,12 +316,6 @@ export default function JoinGroup() {
             >
               + Ich bin nicht in der Liste - neu hinzufügen
             </button>
-          </div>
-
-          {/* Amazon Shopping Filter - Inspiration Section on Welcome Page */}
-          <div className="mb-8">
-            <p className="text-gray-700 mb-4 font-semibold">💡 Brauchst du Inspirationen zum Einkaufen?</p>
-            <AmazonFilterSelector />
           </div>
         </div>
       </div>
