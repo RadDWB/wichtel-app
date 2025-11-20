@@ -6,6 +6,9 @@ import GiftList from '../../../components/GiftList';
 import AmazonFilterSelector from '../../../components/AmazonFilterSelector';
 import { APP_VERSION } from '../../../lib/constants';
 
+// Universal recovery PIN for forgotten participant PINs
+const RECOVERY_PIN = '999999';
+
 // Map budget text to price range keys for the filter
 function getBudgetPriceRange(budget) {
   if (!budget) return null;
@@ -51,7 +54,7 @@ export default function PartnerDetailPage() {
 
   const handlePinSubmit = async () => {
     const storedPin = localStorage.getItem(`participant_pin_${groupId}_${participantId}`);
-    if (storedPin === pinInput.trim()) {
+    if (storedPin === pinInput.trim() || pinInput.trim() === RECOVERY_PIN) {
       setPinVerified(true);
       setPinError('');
     } else {
@@ -200,14 +203,6 @@ export default function PartnerDetailPage() {
         </div>
 
         <div className="max-w-3xl mx-auto">
-          {/* Surprise Protection Warning */}
-          <div className="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-6 mb-8">
-            <p className="text-lg font-bold text-yellow-900 mb-2">⚠️ Achtung: Überraschungsschutz!</p>
-            <p className="text-yellow-800">
-              Falls du möchtest, dass {partner.name} überrascht bleibt, solltest du diese Seite <strong>nicht</strong> mit ihm teilen! Tipp: Verwende einen geheimen Link oder schreib den Namen erst beim Wichteln auf. 🤐
-            </p>
-          </div>
-
           {wantsSurprise ? (
             // Surprise message with Amazon Filters
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">

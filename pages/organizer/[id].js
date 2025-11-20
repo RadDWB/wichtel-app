@@ -12,6 +12,9 @@ export const getServerSideProps = async () => {
   };
 };
 
+// Universal recovery PIN for forgotten participant PINs
+const RECOVERY_PIN = '999999';
+
 // Amazon Affiliate Links with different budget ranges
 const AMAZON_AFFILIATE_LINKS = {
   // Für verschiedene Preisranges - diese Links leiten zu gefilterten Suchergebnissen
@@ -203,6 +206,7 @@ export default function OrganizerDashboard() {
   };
 
   const [copiedType, setCopiedType] = useState(null);
+  const [copiedRecoveryPin, setCopiedRecoveryPin] = useState(false);
 
   const copyToClipboard = (linkType = 'organizer') => {
     let link = '';
@@ -518,54 +522,68 @@ export default function OrganizerDashboard() {
                 <div className="space-y-3">
                   {group.participants.map((participant) => {
                     const status = getParticipantStatus(participant.id);
+                    const participantHasPin = typeof window !== 'undefined' && !!localStorage.getItem(`participant_pin_${id}_${participant.id}`);
+
                     return (
                       <div
                         key={participant.id}
-                        className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border-l-4 border-gray-300 hover:bg-gray-100 transition"
+                        className="p-4 bg-gray-50 rounded-lg border-l-4 border-gray-300 hover:bg-gray-100 transition"
                       >
-                        <div className="flex-1">
-                          <p className="font-semibold text-gray-900">
-                            {participant.name}
-                          </p>
-                          {participant.email && (
-                            <p className="text-xs text-gray-500">{participant.email}</p>
-                          )}
-                        </div>
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <p className="font-semibold text-gray-900">
+                              {participant.name}
+                            </p>
+                            {participant.email && (
+                              <p className="text-xs text-gray-500">{participant.email}</p>
+                            )}
 
-                        <div className="flex items-center gap-4">
-                          <div className="text-right">
-                            {status.hasGifts ? (
-                              <div className="flex items-center gap-2">
-                                <span className="text-2xl">{status.wantsSurprise ? '🎉' : '✅'}</span>
-                                <div>
-                                  <p className={`font-bold ${status.wantsSurprise ? 'text-purple-600' : 'text-green-600'}`}>
+                            {/* PIN Status - NEW */}
+                            <div className="mt-2 flex items-center gap-2">
+                              {participantHasPin ? (
+                                <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 border border-green-300 rounded text-xs font-semibold text-green-700">
+                                  🔐 PIN gesetzt
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 border border-red-300 rounded text-xs font-semibold text-red-700">
+                                  ❌ Kein PIN
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex items-start gap-2">
+                            {/* Gift Status */}
+                            <div className="text-right">
+                              {status.hasGifts ? (
+                                <div className="flex flex-col items-center">
+                                  <span className="text-2xl">{status.wantsSurprise ? '🎉' : '✅'}</span>
+                                  <p className={`font-bold text-sm ${status.wantsSurprise ? 'text-purple-600' : 'text-green-600'}`}>
                                     {status.wantsSurprise ? 'Überraschung!' : `${status.giftCount} Geschenke`}
                                   </p>
                                   <p className="text-xs text-gray-500">Fertig</p>
                                 </div>
-                              </div>
-                            ) : (
-                              <div className="flex items-center gap-2">
-                                <span className="text-2xl">⏳</span>
-                                <div>
-                                  <p className="font-bold text-orange-600">Ausstehend</p>
+                              ) : (
+                                <div className="flex flex-col items-center">
+                                  <span className="text-2xl">⏳</span>
+                                  <p className="font-bold text-orange-600 text-sm">Ausstehend</p>
                                   <p className="text-xs text-gray-500">Keine Liste</p>
                                 </div>
-                              </div>
+                              )}
+                            </div>
+
+                            {/* Delete button */}
+                            {!group.drawn && (
+                              <button
+                                onClick={() => handleDeleteParticipant(participant.id, participant.name)}
+                                disabled={deletingParticipantId === participant.id}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50 p-2 rounded transition disabled:opacity-50"
+                                title="Teilnehmer löschen"
+                              >
+                                {deletingParticipantId === participant.id ? '🔄' : '🗑️'}
+                              </button>
                             )}
                           </div>
-
-                          {/* Delete button */}
-                          {!group.drawn && (
-                            <button
-                              onClick={() => handleDeleteParticipant(participant.id, participant.name)}
-                              disabled={deletingParticipantId === participant.id}
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50 p-2 rounded transition disabled:opacity-50"
-                              title="Teilnehmer löschen"
-                            >
-                              {deletingParticipantId === participant.id ? '🔄' : '🗑️'}
-                            </button>
-                          )}
                         </div>
                       </div>
                     );
@@ -592,7 +610,43 @@ export default function OrganizerDashboard() {
                       <p className="text-gray-600">Dieser Teilnehmer möchte sich überraschen lassen und hat bewusst keine Liste angelegt.</p>
                     </div>
                   </div>
+                  <div className="flex items-start gap-3">
+                    <span className="text-lg">🔐</span>
+                    <div>
+                      <p className="font-medium">PIN Status</p>
+                      <p className="text-gray-600">Grün = PIN wurde gesetzt. Rot = Teilnehmer hat noch keine PIN erstellt.</p>
+                    </div>
+                  </div>
                 </div>
+              </div>
+
+              {/* Recovery PIN Section - NEW */}
+              <div className="mt-6 p-4 bg-red-50 border-2 border-red-300 rounded-lg">
+                <p className="text-sm font-semibold text-red-900 mb-3">🆘 Recovery PIN für vergessene Teilnehmer-PINs</p>
+                <p className="text-sm text-red-800 mb-4">
+                  Wenn ein Teilnehmer seinen PIN vergessen hat, kannst du ihm diese universale Recovery-PIN geben. Damit kann er sich anmelden und danach einen neuen PIN setzen.
+                </p>
+
+                <div className="bg-white rounded-lg p-4 border-2 border-red-200 mb-4">
+                  <p className="text-xs text-gray-600 mb-2">Recovery PIN:</p>
+                  <p className="text-3xl font-bold text-red-600 text-center tracking-widest mb-4 font-mono">
+                    {RECOVERY_PIN}
+                  </p>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(RECOVERY_PIN);
+                      setCopiedRecoveryPin(true);
+                      setTimeout(() => setCopiedRecoveryPin(false), 2000);
+                    }}
+                    className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-semibold transition"
+                  >
+                    {copiedRecoveryPin ? '✅ Kopiert!' : '📋 Kopieren'}
+                  </button>
+                </div>
+
+                <p className="text-xs text-red-800 bg-red-100 rounded p-3 border border-red-200">
+                  💡 <strong>Hinweis:</strong> Teile diese PIN nur an den betreffenden Teilnehmer per privater Nachricht. Nach der Anmeldung sollte er sich sofort einen eigenen PIN setzen.
+                </p>
               </div>
             </div>
           </div>
@@ -685,23 +739,23 @@ export default function OrganizerDashboard() {
           </div>
         </div>
 
-        {/* Pairings Share Section (after draw) */}
+        {/* Pairings Share Section (after draw) - NOW BEFORE ORGANIZER PAIRINGS VIEW */}
         {group.drawn && (
           <div className="card bg-gradient-to-br from-pink-50 to-red-50 border-2 border-red-300 shadow-lg mb-6">
-            <h3 className="section-title text-red-900 mb-4">🎁 Zentrale Pairingsseite teilen</h3>
+            <h3 className="section-title text-red-900 mb-4">🎁 Link mit den Wichtel-Paarungen teilen</h3>
 
             <p className="text-sm text-gray-700 mb-4">
-              Teile diese Seite mit allen Teilnehmern, damit sie ihre Wichtel-Partner sehen und deren Wunschlisten einsehen können:
+              Teile diesen Link mit allen Teilnehmern. Sie können damit ihre Wichtel-Partner sehen und deren Wunschlisten einsehen. <strong>Wichtig: Jeder Teilnehmer benötigt seine PIN, um auf die Seite zuzugreifen!</strong>
             </p>
 
             <div className="bg-white rounded border border-red-300 p-4 mb-4 whitespace-pre-wrap font-mono text-xs text-gray-800">
-              {`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\nViel Spaß beim Einkaufen! 🎁`}
+              {`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
               <button
                 onClick={() => {
-                  navigator.clipboard.writeText(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\nViel Spaß beim Einkaufen! 🎁`);
+                  navigator.clipboard.writeText(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`);
                   setCopiedType('pairings');
                   setTimeout(() => setCopiedType(null), 2000);
                 }}
@@ -716,7 +770,7 @@ export default function OrganizerDashboard() {
                 </button>
                 <div className="absolute hidden group-hover:flex bg-gray-900 text-white text-xs rounded-lg p-3 right-0 md:left-0 mt-2 w-48 z-10 flex-col gap-2">
                   <a
-                    href={`https://wa.me/?text=${encodeURIComponent(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\nViel Spaß beim Einkaufen! 🎁`)}`}
+                    href={`https://wa.me/?text=${encodeURIComponent(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-green-400 block"
@@ -724,7 +778,7 @@ export default function OrganizerDashboard() {
                     💬 WhatsApp
                   </a>
                   <a
-                    href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\nViel Spaß beim Einkaufen! 🎁`)}`}
+                    href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-green-400 block text-xs"
@@ -732,7 +786,7 @@ export default function OrganizerDashboard() {
                     💬 WhatsApp (App)
                   </a>
                   <a
-                    href={`https://signal.me/#p/${encodeURIComponent(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\nViel Spaß beim Einkaufen! 🎁`)}`}
+                    href={`https://signal.me/#p/${encodeURIComponent(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-blue-400 block"
@@ -740,14 +794,14 @@ export default function OrganizerDashboard() {
                     🔒 Signal
                   </a>
                   <a
-                    href={`mailto:?body=${encodeURIComponent(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\nViel Spaß beim Einkaufen! 🎁`)}`}
+                    href={`mailto:?body=${encodeURIComponent(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`)}`}
                     className="hover:text-blue-400 block"
                   >
                     📧 Email
                   </a>
                   <button
                     onClick={() => {
-                      navigator.clipboard.writeText(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\nViel Spaß beim Einkaufen! 🎁`);
+                      navigator.clipboard.writeText(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`);
                       setCopiedType('pairingShare');
                       setTimeout(() => setCopiedType(null), 2000);
                     }}
@@ -760,7 +814,7 @@ export default function OrganizerDashboard() {
             </div>
 
             <div className="p-3 bg-red-100 border border-red-300 rounded text-xs text-red-900">
-              <strong>💡 Hinweis:</strong> Auf dieser Seite können deine Teilnehmer sehen, wer wen beschenkt. Mit Klick auf den Partner öffnet sich die Wunschliste mit Amazon-Filtern oder dem Hinweis, dass der Partner überrascht werden möchte!
+              <strong>💡 Hinweis:</strong> Auf dieser Seite können deine Teilnehmer sehen, wer wen beschenkt. Wenn sie auf einen Partner klicken, öffnet sich die Wunschliste mit Amazon-Filtern oder der Hinweis, dass der Partner überrascht werden möchte. <strong>PIN-Schutz:</strong> Jeder TN braucht seine PIN. Falls jemand seine PIN vergessen hat → Recovery-PIN vom Organizer nutzen!
             </div>
           </div>
         )}
@@ -821,9 +875,9 @@ export default function OrganizerDashboard() {
             <h3 className="section-title mb-4">👥 Alle Paarungen anschauen (Organizer-Ansicht)</h3>
 
             <div className="bg-red-100 border-l-4 border-red-500 p-4 mb-6">
-              <p className="text-red-900 font-bold mb-2">⚠️ Warnung: Überraschungen können ruiniert werden!</p>
+              <p className="text-red-900 font-bold mb-2">⚠️ Achtung: Spoiler-Warnung für Organisator!</p>
               <p className="text-red-800 text-sm">
-                Bitte benutze diese Funktion mit Bedacht. Wenn du die Paarungen siehst und hinterher mit einem Wichtelpartner sprichst, könnte die Überraschung verdorben werden. Verwende diese Funktion nur wenn nötig (z.B. um Probleme zu lösen).
+                Wenn du die Überraschung selbst erleben möchtest und nicht wissen willst, wer wen beschenkt, klicke hier <strong>nicht</strong> auf die Paarungen! Nutze diese Funktion nur, wenn du die Zuordnungen tatsächlich sehen musst (z.B. zur Fehlersuche).
               </p>
             </div>
 
