@@ -1,3 +1,5 @@
+import { APP_VERSION } from '../lib/constants';
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
@@ -9,7 +11,7 @@ export default function Home() {
               🎁 Julklapp Online
             </h1>
             <span className="inline-block bg-gradient-to-r from-red-600 to-orange-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
-              v2.0.0
+              v{APP_VERSION}
             </span>
           </div>
           <p className="text-2xl font-bold text-gray-800 mb-4">
