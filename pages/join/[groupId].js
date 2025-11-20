@@ -529,6 +529,7 @@ export default function JoinGroup() {
                       if (tempPin === participantPin || tempPin === RECOVERY_PIN) {
                         setPinConfirmed(true);
                         setTempPin('');
+                        setWantsSurprise(undefined); // Reset to show gift choice menu
                       } else {
                         setPinVerificationError('❌ PIN ist falsch. Bitte versuche es erneut.');
                       }
@@ -558,6 +559,7 @@ export default function JoinGroup() {
                     setPinConfirmed(true);
                     setTempPin('');
                     setPinVerificationError('');
+                    setWantsSurprise(undefined); // Reset to show gift choice menu
                   } else {
                     setPinVerificationError('❌ PIN ist falsch. Bitte versuche es erneut.');
                   }
