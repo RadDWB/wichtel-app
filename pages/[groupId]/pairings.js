@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { getGroup, getGifts } from '../../lib/kv-client';
 import GiftList from '../../components/GiftList';
+import { APP_VERSION } from '../../lib/constants';
 
 export const getServerSideProps = async () => {
   return { props: {} };
@@ -145,9 +146,14 @@ export default function PairingsPage() {
       <div className="container mx-auto py-12 px-4">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-orange-500 to-amber-600 mb-2">
-            🎁 Wichtel-Paarungen
-          </h1>
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-orange-500 to-amber-600">
+              🎁 Wichtel-Paarungen
+            </h1>
+            <span className="inline-block bg-gradient-to-r from-red-600 to-orange-500 text-white px-2 py-1 rounded text-xs font-bold">
+              v{APP_VERSION}
+            </span>
+          </div>
           <p className="text-xl text-gray-700">{group.name}</p>
           <p className="text-gray-600">Budget: {group.budget}</p>
         </div>
