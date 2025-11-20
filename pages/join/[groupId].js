@@ -254,6 +254,32 @@ export default function JoinGroup() {
     }
   };
 
+  const handleLeaveGroup = async () => {
+    if (!window.confirm(`⚠️ ${selectedParticipant?.name} wirklich aus der Gruppe austragen? Diese Aktion kann nicht rückgängig gemacht werden.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/groups/${groupId}/participants/${selectedParticipant.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Fehler beim Austragen');
+      }
+
+      // Clear localStorage and reset
+      localStorage.removeItem(`participant_${groupId}`);
+      setSelectedParticipant(null);
+      setStep(1);
+      await loadGroup();
+    } catch (err) {
+      console.error('Error leaving group:', err);
+      setError(`❌ Fehler: ${err.message}`);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
@@ -649,10 +675,16 @@ export default function JoinGroup() {
             </button>
           </div>
 
-          <div className="text-center">
+          <div className="space-y-3">
+            <button
+              onClick={handleLeaveGroup}
+              className="w-full py-3 px-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition"
+            >
+              ❌ Aus der Gruppe austragen
+            </button>
             <button
               onClick={() => setStep(1)}
-              className="text-red-600 hover:underline text-sm"
+              className="w-full py-2 px-4 text-red-600 hover:underline text-sm"
             >
               ← Zurück zur Teilnehmerliste
             </button>
