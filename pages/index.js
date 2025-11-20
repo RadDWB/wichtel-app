@@ -25,25 +25,6 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Feature Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12 max-w-3xl mx-auto">
-          <div className="card bg-gradient-to-br from-orange-50 to-amber-50 border-2 border-orange-200 hover:shadow-lg transition">
-            <div className="text-4xl mb-3">👥</div>
-            <h3 className="font-bold mb-2 text-orange-700">Gruppe erstellen</h3>
-            <p className="text-sm text-gray-700">Einfach eine neue Runde anlegen und Freunde, Familie oder Verein einladen</p>
-          </div>
-          <div className="card bg-gradient-to-br from-red-50 to-orange-50 border-2 border-red-200 hover:shadow-lg transition">
-            <div className="text-4xl mb-3">🎲</div>
-            <h3 className="font-bold mb-2 text-red-700">Fair auslosen</h3>
-            <p className="text-sm text-gray-700">Intelligenter Algorithmus für faire & gerechte Zufallspaarungen</p>
-          </div>
-          <div className="card bg-gradient-to-br from-amber-50 to-yellow-50 border-2 border-amber-200 hover:shadow-lg transition">
-            <div className="text-4xl mb-3">🎁</div>
-            <h3 className="font-bold mb-2 text-amber-700">Geschenkeliste</h3>
-            <p className="text-sm text-gray-700">Bis zu 10 Geschenke mit Kategorien & Amazon-Links teilen</p>
-          </div>
-        </div>
-
         {/* Main Content */}
         <div className="max-w-md mx-auto">
           <div className="card bg-gradient-to-br from-white to-amber-50 shadow-xl border-2 border-amber-200 mb-6">
@@ -75,6 +56,25 @@ export default function Home() {
                 <span><strong>Auslosen & beschenken</strong> – Geschenkelisten anlegen, einkaufen, schenken!</span>
               </li>
             </ol>
+          </div>
+        </div>
+
+        {/* Feature Cards - Bottom Section */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-16 mb-12 max-w-3xl mx-auto">
+          <div className="card bg-gradient-to-br from-orange-50 to-amber-50 border-2 border-orange-200 hover:shadow-lg transition">
+            <div className="text-4xl mb-3">👥</div>
+            <h3 className="font-bold mb-2 text-orange-700">Gruppe erstellen</h3>
+            <p className="text-sm text-gray-700">Einfach eine neue Runde anlegen und Freunde, Familie oder Verein einladen</p>
+          </div>
+          <div className="card bg-gradient-to-br from-red-50 to-orange-50 border-2 border-red-200 hover:shadow-lg transition">
+            <div className="text-4xl mb-3">🎲</div>
+            <h3 className="font-bold mb-2 text-red-700">Fair auslosen</h3>
+            <p className="text-sm text-gray-700">Intelligenter Algorithmus für faire & gerechte Zufallspaarungen</p>
+          </div>
+          <div className="card bg-gradient-to-br from-amber-50 to-yellow-50 border-2 border-amber-200 hover:shadow-lg transition">
+            <div className="text-4xl mb-3">🎁</div>
+            <h3 className="font-bold mb-2 text-amber-700">Geschenkeliste</h3>
+            <p className="text-sm text-gray-700">Bis zu 10 Geschenke mit Kategorien & Amazon-Links teilen</p>
           </div>
         </div>
 
