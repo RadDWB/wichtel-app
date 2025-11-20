@@ -5,10 +5,27 @@ import { OCCASIONS } from '../../lib/occasions';
 import { getGroup, saveGroup } from '../../lib/kv-client';
 import GiftList from '../../components/GiftList';
 import AmazonFilterSelector from '../../components/AmazonFilterSelector';
+import { APP_VERSION } from '../../lib/constants';
 
 export const getServerSideProps = async () => {
   return { props: {} };
 };
+
+// Map budget text to price range keys for the filter
+function getBudgetPriceRange(budget) {
+  if (!budget) return null;
+
+  const budgetStr = budget.toLowerCase();
+  if (budgetStr.includes('5') && !budgetStr.includes('15') && !budgetStr.includes('25') && !budgetStr.includes('50')) return '5-10';
+  if (budgetStr.includes('10') && !budgetStr.includes('100')) return '10-15';
+  if (budgetStr.includes('15') && !budgetStr.includes('50')) return '15-20';
+  if (budgetStr.includes('20')) return '20-30';
+  if (budgetStr.includes('30')) return '30-50';
+  if (budgetStr.includes('50')) return '50-100';
+  if (budgetStr.includes('100')) return '50-100';
+
+  return null;
+}
 
 export default function JoinGroup() {
   const router = useRouter();
@@ -691,7 +708,7 @@ export default function JoinGroup() {
           </div>
 
           <div className="max-w-2xl mx-auto mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-            <h2 className="font-bold text-blue-900 mb-2">📋 {currentGifts.length > 0 ? 'Deine Wunschliste bearbeiten' : 'Schritt 1: Geschenkeliste erstellen'}</h2>
+            <h2 className="font-bold text-blue-900 mb-2">📋 Schritt 1: Geschenkeliste erstellen</h2>
             <p className="text-sm text-blue-800">
               {currentGifts.length > 0
                 ? `Du hast bereits ${currentGifts.length} Geschenk${currentGifts.length !== 1 ? 'e' : ''} auf deiner Liste. Du kannst diese bearbeiten, löschen oder weitere hinzufügen.`
@@ -704,6 +721,15 @@ export default function JoinGroup() {
             groupId={groupId}
             participantId={selectedParticipant.id}
           />
+
+          {/* Amazon Filters Help Section */}
+          <div className="max-w-2xl mx-auto mt-8 mb-6">
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">💡 Geschenk-Inspirationen auf Amazon</h3>
+            <p className="text-gray-700 mb-6">
+              Du möchtest noch mehr Geschenkideen? Nutze unsere intelligenten Filter, um auf Amazon.de zu stöbern:
+            </p>
+            <AmazonFilterSelector preselectedPrice={getBudgetPriceRange(group?.budget)} />
+          </div>
           <div className="container mx-auto mt-8 max-w-2xl">
             <div className="flex gap-3 mb-6">
               <button
@@ -752,10 +778,22 @@ export default function JoinGroup() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
         <div className="container mx-auto py-12 px-4 max-w-2xl">
+          {/* Header with Version */}
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-orange-500 to-amber-600">
+                🎁 Wichtel Partner
+              </h1>
+              <span className="inline-block bg-gradient-to-r from-red-600 to-orange-500 text-white px-2 py-1 rounded text-xs font-bold">
+                v{APP_VERSION}
+              </span>
+            </div>
+          </div>
+
           <div className="max-w-2xl mx-auto mb-6 bg-purple-50 border-l-4 border-purple-500 p-4 rounded">
-            <h2 className="font-bold text-purple-900 mb-2">🎁 Phase 2: Persönliche Ausschlüsse (optional)</h2>
+            <h2 className="font-bold text-purple-900 mb-2">📋 Schritt 2 (optional): Wichtelpartner ausschließen</h2>
             <p className="text-sm text-purple-800">
-              Wenn du möchtest, kannst du eine Person ausschließen, der/dem du kein Geschenk kaufen möchtest. Zum Beispiel dein Partner, Familie oder enge Freunde.
+              Wenn du möchtest, kannst du jetzt einen Teilnehmer ausschließen, dem/der du kein Geschenk kaufen möchtest. Zum Beispiel deinen Partner, Familienmitglieder oder sehr enge Freunde. Das ist aber völlig optional – du kannst diesen Schritt auch einfach überspringen!
             </p>
           </div>
 
