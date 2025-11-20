@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { OCCASIONS } from '../../lib/occasions';
 import { getGroup, saveGroup } from '../../lib/kv-client';
 import GiftList from '../../components/GiftList';
+import AmazonFilterSelector from '../../components/AmazonFilterSelector';
 import { APP_VERSION } from '../../lib/constants';
 
 export const getServerSideProps = async () => {
