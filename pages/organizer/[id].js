@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { getGroup, getGifts } from '../../lib/kv-client';
 import AmazonFilterSelector from '../../components/AmazonFilterSelector';
+import { APP_VERSION, getInvitationText, getPairingsText } from '../../lib/constants';
 
 // Amazon Affiliate Links with different budget ranges
 const AMAZON_AFFILIATE_LINKS = {
@@ -365,7 +366,7 @@ export default function OrganizerDashboard() {
           </h1>
           <p className="text-xl text-gray-700 mb-1">{group.name}</p>
           <p className="text-gray-600">Überblick über den Status deiner Wichtelgruppe</p>
-          <p className="text-sm text-gray-500 mt-2 font-mono">ID: {id}</p>
+          <p className="text-sm text-gray-500 mt-2 font-mono">ID: {id} | Version: {APP_VERSION}</p>
         </div>
 
         {/* Main Content Grid */}
@@ -617,70 +618,93 @@ export default function OrganizerDashboard() {
 
         {/* Pairings Share Section (after draw) */}
         {group.drawn && (
-          <div className="card bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-300 shadow-lg mb-6">
-            <h3 className="section-title text-purple-900 mb-4">🎁 Paarungen teilen</h3>
+          <>
+            {/* Pairings Link Pure Section */}
+            <div className="card bg-gradient-to-br from-cyan-50 to-blue-50 border-2 border-cyan-300 shadow-lg mb-6">
+              <h3 className="section-title text-cyan-900 mb-4">🎁 Paarungen-Link</h3>
 
-            <p className="text-sm text-gray-700 mb-4">
-              Teile diese Seite mit allen Teilnehmern, damit sie sehen können, wer wen beschenkt und die Wunschlisten einsehen können:
-            </p>
+              <p className="text-sm text-gray-700 mb-4">
+                Die Auslosung ist abgeschlossen! Teile diesen Link mit allen Teilnehmern, damit sie ihre Wichtelpartner und deren Wunschlisten sehen können:
+              </p>
 
-            <div className="bg-white rounded border border-purple-300 p-4 mb-4 font-mono text-xs break-all">
-              {getPairingsLink()}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <button
+                  onClick={() => copyToClipboard('pairings')}
+                  className="w-full bg-cyan-600 hover:bg-cyan-700 text-white py-2 rounded-lg font-semibold transition"
+                >
+                  {copiedType === 'pairings' ? '✅ Link kopiert!' : '📋 Link in Zwischenablage'}
+                </button>
+
+                <div className="relative group">
+                  <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-semibold transition">
+                    📲 Link teilen
+                  </button>
+                  <div className="absolute hidden group-hover:flex bg-gray-900 text-white text-xs rounded-lg p-3 right-0 mt-2 w-48 z-10 flex-col gap-2">
+                    <a
+                      href={`https://wa.me/?text=${encodeURIComponent(getPairingsText(getPairingsLink()))}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-green-400 block"
+                    >
+                      💬 WhatsApp
+                    </a>
+                    <a
+                      href={`https://api.whatsapp.com/send?text=${encodeURIComponent(getPairingsText(getPairingsLink()))}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-green-400 block text-xs"
+                    >
+                      💬 WhatsApp (App)
+                    </a>
+                    <a
+                      href={`mailto:?body=${encodeURIComponent(getPairingsText(getPairingsLink()))}`}
+                      className="hover:text-blue-400 block"
+                    >
+                      📧 Email
+                    </a>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(getPairingsText(getPairingsLink()));
+                        setCopiedType('pairings-share');
+                        setTimeout(() => setCopiedType(null), 2000);
+                      }}
+                      className="text-left hover:text-yellow-400 block"
+                    >
+                      {copiedType === 'pairings-share' ? '✅ Kopiert!' : '📌 Text kopieren'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 p-3 bg-cyan-100 border border-cyan-300 rounded text-xs text-cyan-900">
+                <strong>💡 Hinweis:</strong> Teile diesen Link per WhatsApp, Email oder andere Messenger, um deine Teilnehmer über ihre Wichtelpartner zu informieren!
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <button
-                onClick={() => copyToClipboard('pairings')}
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg font-semibold transition"
-              >
-                {copiedType === 'pairings' ? '✅ Link kopiert!' : '📋 Link in Zwischenablage'}
-              </button>
+            {/* Pairings Text Template Section */}
+            <div className="card bg-gradient-to-br from-sky-50 to-indigo-50 border-2 border-sky-300 shadow-lg mb-6">
+              <h3 className="section-title text-sky-900 mb-4">📝 Paarungen-Text mit Link</h3>
 
-              <div className="relative group">
-                <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg font-semibold transition">
-                  📲 Link teilen
-                </button>
-                <div className="absolute hidden group-hover:flex bg-gray-900 text-white text-xs rounded-lg p-3 right-0 mt-2 w-48 z-10 flex-col gap-2">
-                  <a
-                    href={`https://wa.me/?text=${encodeURIComponent(`Schaut die Wichtel-Paarungen an! ${getPairingsLink()}`)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-green-400 block"
-                  >
-                    💬 WhatsApp
-                  </a>
-                  <a
-                    href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`Schaut die Wichtel-Paarungen an! ${getPairingsLink()}`)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-green-400 block"
-                  >
-                    💬 WhatsApp (App)
-                  </a>
-                  <a
-                    href={`mailto:?body=${encodeURIComponent(`Schaut die Wichtel-Paarungen an:\n\n${getPairingsLink()}`)}`}
-                    className="hover:text-blue-400 block"
-                  >
-                    📧 Email
-                  </a>
-                </div>
+              <p className="text-sm text-gray-700 mb-4">
+                Kopiere diesen Text - der Link ist bereits enthalten! Du kannst ihn noch anpassen, wenn du möchtest:
+              </p>
+
+              <div className="bg-white rounded border border-sky-300 p-4 mb-4 whitespace-pre-wrap font-mono text-xs text-gray-800 max-h-64 overflow-y-auto">
+                {getPairingsText(getPairingsLink())}
               </div>
 
               <button
                 onClick={() => {
-                  const text = `Schaut die Wichtel-Paarungen an! ${getPairingsLink()}`;
-                  navigator.share({ title: 'Wichtel-Paarungen', text: text }).catch(() => {});
+                  navigator.clipboard.writeText(getPairingsText(getPairingsLink()));
+                  setCopiedType('pairings-text');
+                  setTimeout(() => setCopiedType(null), 2000);
                 }}
-                className="w-full bg-pink-600 hover:bg-pink-700 text-white py-2 rounded-lg font-semibold transition"
+                className="w-full bg-sky-600 hover:bg-sky-700 text-white py-2 rounded-lg font-semibold transition"
               >
-                🔗 Share-Button
+                {copiedType === 'pairings-text' ? '✅ Text mit Link kopiert!' : '📋 Text mit Link kopieren'}
               </button>
             </div>
-
-            <div className="mt-4 p-3 bg-purple-100 border border-purple-300 rounded text-xs text-purple-900">
-              <strong>💡 Hinweis:</strong> Auf dieser Seite können deine Teilnehmer sehen, wer wen beschenkt. Klick auf einen Namen, um die Wunschliste zu sehen. Falls jemand sich überraschen lassen möchte, wird das dort angezeigt.
-            </div>
-          </div>
+          </>
         )}
 
         {/* Action Buttons */}

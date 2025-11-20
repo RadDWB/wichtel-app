@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { getGroup, getGifts } from '../../lib/kv-client';
-import GiftList from '../../components/GiftList';
 
 export default function PairingsPage() {
   const router = useRouter();
@@ -10,7 +9,6 @@ export default function PairingsPage() {
   const [group, setGroup] = useState(null);
   const [gifts, setGifts] = useState({});
   const [loading, setLoading] = useState(true);
-  const [expandedPerson, setExpandedPerson] = useState(null);
 
   useEffect(() => {
     if (groupId) {
@@ -164,10 +162,9 @@ export default function PairingsPage() {
                 const recipient = group.pairing?.[participant.id];
                 const recipientName = recipient ? getPersonName(recipient) : 'Nicht zugewiesen';
                 const wantsSurpriseFlag = wantsSurprise(recipient);
-                const isExpanded = expandedPerson === participant.id;
 
                 return (
-                  <div key={participant.id} className="space-y-2">
+                  <div key={participant.id}>
                     {/* Pairing Card */}
                     <div className="bg-white rounded-lg shadow-md overflow-hidden border-l-4 border-red-500 hover:shadow-lg transition">
                       <div className="p-6">
@@ -185,9 +182,9 @@ export default function PairingsPage() {
 
                           {/* Recipient */}
                           <div className="flex-1">
-                            <button
-                              onClick={() => setExpandedPerson(isExpanded ? null : participant.id)}
-                              className="w-full text-center hover:bg-gray-50 rounded-lg p-2 transition group"
+                            <Link
+                              href={`/${groupId}/gift/${recipient}`}
+                              className="block w-full text-center hover:bg-gray-50 rounded-lg p-2 transition group"
                             >
                               <div className="text-3xl mb-2 group-hover:scale-110 transition">👤</div>
                               <p className="font-bold text-gray-900 text-lg">{recipientName}</p>
@@ -196,50 +193,10 @@ export default function PairingsPage() {
                               ) : (
                                 <p className="text-xs text-blue-600 font-semibold mt-1">📋 Klick für Liste</p>
                               )}
-                            </button>
+                            </Link>
                           </div>
                         </div>
                       </div>
-
-                      {/* Expanded Gift List */}
-                      {isExpanded && (
-                        <div className="bg-gray-50 border-t border-gray-200 p-6">
-                          {wantsSurpriseFlag ? (
-                            // Surprise message
-                            <div className="text-center py-8">
-                              <div className="text-6xl mb-4">🎉</div>
-                              <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                                Überraschungs-Zeit!
-                              </h3>
-                              <p className="text-gray-700">
-                                {recipientName} möchte sich überraschen lassen und hat keine Wunschliste angelegt.
-                                Das gibt dir Freiheit, etwas Kreatives auszusuchen!
-                              </p>
-                              <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4 mt-4 text-left">
-                                <p className="text-sm text-gray-700 font-semibold mb-2">✨ Tipps:</p>
-                                <ul className="text-sm text-gray-600 space-y-1">
-                                  <li>💡 Budget: {group.budget}</li>
-                                  <li>💡 Persönliche Interessen berücksichtigen</li>
-                                  <li>💡 Kreativ und liebevoll auswählen</li>
-                                </ul>
-                              </div>
-                            </div>
-                          ) : (
-                            // Gift list
-                            <div>
-                              <h3 className="text-lg font-bold text-gray-900 mb-4">
-                                {recipientName}s Wunschliste
-                              </h3>
-                              <GiftList
-                                group={group}
-                                groupId={groupId}
-                                participantId={recipient}
-                                isViewing={true}
-                              />
-                            </div>
-                          )}
-                        </div>
-                      )}
                     </div>
                   </div>
                 );
