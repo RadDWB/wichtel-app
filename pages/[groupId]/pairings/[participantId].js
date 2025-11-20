@@ -3,15 +3,24 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { getGroup, getGifts } from '../../../lib/kv-client';
 import GiftList from '../../../components/GiftList';
+import AmazonFilterSelector from '../../../components/AmazonFilterSelector';
 import { APP_VERSION } from '../../../lib/constants';
 
-// Amazon Affiliate Links with different budget ranges
-const AMAZON_AFFILIATE_LINKS = {
-  all: 'https://www.amazon.de/s?k=geschenkideen&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl',
-  lowBudget: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A500-1500&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl',
-  mediumBudget: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A2000-3000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl',
-  highBudget: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A5000-10000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl',
-};
+// Map budget text to price range keys for the filter
+function getBudgetPriceRange(budget) {
+  if (!budget) return null;
+
+  const budgetStr = budget.toLowerCase();
+  if (budgetStr.includes('5') && !budgetStr.includes('15') && !budgetStr.includes('25') && !budgetStr.includes('50')) return '5-10';
+  if (budgetStr.includes('10') && !budgetStr.includes('100')) return '10-15';
+  if (budgetStr.includes('15') && !budgetStr.includes('50')) return '15-20';
+  if (budgetStr.includes('20')) return '20-30';
+  if (budgetStr.includes('30')) return '30-50';
+  if (budgetStr.includes('50')) return '50-100';
+  if (budgetStr.includes('100')) return '50-100';
+
+  return null;
+}
 
 export const getServerSideProps = async () => {
   return { props: {} };
@@ -82,20 +91,8 @@ export default function PartnerDetailPage() {
   // Check if partner wants surprise
   const wantsSurprise = !gifts || gifts.length === 0;
 
-  // Get appropriate Amazon link based on budget
-  const getAmazonLink = () => {
-    if (!group?.budget) return AMAZON_AFFILIATE_LINKS.all;
-
-    const budget = group.budget.toLowerCase();
-    if (budget.includes('5') || budget.includes('10') || budget.includes('15')) {
-      return AMAZON_AFFILIATE_LINKS.lowBudget;
-    } else if (budget.includes('20') || budget.includes('25') || budget.includes('30')) {
-      return AMAZON_AFFILIATE_LINKS.mediumBudget;
-    } else if (budget.includes('50') || budget.includes('100')) {
-      return AMAZON_AFFILIATE_LINKS.highBudget;
-    }
-    return AMAZON_AFFILIATE_LINKS.all;
-  };
+  // Get preselected budget for Amazon filters
+  const preselectedPrice = getBudgetPriceRange(group?.budget);
 
   if (loading) {
     return (
@@ -138,46 +135,35 @@ export default function PartnerDetailPage() {
 
         <div className="max-w-3xl mx-auto">
           {wantsSurprise ? (
-            // Surprise message
-            <div className="bg-white rounded-lg shadow-lg p-12 mb-8">
-              <div className="text-center">
+            // Surprise message with Amazon Filters
+            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
+              <div className="text-center mb-8">
                 <div className="text-6xl mb-4 animate-bounce">🎉</div>
                 <h2 className="text-3xl font-bold text-purple-600 mb-4">Überraschungs-Zeit!</h2>
                 <p className="text-lg text-gray-700 mb-6">
                   {partner.name} möchte sich überraschen lassen und hat bewusst keine Wunschliste angelegt.
                 </p>
-                <p className="text-gray-600 mb-8">
+                <p className="text-gray-600">
                   Das gibt dir volle Freiheit, etwas Kreatives und Liebevolles auszusuchen! 💝
                 </p>
-
-                <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-6 mb-8 text-left">
-                  <p className="text-lg font-bold text-purple-900 mb-4">✨ Tipps für die Wahl:</p>
-                  <ul className="text-gray-700 space-y-2 mb-4">
-                    <li>💡 Budget: <strong>{group.budget}</strong></li>
-                    <li>💡 Denke an persönliche Interessen von {partner.name}</li>
-                    <li>💡 Sei kreativ und liebevoll bei der Auswahl</li>
-                    <li>💡 Überraschungsgeschenke sind oft die besten! 🎁</li>
-                  </ul>
-                </div>
-
-                {/* Amazon Link for Surprise */}
-                <a
-                  href={getAmazonLink()}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block w-full md:w-auto text-center bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-4 px-8 rounded-lg transition transform hover:scale-105 shadow-lg text-lg mb-6"
-                >
-                  🛍️ Auf Amazon.de stöbern
-                </a>
-
-                <p className="text-xs text-gray-600">
-                  Wir nehmen am Amazon Affiliate Programm teil – Sie unterstützen uns durch Ihren Einkauf!
-                </p>
               </div>
+
+              <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-6 mb-8 text-left">
+                <p className="text-lg font-bold text-purple-900 mb-4">✨ Tipps für die Wahl:</p>
+                <ul className="text-gray-700 space-y-2">
+                  <li>💡 Budget: <strong>{group.budget}</strong></li>
+                  <li>💡 Denke an persönliche Interessen von {partner.name}</li>
+                  <li>💡 Sei kreativ und liebevoll bei der Auswahl</li>
+                  <li>💡 Überraschungsgeschenke sind oft die besten! 🎁</li>
+                </ul>
+              </div>
+
+              {/* Amazon Filters for Surprise */}
+              <AmazonFilterSelector preselectedPrice={preselectedPrice} />
             </div>
           ) : (
             // Gift list
-            <div className="bg-white rounded-lg shadow-lg p-8">
+            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <h2 className="text-3xl font-bold text-gray-900 mb-6">📋 {partner.name}s Wunschliste</h2>
 
               <div className="mb-8">
@@ -189,23 +175,13 @@ export default function PartnerDetailPage() {
                 />
               </div>
 
-              {/* Amazon Link for Gift List */}
-              <div className="bg-orange-50 border-2 border-orange-300 rounded-lg p-6 mt-8">
-                <h3 className="text-xl font-bold text-orange-900 mb-3">🛍️ Jetzt einkaufen</h3>
-                <p className="text-gray-700 mb-4">
-                  Konntest du das perfekte Geschenk in der Liste nicht finden? Stöbere auf Amazon.de:
+              {/* Amazon Filters for Gift List */}
+              <div className="mt-8">
+                <h3 className="text-2xl font-bold text-gray-900 mb-6">🛍️ Konntest du das perfekte Geschenk nicht finden?</h3>
+                <p className="text-gray-700 mb-6">
+                  Nutze unsere intelligenten Filter, um auf Amazon.de nach Alternativen zu suchen:
                 </p>
-                <a
-                  href={getAmazonLink()}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block w-full md:w-auto text-center bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-4 px-8 rounded-lg transition transform hover:scale-105 shadow-lg"
-                >
-                  🎁 Zu Amazon.de mit Filtern
-                </a>
-                <p className="text-xs text-gray-600 mt-4">
-                  Budget: <strong>{group.budget}</strong> | Wir nehmen am Amazon Affiliate Programm teil
-                </p>
+                <AmazonFilterSelector preselectedPrice={preselectedPrice} />
               </div>
             </div>
           )}
