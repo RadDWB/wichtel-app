@@ -860,6 +860,14 @@ export default function OrganizerDashboard() {
         {/* Organizer Pairings View (Accordion with Spoiler Warning) - ACCORDION VERSION */}
         {group.drawn && (
           <div className="card bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-orange-400 mb-6">
+            {/* Spoiler Warning - ALWAYS VISIBLE */}
+            <div className="bg-red-100 border-l-4 border-red-500 p-4 border-b-2 border-orange-300">
+              <p className="text-red-900 font-bold mb-2">⚠️ Achtung: Spoiler-Warnung für Organisator!</p>
+              <p className="text-red-800 text-sm">
+                Wenn du die Überraschung selbst erleben möchtest und nicht wissen willst, wer wen beschenkt, scrolle hier <strong>nicht runter</strong>! Nutze diese Funktion nur, wenn du die Zuordnungen tatsächlich sehen musst (z.B. zur Fehlersuche).
+              </p>
+            </div>
+
             <button
               onClick={() => setShowPairingsAccordion(!showPairingsAccordion)}
               className="w-full text-left p-4 hover:bg-orange-100 transition flex items-center justify-between"
@@ -871,12 +879,6 @@ export default function OrganizerDashboard() {
             {showPairingsAccordion && (
               <>
                 <div className="border-t border-orange-300">
-                  <div className="bg-red-100 border-l-4 border-red-500 p-4 m-4">
-                    <p className="text-red-900 font-bold mb-2">⚠️ Achtung: Spoiler-Warnung für Organisator!</p>
-                    <p className="text-red-800 text-sm">
-                      Wenn du die Überraschung selbst erleben möchtest und nicht wissen willst, wer wen beschenkt, scrolle hier <strong>nicht runter</strong>! Nutze diese Funktion nur, wenn du die Zuordnungen tatsächlich sehen musst (z.B. zur Fehlersuche).
-                    </p>
-                  </div>
 
                   <p className="text-gray-700 px-4 pt-2">
                     Hier kannst du eine Zusammenfassung aller Wichtelpaarungen anschauen:
