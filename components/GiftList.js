@@ -3,17 +3,38 @@ import { APP_VERSION } from '../lib/constants';
 
 const AMAZON_AFFILIATE_TAG = process.env.NEXT_PUBLIC_AMAZON_AFFILIATE_TAG || 'httpwwwspor03-21';
 
-// Amazon Affiliate Links mit verschiedenen Preisranges
-const AMAZON_PRICE_RANGES = [
-  { label: '1-5 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A100-500&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
-  { label: '5-10 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A500-1000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
-  { label: '10-15 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A1000-1500&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
-  { label: '15-20 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A1500-2000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
-  { label: '20-30 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A2000-3000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
-  { label: '30-50 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A3000-5000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
-  { label: '50-100 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A5000-10000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
-  { label: 'Alle Preise', link: 'https://www.amazon.de/s?k=geschenkideen&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' }
-];
+// Amazon Filter Kategorien
+const AMAZON_FILTERS = {
+  price: [
+    { label: '1-5 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A100-500&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '5-10 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A500-1000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '10-15 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A1000-1500&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '15-20 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A1500-2000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '20-30 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A2000-3000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '30-50 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A3000-5000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '50-100 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A5000-10000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
+  ],
+  age: [
+    { label: '👶 Baby (0-2 Jahre)', link: 'https://www.amazon.de/s?k=baby+geschenke&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '👧 Kind (3-7 Jahre)', link: 'https://www.amazon.de/s?k=kinder+geschenke&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '🧒 Schulkind (8-12 Jahre)', link: 'https://www.amazon.de/s?k=schulkinder+geschenke&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '👦 Teenager (13-17 Jahre)', link: 'https://www.amazon.de/s?k=teenager+geschenke&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+  ],
+  gender: [
+    { label: '👧 Für Mädchen', link: 'https://www.amazon.de/s?k=geschenke+für+mädchen&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '👦 Für Jungen', link: 'https://www.amazon.de/s?k=geschenke+für+jungen&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+  ],
+  category: [
+    { label: '📚 Bücher & E-Reader', link: 'https://www.amazon.de/s?k=bücher+geschenke&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '🎮 Gaming & Konsolen', link: 'https://www.amazon.de/s?k=gaming+geschenke&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '🎧 Audio & Kopfhörer', link: 'https://www.amazon.de/s?k=kopfhörer+geschenke&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '⌚ Uhren & Schmuck', link: 'https://www.amazon.de/s?k=uhren+schmuck+geschenke&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '💻 Elektronik & Gadgets', link: 'https://www.amazon.de/s?k=elektronik+gadgets+geschenke&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '🏃 Sport & Outdoor', link: 'https://www.amazon.de/s?k=sport+outdoor+geschenke&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '🧘 Beauty & Wellness', link: 'https://www.amazon.de/s?k=beauty+wellness+geschenke&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '🍳 Haushalt & Küche', link: 'https://www.amazon.de/s?k=haushalt+küche+geschenke&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+  ]
+};
 
 export default function GiftList({ group, groupId, participantId, isViewing = false }) {
   const [gifts, setGifts] = useState([]);
@@ -195,20 +216,62 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
             <span className="text-xl text-gray-500" style={{transform: expandedStep === 1 ? 'rotate(180deg)' : 'rotate(0deg)'}}>▼</span>
           </button>
           {expandedStep === 1 && (
-            <div className="px-6 py-4 bg-orange-50 border-t border-orange-100">
-              <p className="text-sm text-gray-700 mb-4">
-                Suche dein Wunschprodukt. Du kannst die Amazon-Filter nutzen, um den Preis auf dein Budget ({group.budget}) zu begrenzen. Du kannst auch nach Kategorie, Alter, Geschlecht und anderen Eigenschaften filtern.
+            <div className="px-6 py-4 bg-orange-50 border-t border-orange-100 space-y-4">
+              <p className="text-sm text-gray-700">
+                Suche dein Wunschprodukt auf Amazon.de. Nutze die Filter unten, um schnell zum richtigen Produkt zu gelangen!
               </p>
+
+              {/* BUDGET / PREIS FILTER */}
               <div className="bg-white border border-orange-200 rounded p-4">
-                <p className="text-xs font-semibold text-orange-900 mb-3">💡 Schnelle Links für dein Budget ({group.budget}):</p>
+                <p className="text-xs font-semibold text-orange-900 mb-3">💰 Nach Budget ({group.budget}):</p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                  {AMAZON_PRICE_RANGES.map((range) => (
+                  {AMAZON_FILTERS.price.map((range) => (
                     <a key={range.label} href={range.link} target="_blank" rel="noopener noreferrer" className="text-xs bg-orange-500 hover:bg-orange-600 text-white py-2 px-2 rounded font-semibold text-center transition">
                       {range.label}
                     </a>
                   ))}
                 </div>
               </div>
+
+              {/* ALTERSBEREICH FILTER */}
+              <div className="bg-white border border-blue-200 rounded p-4">
+                <p className="text-xs font-semibold text-blue-900 mb-3">👥 Nach Altersbereich:</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {AMAZON_FILTERS.age.map((age) => (
+                    <a key={age.label} href={age.link} target="_blank" rel="noopener noreferrer" className="text-xs bg-blue-500 hover:bg-blue-600 text-white py-2 px-3 rounded font-semibold text-center transition">
+                      {age.label}
+                    </a>
+                  ))}
+                </div>
+              </div>
+
+              {/* GESCHLECHT FILTER */}
+              <div className="bg-white border border-purple-200 rounded p-4">
+                <p className="text-xs font-semibold text-purple-900 mb-3">👫 Nach Geschlecht:</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {AMAZON_FILTERS.gender.map((gender) => (
+                    <a key={gender.label} href={gender.link} target="_blank" rel="noopener noreferrer" className="text-xs bg-purple-500 hover:bg-purple-600 text-white py-2 px-3 rounded font-semibold text-center transition">
+                      {gender.label}
+                    </a>
+                  ))}
+                </div>
+              </div>
+
+              {/* KATEGORIE FILTER */}
+              <div className="bg-white border border-green-200 rounded p-4">
+                <p className="text-xs font-semibold text-green-900 mb-3">🏷️ Nach Kategorie:</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-2">
+                  {AMAZON_FILTERS.category.map((cat) => (
+                    <a key={cat.label} href={cat.link} target="_blank" rel="noopener noreferrer" className="text-xs bg-green-500 hover:bg-green-600 text-white py-2 px-3 rounded font-semibold text-center transition">
+                      {cat.label}
+                    </a>
+                  ))}
+                </div>
+              </div>
+
+              <p className="text-xs text-gray-600 text-center">
+                💡 Klick auf einen Filter, um zur Amazon.de Geschenke-Übersicht zu gehen. Die Links sind vorausgewählt!
+              </p>
             </div>
           )}
         </div>
