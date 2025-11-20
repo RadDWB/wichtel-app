@@ -722,14 +722,6 @@ export default function JoinGroup() {
             participantId={selectedParticipant.id}
           />
 
-          {/* Amazon Filters Help Section */}
-          <div className="max-w-2xl mx-auto mt-8 mb-6">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">💡 Geschenk-Inspirationen auf Amazon</h3>
-            <p className="text-gray-700 mb-6">
-              Du möchtest noch mehr Geschenkideen? Nutze unsere intelligenten Filter, um auf Amazon.de zu stöbern:
-            </p>
-            <AmazonFilterSelector preselectedPrice={getBudgetPriceRange(group?.budget)} />
-          </div>
           <div className="container mx-auto mt-8 max-w-2xl">
             <div className="flex gap-3 mb-6">
               <button
@@ -749,7 +741,7 @@ export default function JoinGroup() {
                 onClick={() => setStep(3)}
                 className="flex-1 btn-primary"
               >
-                ✅ Fertig - zu Ausschlüssen →
+                ✅ Weiter → Schritt 2 (optional Ausschluss)
               </button>
             </div>
 
