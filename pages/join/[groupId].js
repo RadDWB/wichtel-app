@@ -178,7 +178,13 @@ export default function JoinGroup() {
               setSelectedParticipant(orgParticipantObj);
               setNameEdit(orgParticipantObj.name);
               setEmailEdit(orgParticipantObj.email || '');
-              setStep(1.5); // Go to gift choice
+              // After draw: show name list (Step 1)
+              // Before draw: go to gift choice (Step 1.5)
+              if (groupData.drawn) {
+                setStep(1); // Show participant list after draw
+              } else {
+                setStep(1.5); // Go to gift choice before draw
+              }
               localStorage.setItem(`participant_${groupId}`, orgParticipant);
               return;
             }
@@ -190,7 +196,13 @@ export default function JoinGroup() {
             const participant = groupData.participants.find(p => p.id === participantId);
             if (participant) {
               setSelectedParticipant(participant);
-              setStep(1.5); // Go to gift choice
+              // After draw: show name list (Step 1)
+              // Before draw: go to gift choice (Step 1.5)
+              if (groupData.drawn) {
+                setStep(1); // Show participant list after draw
+              } else {
+                setStep(1.5); // Go to gift choice before draw
+              }
             }
           }
         }
