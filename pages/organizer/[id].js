@@ -5,6 +5,13 @@ import { getGroup, getGifts } from '../../lib/kv-client';
 import AmazonFilterSelector from '../../components/AmazonFilterSelector';
 import { APP_VERSION, getInvitationText, getPairingsText } from '../../lib/constants';
 
+// Force SSR to prevent static generation errors
+export const getServerSideProps = async () => {
+  return {
+    props: {},
+  };
+};
+
 // Amazon Affiliate Links with different budget ranges
 const AMAZON_AFFILIATE_LINKS = {
   // Für verschiedene Preisranges - diese Links leiten zu gefilterten Suchergebnissen
@@ -26,56 +33,54 @@ export default function OrganizerDashboard() {
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState('');
   const [deletingParticipantId, setDeletingParticipantId] = useState(null);
-  const [copiedType, setCopiedType] = useState(null);
 
   useEffect(() => {
     if (id) {
-      // Check if authenticated via PIN
-      checkAuthentication();
-
-      // Store showPin in localStorage so join page can redirect back correctly
+      // Store showPin in localStorage immediately
       if (showPin) {
         localStorage.setItem(`organizer_pin_${id}`, showPin);
+        // Also store in the organizer_ key for authentication
+        localStorage.setItem(`organizer_${id}`, JSON.stringify({
+          pin: showPin,
+          verifiedAt: new Date().toISOString()
+        }));
+        setAuthenticated(true);
+      } else {
+        // Check if authenticated via PIN from localStorage
+        const stored = localStorage.getItem(`organizer_${id}`);
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            if (parsed.pin && parsed.verifiedAt) {
+              setAuthenticated(true);
+            } else {
+              setAuthenticated(false);
+            }
+          } catch (e) {
+            console.error('Invalid stored auth:', e);
+            setAuthenticated(false);
+          }
+        } else {
+          setAuthenticated(false);
+        }
       }
+    }
+  }, [id, showPin]);
+
+  // Separate effect for loading data when authenticated
+  useEffect(() => {
+    if (id && authenticated) {
+      loadGroupData();
 
       // Refresh data every 30 seconds (reduced from 10s to decrease flickering on mobile)
-      // Only poll when authenticated
-      let interval = null;
-      if (authenticated) {
-        interval = setInterval(() => {
-          loadGroupData();
-        }, 30000);
-      }
-      return () => {
-        if (interval) clearInterval(interval);
-      };
-    }
-  }, [id, authenticated, showPin]);
+      const interval = setInterval(() => {
+        loadGroupData();
+      }, 30000);
 
-  const checkAuthentication = () => {
-    // Check if coming from initial setup (showPin in URL)
-    if (showPin) {
-      setAuthenticated(true);
-      return;
+      return () => clearInterval(interval);
     }
+  }, [id, authenticated]);
 
-    // Check localStorage for verification
-    const stored = localStorage.getItem(`organizer_${id}`);
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        if (parsed.pin && parsed.verifiedAt) {
-          setAuthenticated(true);
-          return;
-        }
-      } catch (e) {
-        console.error('Invalid stored auth:', e);
-      }
-    }
-
-    // Not authenticated
-    setAuthenticated(false);
-  };
 
   const handlePinSubmit = async (e) => {
     e.preventDefault();
@@ -390,12 +395,17 @@ export default function OrganizerDashboard() {
 
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-orange-500 to-amber-600 mb-2">
-            🎯 Organisator Dashboard
-          </h1>
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-orange-500 to-amber-600">
+              🎯 Organisator Dashboard
+            </h1>
+            <span className="inline-block bg-gradient-to-r from-red-600 to-orange-500 text-white px-2 py-1 rounded text-xs font-bold">
+              v{APP_VERSION}
+            </span>
+          </div>
           <p className="text-xl text-gray-700 mb-1">{group.name}</p>
           <p className="text-gray-600">Überblick über den Status deiner Wichtelgruppe</p>
-          <p className="text-sm text-gray-500 mt-2 font-mono">ID: {id} | Version: {APP_VERSION}</p>
+          <p className="text-sm text-gray-500 mt-2 font-mono">ID: {id}</p>
         </div>
 
         {/* Main Content Grid */}
@@ -605,10 +615,6 @@ export default function OrganizerDashboard() {
             </p>
           </div>
 
-          <div className="bg-white rounded border border-purple-300 p-4 mb-4 font-mono text-xs break-all">
-            {getParticipantLink()}
-          </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <button
               onClick={() => copyToClipboard('participant')}
@@ -661,6 +667,30 @@ export default function OrganizerDashboard() {
           <div className="mt-4 p-3 bg-purple-100 border border-purple-300 rounded text-xs text-purple-900">
             <strong>💡 Hinweis:</strong> Teile diesen Link per WhatsApp, Signal, Threema, Email oder andere Messenger, um deine Teilnehmer einzuladen!
           </div>
+        </div>
+
+        {/* Invitation Text Template Section */}
+        <div className="card bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 shadow-lg mb-6">
+          <h3 className="section-title text-green-900 mb-4">📝 Einladungstext mit Link</h3>
+
+          <p className="text-sm text-gray-700 mb-4">
+            Kopiere diesen Text - der Link ist bereits enthalten! Du kannst ihn noch anpassen, wenn du möchtest:
+          </p>
+
+          <div className="bg-white rounded border border-green-300 p-4 mb-4 whitespace-pre-wrap font-mono text-xs text-gray-800 max-h-48 overflow-y-auto">
+            {getInvitationText(getParticipantLink())}
+          </div>
+
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(getInvitationText(getParticipantLink()));
+              setCopiedType('invitation');
+              setTimeout(() => setCopiedType(null), 2000);
+            }}
+            className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-semibold transition"
+          >
+            {copiedType === 'invitation' ? '✅ Text mit Link kopiert!' : '📋 Text mit Link kopieren'}
+          </button>
         </div>
 
         {/* Pairings Share Section (after draw) */}
