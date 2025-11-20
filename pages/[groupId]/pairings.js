@@ -16,7 +16,6 @@ export default function PairingsPage() {
   const [group, setGroup] = useState(null);
   const [gifts, setGifts] = useState({});
   const [loading, setLoading] = useState(true);
-  const [expandedPerson, setExpandedPerson] = useState(null);
 
   useEffect(() => {
     if (groupId) {
@@ -163,8 +162,8 @@ export default function PairingsPage() {
           {/* Info Box */}
           <div className="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-6 mb-8">
             <p className="text-sm text-gray-700">
-              <strong>💡 Hinweis:</strong> Klick auf einen Namen, um die Wunschliste dieser Person zu sehen.
-              Falls jemand "überrascht werden" möchte, wird das hier angezeigt.
+              <strong>💡 Hinweis:</strong> Klick auf einen Namen, um die Wunschliste dieser Person anzusehen.
+              Falls jemand "überrascht werden" möchte, öffnet sich sein Profil mit Tipps für Überraschungsgeschenke!
             </p>
           </div>
 
@@ -175,7 +174,6 @@ export default function PairingsPage() {
                 const recipient = group.pairing?.[participant.id];
                 const recipientName = recipient ? getPersonName(recipient) : 'Nicht zugewiesen';
                 const wantsSurpriseFlag = wantsSurprise(recipient);
-                const isExpanded = expandedPerson === participant.id;
 
                 return (
                   <div key={participant.id} className="space-y-2">
@@ -194,63 +192,23 @@ export default function PairingsPage() {
                             🎁 ➜
                           </div>
 
-                          {/* Recipient */}
+                          {/* Recipient - Opens Detail Page */}
                           <div className="flex-1">
-                            <button
-                              onClick={() => setExpandedPerson(isExpanded ? null : participant.id)}
-                              className="w-full text-center hover:bg-gray-50 rounded-lg p-2 transition group"
+                            <Link
+                              href={`/${groupId}/pairings/${recipient}`}
+                              className="block w-full text-center hover:bg-gray-50 rounded-lg p-2 transition group"
                             >
                               <div className="text-3xl mb-2 group-hover:scale-110 transition">👤</div>
                               <p className="font-bold text-gray-900 text-lg">{recipientName}</p>
                               {wantsSurpriseFlag ? (
                                 <p className="text-xs text-purple-600 font-semibold mt-1">🎉 Überraschung!</p>
                               ) : (
-                                <p className="text-xs text-blue-600 font-semibold mt-1">📋 Klick für Liste</p>
+                                <p className="text-xs text-blue-600 font-semibold mt-1">📄 Profil öffnen</p>
                               )}
-                            </button>
+                            </Link>
                           </div>
                         </div>
                       </div>
-
-                      {/* Expanded Gift List */}
-                      {isExpanded && (
-                        <div className="bg-gray-50 border-t border-gray-200 p-6">
-                          {wantsSurpriseFlag ? (
-                            // Surprise message
-                            <div className="text-center py-8">
-                              <div className="text-6xl mb-4">🎉</div>
-                              <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                                Überraschungs-Zeit!
-                              </h3>
-                              <p className="text-gray-700">
-                                {recipientName} möchte sich überraschen lassen und hat keine Wunschliste angelegt.
-                                Das gibt dir Freiheit, etwas Kreatives auszusuchen!
-                              </p>
-                              <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4 mt-4 text-left">
-                                <p className="text-sm text-gray-700 font-semibold mb-2">✨ Tipps:</p>
-                                <ul className="text-sm text-gray-600 space-y-1">
-                                  <li>💡 Budget: {group.budget}</li>
-                                  <li>💡 Persönliche Interessen berücksichtigen</li>
-                                  <li>💡 Kreativ und liebevoll auswählen</li>
-                                </ul>
-                              </div>
-                            </div>
-                          ) : (
-                            // Gift list
-                            <div>
-                              <h3 className="text-lg font-bold text-gray-900 mb-4">
-                                {recipientName}s Wunschliste
-                              </h3>
-                              <GiftList
-                                group={group}
-                                groupId={groupId}
-                                participantId={recipient}
-                                isViewing={true}
-                              />
-                            </div>
-                          )}
-                        </div>
-                      )}
                     </div>
                   </div>
                 );
