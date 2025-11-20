@@ -18,7 +18,8 @@
       "Bash(find:*)",
       "Bash(powershell -Command \"cd ''c:\\Users\\rad3\\OneDrive\\Dokumente\\GithubNew\\StrichlisteRepo\\StrichlisteChat\\wichtel-app''; npm run dev\")",
       "Bash(git checkout:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(Es ist jedoch für deinen Partner viel einfacher, wenn du einen Link hier reinkopierst.\"\n\nImproved Phase 2 (Exclusions) header and descriptions\nUpdated APP_VERSION to 2.5.0\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []

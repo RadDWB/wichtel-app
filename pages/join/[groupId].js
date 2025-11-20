@@ -846,9 +846,9 @@ export default function JoinGroup() {
           </div>
 
           <div className="max-w-2xl mx-auto mb-6 bg-purple-50 border-l-4 border-purple-500 p-4 rounded">
-            <h2 className="font-bold text-purple-900 mb-2">📋 Schritt 2 (optional): Wichtelpartner ausschließen</h2>
+            <h2 className="font-bold text-purple-900 mb-2">🎁 Phase 2: Persönliche Ausschlüsse (optional)</h2>
             <p className="text-sm text-purple-800">
-              Wenn du möchtest, kannst du jetzt einen Teilnehmer ausschließen, dem/der du kein Geschenk kaufen möchtest. Zum Beispiel deinen Partner, Familienmitglieder oder sehr enge Freunde. Das ist aber völlig optional – du kannst diesen Schritt auch einfach überspringen!
+              Wenn du möchtest, kannst du eine Person ausschließen, der/dem du kein Geschenk kaufen möchtest. Zum Beispiel dein Partner, Familie oder enge Freunde.
             </p>
           </div>
 
@@ -857,7 +857,7 @@ export default function JoinGroup() {
           {group.participants && group.participants.length >= 2 && (
             <div className="bg-white rounded-lg p-6 shadow-md mb-6">
               <div className="mb-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded">
-                <p className="text-sm text-gray-700 mb-2">
+                <p className="text-sm text-gray-700 mb-3">
                   <strong>ℹ️ Wie funktioniert das Ausschließen?</strong>
                 </p>
                 <p className="text-sm text-gray-600 mb-3">
