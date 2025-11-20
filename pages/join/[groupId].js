@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { OCCASIONS } from '../../lib/occasions';
 import { getGroup, saveGroup } from '../../lib/kv-client';
 import GiftList from '../../components/GiftList';
+import AmazonFilterSelector from '../../components/AmazonFilterSelector';
 import { APP_VERSION } from '../../lib/constants';
 
 export const getServerSideProps = async () => {
@@ -178,7 +179,13 @@ export default function JoinGroup() {
               setSelectedParticipant(orgParticipantObj);
               setNameEdit(orgParticipantObj.name);
               setEmailEdit(orgParticipantObj.email || '');
-              setStep(1.5); // Go to gift choice
+              // After draw: show name list (Step 1)
+              // Before draw: go to gift choice (Step 1.5)
+              if (groupData.drawn) {
+                setStep(1); // Show participant list after draw
+              } else {
+                setStep(1.5); // Go to gift choice before draw
+              }
               localStorage.setItem(`participant_${groupId}`, orgParticipant);
               return;
             }
@@ -190,7 +197,13 @@ export default function JoinGroup() {
             const participant = groupData.participants.find(p => p.id === participantId);
             if (participant) {
               setSelectedParticipant(participant);
-              setStep(1.5); // Go to gift choice
+              // After draw: show name list (Step 1)
+              // Before draw: go to gift choice (Step 1.5)
+              if (groupData.drawn) {
+                setStep(1); // Show participant list after draw
+              } else {
+                setStep(1.5); // Go to gift choice before draw
+              }
             }
           }
         }
@@ -206,39 +219,34 @@ export default function JoinGroup() {
   };
 
   const handleJoin = (participant) => {
+    // Store participant ID first (before checking anything)
+    localStorage.setItem(`participant_${groupId}`, participant.id);
+
     // Check if this participant was previously selected (indicated by localStorage)
-    const wasParticipantPreviouslySelected = localStorage.getItem(`participant_${groupId}`) === participant.id;
+    const previousParticipantId = localStorage.getItem(`participant_${groupId}`);
+    const wasParticipantPreviouslySelected = previousParticipantId === participant.id;
     const storedPin = localStorage.getItem(`participant_pin_${groupId}_${participant.id}`);
+
+    // Set participant data
+    setSelectedParticipant(participant);
+    setNameEdit(participant.name);
+    setEmailEdit(participant.email || '');
+    setParticipantPin(storedPin || ''); // Store PIN if it exists
+    setTempPin(''); // Reset PIN input
+    setPinVerificationError(''); // Clear any previous errors
 
     // If participant was previously selected and has a PIN, require verification
     if (wasParticipantPreviouslySelected && storedPin) {
-      setSelectedParticipant(participant);
-      setNameEdit(participant.name);
-      setEmailEdit(participant.email || '');
-      setParticipantPin(storedPin); // Store the correct PIN
       setPinConfirmed(false); // Not confirmed yet
-      setTempPin(''); // Reset PIN input
-      setPinVerificationError(''); // Clear any errors
+      setStep(1.5); // Go to PIN verification screen
+    } else if (storedPin) {
+      // PIN exists but first time selecting - still show verification
+      setPinConfirmed(false);
       setStep(1.5); // Go to PIN verification screen
     } else {
-      // First time selecting this participant (or no PIN set) - proceed directly
-      setSelectedParticipant(participant);
-      setNameEdit(participant.name);
-      setEmailEdit(participant.email || '');
-      setParticipantPin(storedPin || ''); // Store PIN if it exists
-      setTempPin(''); // Reset PIN input
-      setPinVerificationError(''); // Clear any previous errors
-      localStorage.setItem(`participant_${groupId}`, participant.id);
-
-      if (storedPin) {
-        // PIN exists but first time selecting - still show verification
-        setPinConfirmed(false);
-        setStep(1.5); // Go to PIN verification screen
-      } else {
-        // No PIN set - skip to gift choice
-        setPinConfirmed(true); // Already "verified" since no PIN
-        setStep(1.5); // Go to gift choice
-      }
+      // No PIN set - skip to gift choice
+      setPinConfirmed(true); // Already "verified" since no PIN
+      setStep(1.5); // Go to gift choice
     }
   };
 
@@ -373,12 +381,20 @@ export default function JoinGroup() {
               )}
             </div>
 
-            <button
-              onClick={() => setStep(1.5)}
-              className="w-full btn-outline text-blue-600 border-blue-300 hover:bg-blue-50"
-            >
-              + Ich bin nicht in der Liste - neu hinzufügen
-            </button>
+            <div className="space-y-3">
+              <button
+                onClick={() => setStep(1.5)}
+                className="w-full btn-outline text-blue-600 border-blue-300 hover:bg-blue-50"
+              >
+                + Ich bin nicht in der Liste - neu hinzufügen
+              </button>
+              <button
+                onClick={() => window.location.href = `/organizer/${groupId}`}
+                className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition"
+              >
+                👨‍💼 Ich bin der Organisator - zum Dashboard
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -521,6 +537,7 @@ export default function JoinGroup() {
                       if (tempPin === participantPin || tempPin === RECOVERY_PIN) {
                         setPinConfirmed(true);
                         setTempPin('');
+                        setWantsSurprise(undefined); // Reset to show gift choice menu
                       } else {
                         setPinVerificationError('❌ PIN ist falsch. Bitte versuche es erneut.');
                       }
@@ -550,6 +567,7 @@ export default function JoinGroup() {
                     setPinConfirmed(true);
                     setTempPin('');
                     setPinVerificationError('');
+                    setWantsSurprise(undefined); // Reset to show gift choice menu
                   } else {
                     setPinVerificationError('❌ PIN ist falsch. Bitte versuche es erneut.');
                   }
@@ -804,7 +822,7 @@ export default function JoinGroup() {
                 onClick={() => setStep(3)}
                 className="flex-1 btn-primary"
               >
-                ✅ Weiter → Schritt 2 (optional Ausschluss)
+                ✅ Weiter → Hier kannst du eine Person als Wichtelpartner ausschließen
               </button>
             </div>
 

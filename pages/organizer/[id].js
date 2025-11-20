@@ -36,6 +36,9 @@ export default function OrganizerDashboard() {
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState('');
   const [deletingParticipantId, setDeletingParticipantId] = useState(null);
+  const [showPairingsAccordion, setShowPairingsAccordion] = useState(false);
+  const [showLegend, setShowLegend] = useState(false);
+  const [showRecoveryPin, setShowRecoveryPin] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -609,64 +612,163 @@ export default function OrganizerDashboard() {
                 <p className="text-center text-gray-500 py-6">Keine Teilnehmer</p>
               )}
 
-              <div className="mt-6 p-4 bg-gray-50 border border-gray-300 rounded">
-                <p className="text-sm font-semibold text-gray-900 mb-3">📖 Legende:</p>
-                <div className="space-y-2 text-sm text-gray-700">
-                  <div className="flex items-start gap-3">
-                    <span className="text-lg">✅</span>
-                    <div>
-                      <p className="font-medium">X Geschenke</p>
-                      <p className="text-gray-600">Dieser Teilnehmer hat eine normale Wunschliste mit Geschenkideen angelegt.</p>
+              {/* Legend as Accordion */}
+              <div className="mt-6 border border-gray-300 rounded-lg overflow-hidden">
+                <button
+                  onClick={() => setShowLegend(!showLegend)}
+                  className="w-full px-4 py-3 bg-gray-100 hover:bg-gray-200 transition flex items-center justify-between text-left"
+                >
+                  <p className="text-sm font-semibold text-gray-900">📖 Legende</p>
+                  <span className="text-lg transition" style={{ transform: showLegend ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+                </button>
+                {showLegend && (
+                  <div className="p-4 bg-gray-50 space-y-3 text-sm text-gray-700 border-t border-gray-300">
+                    <div className="flex items-start gap-3">
+                      <span className="text-lg">✅</span>
+                      <div>
+                        <p className="font-medium">X Geschenke</p>
+                        <p className="text-gray-600">Dieser Teilnehmer hat eine normale Wunschliste mit Geschenkideen angelegt.</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <span className="text-lg">🎉</span>
+                      <div>
+                        <p className="font-medium">Überraschung!</p>
+                        <p className="text-gray-600">Dieser Teilnehmer möchte sich überraschen lassen und hat bewusst keine Liste angelegt.</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <span className="text-lg">🔐</span>
+                      <div>
+                        <p className="font-medium">PIN Status</p>
+                        <p className="text-gray-600">Grün = PIN wurde gesetzt. Rot = Teilnehmer hat noch keine PIN erstellt.</p>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <span className="text-lg">🎉</span>
-                    <div>
-                      <p className="font-medium">Überraschung!</p>
-                      <p className="text-gray-600">Dieser Teilnehmer möchte sich überraschen lassen und hat bewusst keine Liste angelegt.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <span className="text-lg">🔐</span>
-                    <div>
-                      <p className="font-medium">PIN Status</p>
-                      <p className="text-gray-600">Grün = PIN wurde gesetzt. Rot = Teilnehmer hat noch keine PIN erstellt.</p>
-                    </div>
-                  </div>
-                </div>
+                )}
               </div>
 
-              {/* Recovery PIN Section - NEW */}
-              <div className="mt-6 p-4 bg-red-50 border-2 border-red-300 rounded-lg">
-                <p className="text-sm font-semibold text-red-900 mb-3">🆘 Recovery PIN für vergessene Teilnehmer-PINs</p>
-                <p className="text-sm text-red-800 mb-4">
-                  Wenn ein Teilnehmer seinen PIN vergessen hat, kannst du ihm diese universale Recovery-PIN geben. Damit kann er sich anmelden und danach einen neuen PIN setzen.
-                </p>
+              {/* Recovery PIN Section - as Accordion */}
+              <div className="mt-6 border-2 border-red-300 rounded-lg overflow-hidden">
+                <button
+                  onClick={() => setShowRecoveryPin(!showRecoveryPin)}
+                  className="w-full px-4 py-3 bg-red-100 hover:bg-red-200 transition flex items-center justify-between text-left"
+                >
+                  <p className="text-sm font-semibold text-red-900">🆘 Recovery PIN für vergessene Teilnehmer-PINs</p>
+                  <span className="text-lg transition" style={{ transform: showRecoveryPin ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+                </button>
+                {showRecoveryPin && (
+                  <div className="p-4 bg-red-50 border-t-2 border-red-300 space-y-4">
+                    <p className="text-sm text-red-800">
+                      Wenn ein Teilnehmer seinen PIN vergessen hat, kannst du ihm diese universale Recovery-PIN geben. Damit kann er sich anmelden und danach einen neuen PIN setzen.
+                    </p>
 
-                <div className="bg-white rounded-lg p-4 border-2 border-red-200 mb-4">
-                  <p className="text-xs text-gray-600 mb-2">Recovery PIN:</p>
-                  <p className="text-3xl font-bold text-red-600 text-center tracking-widest mb-4 font-mono">
-                    {RECOVERY_PIN}
-                  </p>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(RECOVERY_PIN);
-                      setCopiedRecoveryPin(true);
-                      setTimeout(() => setCopiedRecoveryPin(false), 2000);
-                    }}
-                    className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-semibold transition"
-                  >
-                    {copiedRecoveryPin ? '✅ Kopiert!' : '📋 Kopieren'}
-                  </button>
-                </div>
+                    <div className="bg-white rounded-lg p-4 border-2 border-red-200">
+                      <p className="text-xs text-gray-600 mb-2">Recovery PIN:</p>
+                      <p className="text-3xl font-bold text-red-600 text-center tracking-widest mb-4 font-mono">
+                        {RECOVERY_PIN}
+                      </p>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(RECOVERY_PIN);
+                          setCopiedRecoveryPin(true);
+                          setTimeout(() => setCopiedRecoveryPin(false), 2000);
+                        }}
+                        className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-semibold transition"
+                      >
+                        {copiedRecoveryPin ? '✅ Kopiert!' : '📋 Kopieren'}
+                      </button>
+                    </div>
 
-                <p className="text-xs text-red-800 bg-red-100 rounded p-3 border border-red-200">
-                  💡 <strong>Hinweis:</strong> Teile diese PIN nur an den betreffenden Teilnehmer per privater Nachricht. Nach der Anmeldung sollte er sich sofort einen eigenen PIN setzen.
-                </p>
+                    <p className="text-xs text-red-800 bg-red-100 rounded p-3 border border-red-200">
+                      💡 <strong>Hinweis:</strong> Teile diese PIN nur an den betreffenden Teilnehmer per privater Nachricht. Nach der Anmeldung sollte er sich sofort einen eigenen PIN setzen.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
+
+        {/* Pairings Share Section (after draw) - MOVED TO TOP */}
+        {group.drawn && (
+          <div className="card bg-gradient-to-br from-pink-50 to-red-50 border-2 border-red-300 shadow-lg mb-6">
+            <h3 className="section-title text-red-900 mb-4">🎁 Link mit den Wichtel-Paarungen teilen</h3>
+
+            <p className="text-sm text-gray-700 mb-4">
+              Teile diesen Link mit allen Teilnehmern. Sie sehen dort eine Liste mit allen Namen und können auf ihren eigenen Namen klicken, um ihren Wichtelpartner und dessen Wunschliste zu sehen. <strong>Wichtig: Jeder Teilnehmer benötigt seine PIN, um auf die Seite zuzugreifen!</strong>
+            </p>
+
+            <div className="bg-white rounded border border-red-300 p-4 mb-4 whitespace-pre-wrap font-mono text-xs text-gray-800">
+              {`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link und melde dich an, um deinen Wichtelpartner zu sehen:\n\n${typeof window !== 'undefined' ? window.location.origin : ''}/join/${id}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link und melde dich an, um deinen Wichtelpartner zu sehen:\n\n${typeof window !== 'undefined' ? window.location.origin : ''}/join/${id}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`);
+                  setCopiedType('pairings');
+                  setTimeout(() => setCopiedType(null), 2000);
+                }}
+                className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-semibold transition"
+              >
+                {copiedType === 'pairings' ? '✅ Text kopiert!' : '📋 Text kopieren'}
+              </button>
+
+              <div className="relative group">
+                <button className="w-full bg-orange-600 hover:bg-orange-700 text-white py-2 rounded-lg font-semibold transition">
+                  📲 Teilen
+                </button>
+                <div className="absolute hidden group-hover:flex bg-gray-900 text-white text-xs rounded-lg p-3 right-0 md:left-0 mt-2 w-48 z-10 flex-col gap-2">
+                  <a
+                    href={`https://wa.me/?text=${encodeURIComponent(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link und melde dich an, um deinen Wichtelpartner zu sehen:\n\n${typeof window !== 'undefined' ? window.location.origin : ''}/join/${id}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-green-400 block"
+                  >
+                    💬 WhatsApp
+                  </a>
+                  <a
+                    href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link und melde dich an, um deinen Wichtelpartner zu sehen:\n\n${typeof window !== 'undefined' ? window.location.origin : ''}/join/${id}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-green-400 block text-xs"
+                  >
+                    💬 WhatsApp (App)
+                  </a>
+                  <a
+                    href={`https://signal.me/#p/${encodeURIComponent(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link und melde dich an, um deinen Wichtelpartner zu sehen:\n\n${typeof window !== 'undefined' ? window.location.origin : ''}/join/${id}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-blue-400 block"
+                  >
+                    🔒 Signal
+                  </a>
+                  <a
+                    href={`mailto:?body=${encodeURIComponent(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link und melde dich an, um deinen Wichtelpartner zu sehen:\n\n${typeof window !== 'undefined' ? window.location.origin : ''}/join/${id}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`)}`}
+                    className="hover:text-blue-400 block"
+                  >
+                    📧 Email
+                  </a>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link und melde dich an, um deinen Wichtelpartner zu sehen:\n\n${typeof window !== 'undefined' ? window.location.origin : ''}/join/${id}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`);
+                      setCopiedType('pairingShare');
+                      setTimeout(() => setCopiedType(null), 2000);
+                    }}
+                    className="text-left hover:text-yellow-400 block"
+                  >
+                    {copiedType === 'pairingShare' ? '✅ Kopiert!' : '📌 Kopieren'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-3 bg-red-100 border border-red-300 rounded text-xs text-red-900">
+              <strong>💡 Hinweis:</strong> Teilnehmer sehen eine Liste mit allen Namen. Sie klicken auf ihren eigenen Namen, um ihren Wichtelpartner und dessen Wunschliste zu sehen. <strong>PIN-Schutz:</strong> Jeder TN braucht seine PIN. Falls jemand seine PIN vergessen hat → Recovery-PIN vom Organizer nutzen!
+            </div>
+          </div>
+        )}
 
         {/* Invitation Text Template Section */}
         <div className="card bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 shadow-lg mb-6">
@@ -755,83 +857,66 @@ export default function OrganizerDashboard() {
           </div>
         </div>
 
-        {/* Pairings Share Section (after draw) - NOW BEFORE ORGANIZER PAIRINGS VIEW */}
+        {/* Organizer Pairings View (Accordion with Spoiler Warning) - ACCORDION VERSION */}
         {group.drawn && (
-          <div className="card bg-gradient-to-br from-pink-50 to-red-50 border-2 border-red-300 shadow-lg mb-6">
-            <h3 className="section-title text-red-900 mb-4">🎁 Link mit den Wichtel-Paarungen teilen</h3>
-
-            <p className="text-sm text-gray-700 mb-4">
-              Teile diesen Link mit allen Teilnehmern. Sie können damit ihre Wichtel-Partner sehen und deren Wunschlisten einsehen. <strong>Wichtig: Jeder Teilnehmer benötigt seine PIN, um auf die Seite zuzugreifen!</strong>
-            </p>
-
-            <div className="bg-white rounded border border-red-300 p-4 mb-4 whitespace-pre-wrap font-mono text-xs text-gray-800">
-              {`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`}
+          <div className="card bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-orange-400 mb-6">
+            {/* Spoiler Warning - ALWAYS VISIBLE */}
+            <div className="bg-red-100 border-l-4 border-red-500 p-4 border-b-2 border-orange-300">
+              <p className="text-red-900 font-bold mb-2">⚠️ Achtung: Spoiler-Warnung für Organisator!</p>
+              <p className="text-red-800 text-sm">
+                Wenn du die Überraschung selbst erleben möchtest und nicht wissen willst, wer wen beschenkt, scrolle hier <strong>nicht runter</strong>! Nutze diese Funktion nur, wenn du die Zuordnungen tatsächlich sehen musst (z.B. zur Fehlersuche).
+              </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`);
-                  setCopiedType('pairings');
-                  setTimeout(() => setCopiedType(null), 2000);
-                }}
-                className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-semibold transition"
-              >
-                {copiedType === 'pairings' ? '✅ Text kopiert!' : '📋 Text kopieren'}
-              </button>
+            <button
+              onClick={() => setShowPairingsAccordion(!showPairingsAccordion)}
+              className="w-full text-left p-4 hover:bg-orange-100 transition flex items-center justify-between"
+            >
+              <h3 className="section-title mb-0">👥 Alle Paarungen anschauen (Organizer-Ansicht)</h3>
+              <span className="text-2xl transition" style={{ transform: showPairingsAccordion ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+            </button>
 
-              <div className="relative group">
-                <button className="w-full bg-orange-600 hover:bg-orange-700 text-white py-2 rounded-lg font-semibold transition">
-                  📲 Teilen
-                </button>
-                <div className="absolute hidden group-hover:flex bg-gray-900 text-white text-xs rounded-lg p-3 right-0 md:left-0 mt-2 w-48 z-10 flex-col gap-2">
-                  <a
-                    href={`https://wa.me/?text=${encodeURIComponent(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-green-400 block"
-                  >
-                    💬 WhatsApp
-                  </a>
-                  <a
-                    href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-green-400 block text-xs"
-                  >
-                    💬 WhatsApp (App)
-                  </a>
-                  <a
-                    href={`https://signal.me/#p/${encodeURIComponent(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-blue-400 block"
-                  >
-                    🔒 Signal
-                  </a>
-                  <a
-                    href={`mailto:?body=${encodeURIComponent(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`)}`}
-                    className="hover:text-blue-400 block"
-                  >
-                    📧 Email
-                  </a>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link, um zu sehen, wer dein Wichtelpartner ist und seine/ihre Wunschliste anzuschauen:\n\n${getPairingsLink()}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`);
-                      setCopiedType('pairingShare');
-                      setTimeout(() => setCopiedType(null), 2000);
-                    }}
-                    className="text-left hover:text-yellow-400 block"
-                  >
-                    {copiedType === 'pairingShare' ? '✅ Kopiert!' : '📌 Kopieren'}
-                  </button>
+            {showPairingsAccordion && (
+              <>
+                <div className="border-t border-orange-300">
+
+                  <p className="text-gray-700 px-4 pt-2">
+                    Hier kannst du eine Zusammenfassung aller Wichtelpaarungen anschauen:
+                  </p>
+
+                  <div className="space-y-3 p-4">
+                    {group.pairing && Object.entries(group.pairing).map(([giverId, receiverId]) => {
+                      const giver = group.participants.find(p => p.id === giverId);
+                      const receiver = group.participants.find(p => p.id === receiverId);
+                      const receiverWantsSurprise = !gifts[receiverId] || gifts[receiverId].length === 0;
+
+                      return (
+                        <div key={giverId} className="bg-white p-4 rounded-lg border-l-4 border-blue-400 hover:shadow-md transition">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <p className="text-gray-900 font-bold">{giver?.name || 'Unbekannt'} 🎁</p>
+                              <p className="text-gray-600 text-sm">↓</p>
+                              <p className="text-gray-900 font-bold">{receiver?.name || 'Unbekannt'} {receiverWantsSurprise ? '🎉 (Überraschung!)' : '📋'}</p>
+                            </div>
+                            {receiverWantsSurprise && (
+                              <span className="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-semibold">
+                                Überraschung
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="p-4 border-t border-orange-300">
+                    <Link href={`/${id}/pairings`} className="block text-center p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition">
+                      🔗 Zur Paarungsliste
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            </div>
-
-            <div className="p-3 bg-red-100 border border-red-300 rounded text-xs text-red-900">
-              <strong>💡 Hinweis:</strong> Auf dieser Seite können deine Teilnehmer sehen, wer wen beschenkt. Wenn sie auf einen Partner klicken, öffnet sich die Wunschliste mit Amazon-Filtern oder der Hinweis, dass der Partner überrascht werden möchte. <strong>PIN-Schutz:</strong> Jeder TN braucht seine PIN. Falls jemand seine PIN vergessen hat → Recovery-PIN vom Organizer nutzen!
-            </div>
+              </>
+            )}
           </div>
         )}
 
@@ -885,52 +970,6 @@ export default function OrganizerDashboard() {
           )}
         </div>
 
-        {/* Organizer Pairings View (with warning) */}
-        {group.drawn && (
-          <div className="card bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-orange-400">
-            <h3 className="section-title mb-4">👥 Alle Paarungen anschauen (Organizer-Ansicht)</h3>
-
-            <div className="bg-red-100 border-l-4 border-red-500 p-4 mb-6">
-              <p className="text-red-900 font-bold mb-2">⚠️ Achtung: Spoiler-Warnung für Organisator!</p>
-              <p className="text-red-800 text-sm">
-                Wenn du die Überraschung selbst erleben möchtest und nicht wissen willst, wer wen beschenkt, klicke hier <strong>nicht</strong> auf die Paarungen! Nutze diese Funktion nur, wenn du die Zuordnungen tatsächlich sehen musst (z.B. zur Fehlersuche).
-              </p>
-            </div>
-
-            <p className="text-gray-700 mb-4">
-              Hier kannst du eine Zusammenfassung aller Wichtelpaarungen anschauen:
-            </p>
-
-            <div className="space-y-3 mb-6">
-              {group.pairing && Object.entries(group.pairing).map(([giverId, receiverId]) => {
-                const giver = group.participants.find(p => p.id === giverId);
-                const receiver = group.participants.find(p => p.id === receiverId);
-                const receiverWantsSurprise = !gifts[receiverId] || gifts[receiverId].length === 0;
-
-                return (
-                  <div key={giverId} className="bg-white p-4 rounded-lg border-l-4 border-blue-400 hover:shadow-md transition">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <p className="text-gray-900 font-bold">{giver?.name || 'Unbekannt'} 🎁</p>
-                        <p className="text-gray-600 text-sm">↓</p>
-                        <p className="text-gray-900 font-bold">{receiver?.name || 'Unbekannt'} {receiverWantsSurprise ? '🎉 (Überraschung!)' : '📋'}</p>
-                      </div>
-                      {receiverWantsSurprise && (
-                        <span className="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-semibold">
-                          Überraschung
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            <Link href={`/${id}/pairings`} className="block text-center p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition">
-              🔗 Zur öffentlichen Paarungsseite
-            </Link>
-          </div>
-        )}
 
         {/* Amazon Affiliate Section - Smart Filters for Gift Shopping */}
         {group.drawn && (

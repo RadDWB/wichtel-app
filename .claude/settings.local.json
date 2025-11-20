@@ -1,25 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(tree:*)",
-      "Bash(npm install:*)",
-      "Bash(npm --version:*)",
-      "Bash(git add:*)",
-      "Bash(git push)",
-      "Bash(git commit:*)",
-      "Bash(npm run dev:*)",
-      "Bash(npm run build:*)",
-      "Bash(node:*)",
-      "Bash(git restore:*)",
-      "Bash(git push:*)",
-      "Bash(cat:*)",
-      "Bash(git tag:*)",
-      "Bash(git rm:*)",
-      "Bash(find:*)",
-      "Bash(powershell -Command \"cd ''c:\\Users\\rad3\\OneDrive\\Dokumente\\GithubNew\\StrichlisteRepo\\StrichlisteChat\\wichtel-app''; npm run dev\")",
-      "Bash(git checkout:*)",
-      "Bash(curl:*)",
-      "Bash(Es ist jedoch für deinen Partner viel einfacher, wenn du einen Link hier reinkopierst.\"\n\nImproved Phase 2 (Exclusions) header and descriptions\nUpdated APP_VERSION to 2.5.0\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+      "Bash(git pull:*)",
+      "Bash(git show:*)"
     ],
     "deny": [],
     "ask": []

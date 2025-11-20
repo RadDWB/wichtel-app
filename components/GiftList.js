@@ -1,55 +1,56 @@
 import { useState, useEffect } from 'react';
+import { APP_VERSION } from '../lib/constants';
 
 const AMAZON_AFFILIATE_TAG = process.env.NEXT_PUBLIC_AMAZON_AFFILIATE_TAG || 'httpwwwspor03-21';
 
-// Amazon Affiliate Links mit verschiedenen Preisranges
-const AMAZON_PRICE_RANGES = [
-  {
-    label: '1-5 €',
-    link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A100-500&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl'
-  },
-  {
-    label: '5-10 €',
-    link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A500-1000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl'
-  },
-  {
-    label: '10-15 €',
-    link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A1000-1500&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl'
-  },
-  {
-    label: '15-20 €',
-    link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A1500-2000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl'
-  },
-  {
-    label: '20-30 €',
-    link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A2000-3000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl'
-  },
-  {
-    label: '30-50 €',
-    link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A3000-5000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl'
-  },
-  {
-    label: '50-100 €',
-    link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A5000-10000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl'
-  },
-  {
-    label: 'Alle Preise',
-    link: 'https://www.amazon.de/s?k=geschenkideen&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl'
-  }
-];
+// Amazon Filter Kategorien
+const AMAZON_FILTERS = {
+  price: [
+    { label: '1-5 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A100-500&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '5-10 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A500-1000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '10-15 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A1000-1500&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '15-20 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A1500-2000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '20-30 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A2000-3000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '30-50 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A3000-5000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '50-100 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A5000-10000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
+  ],
+  age: [
+    { label: '👶 Baby (0-2 Jahre)', link: 'https://www.amazon.de/s?k=baby+geschenke&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '👧 Kind (3-7 Jahre)', link: 'https://www.amazon.de/s?k=kinder+geschenke&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '🧒 Schulkind (8-12 Jahre)', link: 'https://www.amazon.de/s?k=schulkinder+geschenke&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '👦 Teenager (13-17 Jahre)', link: 'https://www.amazon.de/s?k=teenager+geschenke&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+  ],
+  gender: [
+    { label: '👧 Für Mädchen', link: 'https://www.amazon.de/s?k=geschenke+für+mädchen&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '👦 Für Jungen', link: 'https://www.amazon.de/s?k=geschenke+für+jungen&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+  ],
+  category: [
+    { label: '📚 Bücher & E-Reader', link: 'https://www.amazon.de/s?k=bücher+geschenke&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '🎮 Gaming & Konsolen', link: 'https://www.amazon.de/s?k=gaming+geschenke&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '🎧 Audio & Kopfhörer', link: 'https://www.amazon.de/s?k=kopfhörer+geschenke&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '⌚ Uhren & Schmuck', link: 'https://www.amazon.de/s?k=uhren+schmuck+geschenke&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '💻 Elektronik & Gadgets', link: 'https://www.amazon.de/s?k=elektronik+gadgets+geschenke&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '🏃 Sport & Outdoor', link: 'https://www.amazon.de/s?k=sport+outdoor+geschenke&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '🧘 Beauty & Wellness', link: 'https://www.amazon.de/s?k=beauty+wellness+geschenke&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '🍳 Haushalt & Küche', link: 'https://www.amazon.de/s?k=haushalt+küche+geschenke&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+  ]
+};
 
 export default function GiftList({ group, groupId, participantId, isViewing = false }) {
   const [gifts, setGifts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [newGift, setNewGift] = useState({
-    name: '',
-    link: '',
-    category: 'other',
-    price: '',
-  });
+  const [showAmazonModal, setShowAmazonModal] = useState(false);
+  const [expandedStep, setExpandedStep] = useState(4);
+  const [showFiltersModal, setShowFiltersModal] = useState(false);
+  const [newGift, setNewGift] = useState({ name: '', link: '', category: 'other', price: '' });
 
-  // Load gifts on mount
+  // Filter selection states
+  const [selectedPrice, setSelectedPrice] = useState(null);
+  const [selectedAge, setSelectedAge] = useState(null);
+  const [selectedGender, setSelectedGender] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
   useEffect(() => {
     loadGifts();
   }, [groupId, participantId]);
@@ -81,17 +82,14 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
     try {
       let affiliateLink = newGift.link.trim();
 
-      // Add affiliate tag if Amazon link
       if (affiliateLink.includes('amazon.')) {
         try {
           const urlObj = new URL(affiliateLink);
-          // Only add tag if not already present
           if (!urlObj.searchParams.has('tag')) {
             urlObj.searchParams.set('tag', AMAZON_AFFILIATE_TAG);
             affiliateLink = urlObj.toString();
           }
         } catch (e) {
-          // If URL parsing fails, use as-is
           console.warn('Could not parse Amazon URL:', e);
         }
       }
@@ -105,7 +103,6 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
 
       const updatedGifts = [...gifts, giftToAdd];
 
-      // Save to backend
       const response = await fetch(`/api/gifts/${groupId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -149,7 +146,7 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
     }
   };
 
-  // Viewing mode - only show the gift list, nothing else
+  // Viewing mode
   if (isViewing) {
     return (
       <div className="space-y-4">
@@ -163,12 +160,7 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
                   <div className="flex-1">
                     <h4 className="font-bold text-lg mb-2">🎁 {gift.name}</h4>
                     {gift.link && (
-                      <a
-                        href={gift.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline font-medium inline-flex items-center gap-2"
-                      >
+                      <a href={gift.link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-medium inline-flex items-center gap-2">
                         🔗 Auf Amazon anschauen
                       </a>
                     )}
@@ -178,202 +170,338 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
             ))}
           </div>
         ) : (
-          <p className="text-center text-gray-500 italic py-6">
-            Keine Geschenke hinterlegt
-          </p>
+          <p className="text-center text-gray-500 italic py-6">Keine Geschenke hinterlegt</p>
         )}
       </div>
     );
   }
 
-  // Edit mode - show full form for adding gifts
+  // Edit mode - COMPLETELY REDESIGNED
   return (
     <div className="space-y-6">
+      {/* HEADER MIT VERSION UND FORTSCHRITT */}
+      <div className="bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-300 rounded-lg p-6 shadow-md sticky top-0 z-30">
+        <div className="flex items-center justify-between gap-4 mb-4">
+          <div>
+            <h2 className="text-3xl font-bold text-gray-900">🎁 Wunschliste erstellen</h2>
+            <p className="text-sm text-gray-600 mt-1">Schritt für Schritt deine Geschenkeliste anlegen</p>
+          </div>
+          <span className="inline-block bg-gradient-to-r from-orange-500 to-amber-500 text-white px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap">
+            v{APP_VERSION}
+          </span>
+        </div>
+
+        {/* Progress Indicator - 10 Circles */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold text-gray-700 mr-2">{gifts.length}/10</span>
+          <div className="flex gap-1.5 flex-wrap">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div key={i} className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition ${i < gifts.length ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-500'}`}>
+                {i < gifts.length ? '✓' : i + 1}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
           {error}
         </div>
       )}
 
-      {/* Add Gift Manual Form */}
-      <div className="card bg-green-50 border-l-4 border-green-500">
-        <h3 className="section-title">🎁 Eigenes Amazon-Produkt hinzufügen</h3>
-        <p className="text-gray-600 mb-6 text-sm">
-          Maximal {10 - gifts.length} Geschenke mehr möglich (Budget: {group.budget})
-        </p>
-
-        {gifts.length < 10 ? (
-          <div className="space-y-6">
-            {/* Step 1 */}
-            <div className="border-b pb-6">
-              <div className="flex gap-3 mb-3">
-                <span className="flex-shrink-0 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center font-bold text-sm">1</span>
-                <p className="font-semibold text-gray-800">Gehe auf <a href="https://amazon.de" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-bold">amazon.de</a></p>
-              </div>
-              <p className="text-sm text-gray-600 ml-11 mb-4">
-                Suche dein Wunschprodukt. Du kannst die Amazon-Filter nutzen, um den Preis auf dein Budget ({group.budget}) zu begrenzen. Du kannst auch nach Kategorie, Alter, Geschlecht und anderen Eigenschaften filtern.
+      {/* SCHRITT AKKORDEON */}
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-md">
+        {/* SCHRITT 1 */}
+        <div className="border-b border-gray-200">
+          <button onClick={() => setExpandedStep(expandedStep === 1 ? null : 1)} className="w-full px-6 py-4 bg-gradient-to-r from-orange-50 to-amber-50 hover:from-orange-100 hover:to-amber-100 transition flex items-center gap-3 text-left">
+            <span className="flex-shrink-0 w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-sm">1</span>
+            <div className="flex-1">
+              <p className="font-bold text-gray-900">Gehe auf Amazon.de</p>
+              <p className="text-xs text-gray-600 mt-0.5">Nutze die Budget-Filter und Kategorie-Filter</p>
+            </div>
+            <span className="text-xl text-gray-500" style={{transform: expandedStep === 1 ? 'rotate(180deg)' : 'rotate(0deg)'}}>▼</span>
+          </button>
+          {expandedStep === 1 && (
+            <div className="px-6 py-6 bg-orange-50 border-t border-orange-100 text-center">
+              <p className="text-sm text-gray-700 mb-4">
+                Suche dein Wunschprodukt auf Amazon.de. Nutze die intelligenten Filter, um schnell zum richtigen Produkt zu gelangen!
               </p>
+              <button
+                onClick={() => setShowFiltersModal(true)}
+                className="w-full py-4 px-6 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-lg font-bold text-lg transition shadow-lg"
+              >
+                🔍 Amazon Filter öffnen
+              </button>
+            </div>
+          )}
+        </div>
 
-              {/* Quick Amazon Links by Price */}
-              <div className="ml-11 bg-gradient-to-r from-orange-50 to-yellow-50 border-l-4 border-orange-400 p-4 rounded">
-                <p className="text-xs font-semibold text-orange-900 mb-3">💡 Oder nutze diese vorfilterten Links für dein Budget ({group.budget}):</p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                  {AMAZON_PRICE_RANGES.map((range) => (
+        {/* SCHRITT 2 */}
+        <div className="border-b border-gray-200">
+          <button onClick={() => setExpandedStep(expandedStep === 2 ? null : 2)} className="w-full px-6 py-4 bg-gradient-to-r from-orange-50 to-amber-50 hover:from-orange-100 hover:to-amber-100 transition flex items-center gap-3 text-left">
+            <span className="flex-shrink-0 w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-sm">2</span>
+            <div className="flex-1">
+              <p className="font-bold text-gray-900">Produkt auswählen</p>
+              <p className="text-xs text-gray-600 mt-0.5">Klick auf das Produkt das dir gefällt</p>
+            </div>
+            <span className="text-xl text-gray-500" style={{transform: expandedStep === 2 ? 'rotate(180deg)' : 'rotate(0deg)'}}>▼</span>
+          </button>
+          {expandedStep === 2 && (
+            <div className="px-6 py-4 bg-orange-50 border-t border-orange-100">
+              <p className="text-sm text-gray-700">
+                Klicke auf das Produkt, das dir gefällt, und öffne die Produktseite. Du wirst dann die detaillierte Beschreibung, Preis und Kundenbewertungen sehen.
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* SCHRITT 3 */}
+        <div className="border-b border-gray-200">
+          <button onClick={() => setExpandedStep(expandedStep === 3 ? null : 3)} className="w-full px-6 py-4 bg-gradient-to-r from-orange-50 to-amber-50 hover:from-orange-100 hover:to-amber-100 transition flex items-center gap-3 text-left">
+            <span className="flex-shrink-0 w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-sm">3</span>
+            <div className="flex-1">
+              <p className="font-bold text-gray-900">Link kopieren</p>
+              <p className="text-xs text-gray-600 mt-0.5">Kopiere die URL aus der Adressleiste</p>
+            </div>
+            <span className="text-xl text-gray-500" style={{transform: expandedStep === 3 ? 'rotate(180deg)' : 'rotate(0deg)'}}>▼</span>
+          </button>
+          {expandedStep === 3 && (
+            <div className="px-6 py-4 bg-orange-50 border-t border-orange-100">
+              <p className="text-sm text-gray-700 mb-3">
+                Markiere die URL in der Adresszeile deines Browsers und kopiere sie. Beispiel:
+              </p>
+              <p className="text-xs bg-gray-200 rounded p-2 font-mono mb-3">
+                https://amazon.de/dp/B08N5WRWNW
+              </p>
+              <p className="text-xs text-blue-600">
+                📱 <strong>Mobile-Tipp:</strong> In der Amazon-App kannst du auch die „Teilen"-Funktion nutzen, um den Link zu kopieren!
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* SCHRITT 4 */}
+        <div>
+          <button onClick={() => setExpandedStep(expandedStep === 4 ? null : 4)} className="w-full px-6 py-4 bg-gradient-to-r from-blue-50 to-blue-50 hover:from-blue-100 hover:to-blue-100 transition flex items-center gap-3 text-left border-b border-blue-200">
+            <span className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-sm">4</span>
+            <div className="flex-1">
+              <p className="font-bold text-gray-900">Hier eintragen</p>
+              <p className="text-xs text-gray-600 mt-0.5">Link und Namen eingeben (Link optional)</p>
+            </div>
+            <span className="text-xl text-blue-600 font-bold">→</span>
+          </button>
+          {expandedStep === 4 && (
+            <div className="px-6 py-6 bg-blue-50 border-t border-blue-200 space-y-4">
+              <div>
+                <label className="block text-sm font-semibold mb-2 text-gray-900">
+                  🔗 Link eintragen (optional):
+                </label>
+                <input type="url" value={newGift.link} onChange={e => setNewGift({ ...newGift, link: e.target.value })} placeholder="https://amazon.de/dp/B08N5WRWNW" className="w-full border-2 border-gray-300 rounded-lg p-3 text-sm font-mono focus:border-blue-500 focus:outline-none" />
+                <p className="text-xs text-gray-600 mt-2">
+                  💡 Du kannst auch ein Geschenk eintragen, ohne einen Link anzugeben! Es ist jedoch für deinen Partner viel einfacher, wenn du einen Link hier reinkopierst.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold mb-2 text-gray-900">
+                  📝 Gib dem Geschenk einen Namen:
+                </label>
+                <input type="text" value={newGift.name} onChange={e => setNewGift({ ...newGift, name: e.target.value })} placeholder="z.B. AirPods Pro, Thermoskanne, Mystery-Buch" className="w-full border-2 border-gray-300 rounded-lg p-3 text-sm focus:border-blue-500 focus:outline-none" />
+              </div>
+
+              <div className="flex gap-3">
+                <button onClick={() => setShowAmazonModal(true)} className="flex-1 py-3 px-4 bg-white border-2 border-orange-400 text-orange-600 rounded-lg font-semibold hover:bg-orange-50 transition text-sm">
+                  🔍 Amazon Filter öffnen
+                </button>
+                <button onClick={addGift} disabled={loading || !newGift.name.trim()} className="flex-1 py-3 px-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed text-sm">
+                  {loading ? '⏳ Wird hinzugefügt...' : '✨ Hinzufügen'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* FILTER MODAL - SCHRITT 1 - REORGANISIERT */}
+      {showFiltersModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-4xl w-full my-8 shadow-2xl">
+            <div className="sticky top-0 bg-gradient-to-r from-orange-500 to-amber-500 text-white p-6 flex items-center justify-between">
+              <h3 className="text-2xl font-bold">🔍 Amazon Filter - Finde das perfekte Geschenk</h3>
+              <button onClick={() => setShowFiltersModal(false)} className="text-3xl font-bold hover:text-orange-200 transition">
+                ✕
+              </button>
+            </div>
+            <div className="p-8 space-y-6 max-h-96 overflow-y-auto">
+              {/* CATEGORY FILTER - OBEN */}
+              <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded">
+                <h4 className="text-lg font-bold text-green-900 mb-4">🏷️ Nach Kategorie (optional):</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-2">
+                  {AMAZON_FILTERS.category.map((cat) => (
+                    <button
+                      key={cat.label}
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`text-sm py-3 px-3 rounded font-semibold text-center transition ${
+                        selectedCategory?.label === cat.label
+                          ? 'bg-green-600 text-white ring-2 ring-green-300'
+                          : 'bg-green-500 hover:bg-green-600 text-white'
+                      }`}
+                    >
+                      {cat.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* AGE FILTER */}
+              <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+                <h4 className="text-lg font-bold text-blue-900 mb-4">👥 Nach Altersbereich (optional):</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-2">
+                  {AMAZON_FILTERS.age.map((age) => (
+                    <button
+                      key={age.label}
+                      onClick={() => setSelectedAge(age)}
+                      className={`text-sm py-3 px-3 rounded font-semibold text-center transition ${
+                        selectedAge?.label === age.label
+                          ? 'bg-blue-600 text-white ring-2 ring-blue-300'
+                          : 'bg-blue-500 hover:bg-blue-600 text-white'
+                      }`}
+                    >
+                      {age.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* GENDER FILTER */}
+              <div className="bg-purple-50 border-l-4 border-purple-400 p-4 rounded">
+                <h4 className="text-lg font-bold text-purple-900 mb-4">👫 Nach Geschlecht (optional):</h4>
+                <div className="grid grid-cols-2 gap-2">
+                  {AMAZON_FILTERS.gender.map((gender) => (
+                    <button
+                      key={gender.label}
+                      onClick={() => setSelectedGender(gender)}
+                      className={`text-sm py-3 px-3 rounded font-semibold text-center transition ${
+                        selectedGender?.label === gender.label
+                          ? 'bg-purple-600 text-white ring-2 ring-purple-300'
+                          : 'bg-purple-500 hover:bg-purple-600 text-white'
+                      }`}
+                    >
+                      {gender.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* BUDGET FILTER - UNTEN - INITIIERT DEN LINK */}
+              <div className="bg-orange-50 border-l-4 border-orange-400 p-4 rounded border-2 border-orange-300">
+                <h4 className="text-lg font-bold text-orange-900 mb-4">💰 Nach Budget ({group.budget}) - Wähle um zu Amazon zu gehen:</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                  {AMAZON_FILTERS.price.map((range) => (
                     <a
                       key={range.label}
                       href={range.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs bg-orange-500 hover:bg-orange-600 text-white py-2 px-3 rounded font-semibold text-center transition"
+                      onClick={() => setShowFiltersModal(false)}
+                      className="text-sm bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white py-3 px-2 rounded font-bold text-center transition shadow-md"
                     >
                       {range.label}
                     </a>
                   ))}
                 </div>
-                <p className="text-xs text-gray-600 mt-2">
-                  Wir nehmen am Amazon Affiliate Programm teil – Sie unterstützen uns durch Ihre Käufe! 🎁
-                </p>
               </div>
-            </div>
 
-            {/* Step 2 */}
-            <div className="border-b pb-6">
-              <div className="flex gap-3 mb-3">
-                <span className="flex-shrink-0 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center font-bold text-sm">2</span>
-                <p className="font-semibold text-gray-800">Wähle dein Produkt aus</p>
-              </div>
-              <p className="text-sm text-gray-600 ml-11">
-                Klicke auf das Produkt, das dir gefällt, und öffne die Produktseite.
+              <p className="text-sm text-gray-600 text-center bg-gray-100 p-4 rounded">
+                💡 Wähle optional Kategorie, Alter und Geschlecht, dann klick auf einen Preis um zur Amazon.de Geschenke-Übersicht zu gehen!
               </p>
-            </div>
-
-            {/* Step 3 */}
-            <div className="border-b pb-6">
-              <div className="flex gap-3 mb-3">
-                <span className="flex-shrink-0 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center font-bold text-sm">3</span>
-                <p className="font-semibold text-gray-800">Kopiere den Link</p>
-              </div>
-              <p className="text-sm text-gray-600 ml-11 mb-3">
-                Markiere die URL in der Adresszeile deines Browsers und kopiere sie. Beispiel:
-              </p>
-              <p className="text-xs bg-gray-200 rounded p-2 ml-11 font-mono mb-3">
-                https://amazon.de/dp/B08N5WRWNW
-              </p>
-              <p className="text-xs text-blue-600 ml-11">
-                📱 <strong>Mobile-Tipp:</strong> In der Amazon-App kannst du auch die „Teilen"-Funktion nutzen, um den Link zu kopieren!
-              </p>
-            </div>
-
-            {/* Step 4 - Input Fields */}
-            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-              <div className="flex gap-3 mb-4">
-                <span className="flex-shrink-0 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center font-bold text-sm">4</span>
-                <p className="font-semibold text-gray-800">Trage den Link und Namen hier ein</p>
-              </div>
-
-              <div className="space-y-4 ml-11">
-                {/* Link Input */}
-                <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-700">
-                    🔗 Kopiere den Link unten ein (optional):
-                  </label>
-                  <input
-                    type="url"
-                    value={newGift.link}
-                    onChange={e => setNewGift({ ...newGift, link: e.target.value })}
-                    placeholder="https://amazon.de/dp/B08N5WRWNW"
-                    className="input-field font-mono text-xs w-full"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    💡 Du kannst auch ein Geschenk eintragen, ohne einen Link anzugeben! Es ist jedoch für deinen Partner viel einfacher, wenn du einen Link hier reinkopierst.
-                  </p>
-                </div>
-
-                {/* Name Input */}
-                <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-700">
-                    📝 Gib dem Geschenk einen aussagekräftigen Namen:
-                  </label>
-                  <input
-                    type="text"
-                    value={newGift.name}
-                    onChange={e => setNewGift({ ...newGift, name: e.target.value })}
-                    placeholder="z.B. AirPods Pro, Thermoskanne, Mystery-Buch"
-                    className="input-field w-full"
-                  />
-                </div>
-
-                {/* Button */}
-                <button
-                  onClick={addGift}
-                  disabled={loading}
-                  className="btn-secondary w-full disabled:opacity-50 mt-4"
-                >
-                  {loading ? '✨ Wird hinzugefügt...' : '✨ Geschenk hinzufügen'}
-                </button>
-              </div>
             </div>
           </div>
-        ) : (
-          <p className="text-center text-gray-600 font-semibold">
-            ✅ Du hast die maximale Anzahl von 10 Geschenken erreicht!
-          </p>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* Gift List */}
-      <div className="card">
-        <h3 className="section-title">
-          📦 Deine Geschenkeliste ({gifts.length}/10)
-        </h3>
+      {/* AMAZON SHOPPING MODAL */}
+      {showAmazonModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-96 overflow-y-auto shadow-2xl">
+            <div className="sticky top-0 bg-orange-500 text-white p-4 flex items-center justify-between">
+              <h3 className="text-lg font-bold">🛍️ Amazon Filter - Schnelle Links</h3>
+              <button onClick={() => setShowAmazonModal(false)} className="text-2xl font-bold hover:text-orange-200 transition">
+                ✕
+              </button>
+            </div>
+            <div className="p-6">
+              <p className="text-sm text-gray-700 mb-6">
+                Klick auf einen Link, um auf Amazon zu gehen und nach Produkten in deinem Budget zu suchen:
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                {AMAZON_PRICE_RANGES.map((range) => (
+                  <a key={range.label} href={range.link} target="_blank" rel="noopener noreferrer" onClick={() => setShowAmazonModal(false)} className="text-sm bg-orange-500 hover:bg-orange-600 text-white py-3 px-2 rounded font-semibold text-center transition">
+                    {range.label}
+                  </a>
+                ))}
+              </div>
+              <p className="text-xs text-gray-600 text-center">
+                💡 Die Links öffnen Amazon mit vordefinierten Filtern für Geschenkideen
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* GESCHENKELISTE */}
+      <div className="bg-white rounded-lg border border-gray-200 shadow-md overflow-hidden">
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b border-green-200">
+          <h3 className="font-bold text-gray-900 text-lg">
+            📦 Deine Geschenkeliste ({gifts.length}/10)
+          </h3>
+        </div>
 
         {gifts.length > 0 ? (
-          <div className="grid grid-cols-1 gap-3">
-            {gifts.map(gift => (
-              <div key={gift.id} className="bg-gray-50 p-4 rounded-lg border-l-4 border-green-500 hover:bg-gray-100 transition">
-                <div className="flex justify-between items-start gap-4">
-                  <div className="flex-1">
-                    <h4 className="font-bold text-lg mb-2">🎁 {gift.name}</h4>
-                    <div className="space-y-2">
-                      {gift.link && (
-                        <p>
-                          <a
-                            href={gift.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline font-medium"
-                          >
-                            🔗 Auf Amazon anschauen
-                          </a>
-                        </p>
-                      )}
-                      {!gift.link && (
-                        <p className="text-sm text-gray-500 italic">Kein Link hinterlegt</p>
-                      )}
-                    </div>
+          <div className="divide-y divide-gray-200">
+            {gifts.map((gift, index) => (
+              <div key={gift.id} className="p-4 hover:bg-gray-50 transition flex justify-between items-start gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold">
+                      {index + 1}
+                    </span>
+                    <h4 className="font-bold text-gray-900 truncate">🎁 {gift.name}</h4>
                   </div>
-                  <button
-                    onClick={() => removeGift(gift.id)}
-                    className="btn-outline py-1 px-3 text-red-600 hover:bg-red-100 flex-shrink-0"
-                  >
-                    🗑️
-                  </button>
+                  {gift.link && (
+                    <a href={gift.link} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline block truncate">
+                      🔗 Amazon Link anschauen →
+                    </a>
+                  )}
+                  {!gift.link && (
+                    <p className="text-xs text-gray-500 italic">Kein Link hinterlegt</p>
+                  )}
                 </div>
+                <button onClick={() => removeGift(gift.id)} className="flex-shrink-0 text-red-600 hover:text-red-700 hover:bg-red-50 p-2 rounded transition" title="Löschen">
+                  🗑️
+                </button>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-center text-gray-500 italic py-6">
-            Noch keine Geschenke hinzugefügt
-          </p>
+          <div className="p-8 text-center">
+            <p className="text-gray-500 italic">Noch keine Geschenke hinzugefügt</p>
+            <p className="text-xs text-gray-400 mt-2">Folge den 4 Schritten oben, um deine erste Wunschliste zu erstellen</p>
+          </div>
         )}
+      </div>
 
-        {/* Footer */}
-        <div className="mt-6 pt-4 border-t border-gray-200">
-          <p className="text-xs text-gray-500 text-center">
-            💚 Der Amazon-Link wird automatisch mit unserem Affiliate-Link verknüpft – der Organisator erhält eine kleine Provision!
-          </p>
+      {gifts.length >= 10 && (
+        <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+          <p className="text-sm text-green-900 font-semibold">✅ Maximale Anzahl erreicht!</p>
+          <p className="text-xs text-green-800 mt-1">Du hast die maximale Anzahl von 10 Geschenken erreicht.</p>
         </div>
+      )}
+
+      {/* FUSSZEILE */}
+      <div className="text-center text-xs text-gray-500 py-4">
+        <p>💚 Amazon-Links werden automatisch mit unserem Affiliate-Link verknüpft</p>
       </div>
     </div>
   );
