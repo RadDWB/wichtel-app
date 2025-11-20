@@ -875,9 +875,9 @@ export default function OrganizerDashboard() {
             <h3 className="section-title mb-4">👥 Alle Paarungen anschauen (Organizer-Ansicht)</h3>
 
             <div className="bg-red-100 border-l-4 border-red-500 p-4 mb-6">
-              <p className="text-red-900 font-bold mb-2">⚠️ Warnung: Überraschungen können ruiniert werden!</p>
+              <p className="text-red-900 font-bold mb-2">⚠️ Achtung: Spoiler-Warnung für Organisator!</p>
               <p className="text-red-800 text-sm">
-                Bitte benutze diese Funktion mit Bedacht. Wenn du die Paarungen siehst und hinterher mit einem Wichtelpartner sprichst, könnte die Überraschung verdorben werden. Verwende diese Funktion nur wenn nötig (z.B. um Probleme zu lösen).
+                Wenn du die Überraschung selbst erleben möchtest und nicht wissen willst, wer wen beschenkt, klicke hier <strong>nicht</strong> auf die Paarungen! Nutze diese Funktion nur, wenn du die Zuordnungen tatsächlich sehen musst (z.B. zur Fehlersuche).
               </p>
             </div>
 
