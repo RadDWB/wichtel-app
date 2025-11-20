@@ -521,31 +521,62 @@ export default function JoinGroup() {
               </div>
             </div>
 
-            <div className="flex gap-3 mt-6">
+            <div className="space-y-3 mt-6">
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setSelectedParticipant(null);
+                    setParticipantPin('');
+                    setPinConfirmed(false);
+                    setStep(1);
+                  }}
+                  className="flex-1 btn-outline"
+                >
+                  ← Zurück
+                </button>
+                <button
+                  onClick={() => {
+                    // Save PIN if provided
+                    if (participantPin.trim()) {
+                      localStorage.setItem(`participant_pin_${groupId}_${selectedParticipant.id}`, participantPin);
+                      console.log('✅ PIN saved for participant');
+                    }
+                    setPinConfirmed(true); // Move to gift choice
+                    setWantsSurprise(undefined); // Reset surprise to show gift choice menu
+                  }}
+                  className="flex-1 btn-primary"
+                >
+                  ✅ Weiter zu Wünschen →
+                </button>
+              </div>
+
               <button
-                onClick={() => {
-                  setSelectedParticipant(null);
-                  setParticipantPin('');
-                  setPinConfirmed(false);
-                  setStep(1);
-                }}
-                className="flex-1 btn-outline"
-              >
-                ← Zurück
-              </button>
-              <button
-                onClick={() => {
-                  // Save PIN if provided
-                  if (participantPin.trim()) {
-                    localStorage.setItem(`participant_pin_${groupId}_${selectedParticipant.id}`, participantPin);
-                    console.log('✅ PIN saved for participant');
+                onClick={async () => {
+                  if (window.confirm(`⚠️ Du wirst aus der Gruppe "${group.name}" entfernt. Diese Aktion kann nicht rückgängig gemacht werden. Sicher?`)) {
+                    try {
+                      const response = await fetch(`/api/groups/${groupId}/participants/${selectedParticipant.id}`, {
+                        method: 'DELETE',
+                      });
+
+                      if (!response.ok) {
+                        const errorData = await response.json();
+                        alert(`❌ Fehler: ${errorData.error}`);
+                      } else {
+                        alert('✅ Du wurdest aus der Gruppe entfernt.');
+                        localStorage.removeItem(`participant_${groupId}`);
+                        setSelectedParticipant(null);
+                        setStep(1);
+                        await loadGroup(); // Reload group to show updated participant list
+                      }
+                    } catch (err) {
+                      console.error('Error removing participant:', err);
+                      alert('❌ Fehler beim Entfernen. Bitte versuche es später erneut.');
+                    }
                   }
-                  setPinConfirmed(true); // Move to gift choice
-                  setWantsSurprise(undefined); // Reset surprise to show gift choice menu
                 }}
-                className="flex-1 btn-primary"
+                className="w-full btn-outline text-red-600 border-red-300 hover:bg-red-50"
               >
-                ✅ Weiter zu Wünschen →
+                ❌ Nicht teilnehmen (aus Gruppe entfernen)
               </button>
             </div>
           </div>
