@@ -514,6 +514,22 @@ export default function OrganizerDashboard() {
               )}
             </div>
 
+            {/* Draw Button - Prominent Placement when 100% */}
+            {!group.drawn && stats.percentage === 100 && (
+              <div className="card bg-gradient-to-br from-red-50 to-orange-50 border-4 border-red-400 shadow-xl mb-6">
+                <h3 className="section-title mb-4 text-red-900">🎲 Auslosung starten</h3>
+                <p className="text-sm text-gray-700 mb-6">
+                  Alle Teilnehmer haben ihre Geschenkelisten eingegeben! Die Auslosung ist bereit.
+                </p>
+                <Link href={`/organizer/${id}/draw`} className="block w-full text-center p-4 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white rounded-lg font-bold text-lg transition shadow-lg">
+                  🎲 Jetzt auslosen
+                </Link>
+                <p className="text-xs text-gray-600 text-center mt-3">
+                  Klick auf den Button, um die Wichtelpartner zuzulosen und die Paarungen zu verteilen.
+                </p>
+              </div>
+            )}
+
             {/* Participant List */}
             <div className="card shadow-lg">
               <h3 className="section-title mb-4">👥 Teilnehmerstatus</h3>
