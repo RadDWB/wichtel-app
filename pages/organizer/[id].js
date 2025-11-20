@@ -24,6 +24,7 @@ export default function OrganizerDashboard() {
   const [authenticated, setAuthenticated] = useState(false);
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState('');
+  const [deletingParticipantId, setDeletingParticipantId] = useState(null);
 
   useEffect(() => {
     if (id) {
@@ -34,20 +35,22 @@ export default function OrganizerDashboard() {
       if (showPin) {
         localStorage.setItem(`organizer_pin_${id}`, showPin);
       }
+    }
+  }, [id, showPin]);
+
+  // Separate effect for loading data when authenticated
+  useEffect(() => {
+    if (id && authenticated) {
+      loadGroupData();
 
       // Refresh data every 30 seconds (reduced from 10s to decrease flickering on mobile)
-      // Only poll when authenticated
-      let interval = null;
-      if (authenticated) {
-        interval = setInterval(() => {
-          loadGroupData();
-        }, 30000);
-      }
-      return () => {
-        if (interval) clearInterval(interval);
-      };
+      const interval = setInterval(() => {
+        loadGroupData();
+      }, 30000);
+
+      return () => clearInterval(interval);
     }
-  }, [id, authenticated, showPin]);
+  }, [id, authenticated]);
 
   const checkAuthentication = () => {
     // Check if coming from initial setup (showPin in URL)
@@ -217,6 +220,33 @@ export default function OrganizerDashboard() {
       `Hier ist der Link zu meinem Organisator-Dashboard für die Wichtelgruppe "${group?.name}":\n\n${link}\n\nDarauf kann ich sehen, ob alle Teilnehmer ihre Geschenkelisten ausgefüllt haben.`
     );
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  };
+
+  const handleDeleteParticipant = async (participantId, participantName) => {
+    if (!window.confirm(`⚠️ ${participantName} wirklich aus der Gruppe entfernen? Diese Aktion kann nicht rückgängig gemacht werden.`)) {
+      return;
+    }
+
+    setDeletingParticipantId(participantId);
+
+    try {
+      const response = await fetch(`/api/groups/${id}/participants/${participantId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Fehler beim Löschen');
+      }
+
+      // Refresh group data
+      await loadGroupData();
+    } catch (err) {
+      console.error('Error deleting participant:', err);
+      alert(`❌ Fehler: ${err.message}`);
+    } finally {
+      setDeletingParticipantId(null);
+    }
   };
 
   const getParticipantStatus = (participantId) => {
@@ -492,25 +522,39 @@ export default function OrganizerDashboard() {
                           )}
                         </div>
 
-                        <div className="text-right">
-                          {status.hasGifts ? (
-                            <div className="flex items-center gap-2">
-                              <span className="text-2xl">{status.wantsSurprise ? '🎉' : '✅'}</span>
-                              <div>
-                                <p className={`font-bold ${status.wantsSurprise ? 'text-purple-600' : 'text-green-600'}`}>
-                                  {status.wantsSurprise ? 'Überraschung!' : `${status.giftCount} Geschenke`}
-                                </p>
-                                <p className="text-xs text-gray-500">Fertig</p>
+                        <div className="flex items-center gap-4">
+                          <div className="text-right">
+                            {status.hasGifts ? (
+                              <div className="flex items-center gap-2">
+                                <span className="text-2xl">{status.wantsSurprise ? '🎉' : '✅'}</span>
+                                <div>
+                                  <p className={`font-bold ${status.wantsSurprise ? 'text-purple-600' : 'text-green-600'}`}>
+                                    {status.wantsSurprise ? 'Überraschung!' : `${status.giftCount} Geschenke`}
+                                  </p>
+                                  <p className="text-xs text-gray-500">Fertig</p>
+                                </div>
                               </div>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2">
-                              <span className="text-2xl">⏳</span>
-                              <div>
-                                <p className="font-bold text-orange-600">Ausstehend</p>
-                                <p className="text-xs text-gray-500">Keine Liste</p>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <span className="text-2xl">⏳</span>
+                                <div>
+                                  <p className="font-bold text-orange-600">Ausstehend</p>
+                                  <p className="text-xs text-gray-500">Keine Liste</p>
+                                </div>
                               </div>
-                            </div>
+                            )}
+                          </div>
+
+                          {/* Delete button */}
+                          {!group.drawn && (
+                            <button
+                              onClick={() => handleDeleteParticipant(participant.id, participant.name)}
+                              disabled={deletingParticipantId === participant.id}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50 p-2 rounded transition disabled:opacity-50"
+                              title="Teilnehmer löschen"
+                            >
+                              {deletingParticipantId === participant.id ? '🔄' : '🗑️'}
+                            </button>
                           )}
                         </div>
                       </div>
