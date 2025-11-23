@@ -1301,7 +1301,7 @@ export default function JoinGroup() {
                 {/* Amazon Shopping Filters - Directly under header */}
                 <div className="mb-6">
                   <AmazonFilterSelector
-                    preselectedPrice="20-30"
+                    preselectedPrice={getBudgetPriceRange(group?.budget)}
                     compact={false}
                   />
                 </div>
