@@ -181,38 +181,29 @@ export default function DrawPage() {
               </ul>
             </div>
 
-            {/* Participant Share Link Section - ORANGE BOX */}
+            {/*             {/* Participant Share Text Section - matches dashboard text copy */}
             <div className="bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-300 rounded-lg p-6 mb-8 text-left shadow-md">
-              <h2 className="text-xl font-bold text-orange-900 mb-3">📢 Link für Teilnehmer kopieren & versenden:</h2>
+              <h2 className="text-xl font-bold text-orange-900 mb-3">?? Text f?r Teilnehmer kopieren & versenden:</h2>
               <p className="text-sm text-gray-700 mb-4">
-                Kopiere diesen Link und versende ihn an alle Teilnehmer. Sie können damit ihre Wichtel-Partner sehen:
+                Kopiere den kompletten Nachrichtentext (inkl. Link) und versende ihn an alle Teilnehmer.
               </p>
-              <div className="flex gap-2 mb-4">
-                <input
-                  type="text"
-                  value={participantLink}
-                  readOnly
-                  className="flex-1 px-3 py-2 bg-white border-2 border-orange-300 rounded-lg font-mono text-sm text-gray-800"
-                />
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(postDrawShareText);
-                    alert('✅ Text kopiert!');
-                  }}
-                  className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg transition whitespace-nowrap"
-                >
-                  📋 Text kopieren
-                </button>
-              </div>
-              <div className="bg-white p-4 rounded border-l-4 border-orange-400">
+              <div className="bg-white p-4 rounded border-l-4 border-orange-400 mb-4">
                 <p className="text-xs text-gray-700 font-semibold mb-2">Nachricht zum Versenden:</p>
                 <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-wrap">
                   {postDrawShareText}
                 </p>
               </div>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(postDrawShareText);
+                  alert('? Text kopiert!');
+                }}
+                className="px-4 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg transition w-full md:w-auto"
+              >
+                ?? Text kopieren
+              </button>
             </div>
-
-            {/* Prominent Amazon Affiliate Section */}
+{/* Prominent Amazon Affiliate Section */}
             <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-400 rounded-lg p-6 mb-8 shadow-md">
               <h2 className="text-2xl font-bold text-orange-900 mb-3">🛍️ Jetzt einkaufen gehen!</h2>
               <p className="text-gray-700 mb-5">
