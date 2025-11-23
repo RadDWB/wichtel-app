@@ -55,6 +55,7 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
   const [selectedAge, setSelectedAge] = useState(null);
   const [selectedGender, setSelectedGender] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [showLinkHelp, setShowLinkHelp] = useState(false);
 
   // Mobile & OS detection
   const [isMobile, setIsMobile] = useState(false);
@@ -239,24 +240,59 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
               </ol>
 
               <div className="text-xs text-blue-600 mt-3 bg-blue-100 p-3 rounded space-y-2">
-                <p className="font-semibold">💡 Tipp zum Link kopieren:</p>
-                {isMobile ? (
-                  isIOS ? (
-                    <ol className="list-decimal list-inside space-y-1 ml-1">
-                      <li>Tippe oben rechts auf das <strong>[Teilen-Icon]</strong></li>
-                      <li>Wähle <strong>"Link kopieren"</strong></li>
-                    </ol>
-                  ) : (
-                    <ol className="list-decimal list-inside space-y-1 ml-1">
-                      <li>Halte die <strong>URL in der Adresszeile</strong> lange gedrückt</li>
-                      <li>Wähle <strong>"Link kopieren"</strong></li>
-                    </ol>
-                  )
-                ) : (
-                  <ol className="list-decimal list-inside space-y-1 ml-1">
-                    <li>Klick in die <strong>Adresszeile</strong> und wähle alles mit <strong>Strg+A</strong></li>
-                    <li>Kopiere mit <strong>Strg+C</strong> (Windows) / <strong>Cmd+C</strong> (Mac)</li>
-                  </ol>
+                <p className="font-semibold flex items-center justify-between cursor-pointer hover:text-blue-800" onClick={() => setShowLinkHelp(!showLinkHelp)}>
+                  💡 Link kopieren
+                  <span style={{transform: showLinkHelp ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s'}} className="ml-2">▼</span>
+                </p>
+
+                {showLinkHelp && (
+                  <div className="mt-2 pt-2 border-t border-blue-300 space-y-3">
+                    {isMobile ? (
+                      isIOS ? (
+                        <>
+                          <div className="bg-white p-2 rounded text-gray-900">
+                            <p className="font-semibold text-sm mb-2">📱 iPhone - So kopierst du den Link:</p>
+                            <ol className="list-decimal list-inside space-y-1 ml-1 text-xs">
+                              <li>Schau dir das Produkt auf Amazon an</li>
+                              <li>Oben rechts: Tippe auf das <strong>[Teilen-Icon]</strong> (Quadrat mit ↑)</li>
+                              <li>Im Menü: Scroll nach unten und wähle <strong>"Link kopieren"</strong></li>
+                              <li className="font-semibold text-green-700">✅ Link ist jetzt im Speicher!</li>
+                              <li>Komm zurück zu dieser App</li>
+                              <li>Im Feld unten: Tippe lange drücken → <strong>"Einfügen"</strong></li>
+                            </ol>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="bg-white p-2 rounded text-gray-900">
+                            <p className="font-semibold text-sm mb-2">🤖 Android - So kopierst du den Link:</p>
+                            <ol className="list-decimal list-inside space-y-1 ml-1 text-xs">
+                              <li>Schau dir das Produkt auf Amazon an</li>
+                              <li>Halte die <strong>URL-Adressleiste</strong> oben für 2-3 Sekunden gedrückt</li>
+                              <li>Im Popup-Menü: Wähle <strong>"Link kopieren"</strong> oder <strong>"URL kopieren"</strong></li>
+                              <li className="font-semibold text-green-700">✅ Link ist jetzt im Speicher!</li>
+                              <li>Komm zurück zu dieser App</li>
+                              <li>Im Feld unten: Tippe lange drücken → <strong>"Einfügen"</strong></li>
+                            </ol>
+                          </div>
+                        </>
+                      )
+                    ) : (
+                      <>
+                        <div className="bg-white p-2 rounded text-gray-900">
+                          <p className="font-semibold text-sm mb-2">🖥️ Desktop/Laptop - So kopierst du den Link:</p>
+                          <ol className="list-decimal list-inside space-y-1 ml-1 text-xs">
+                            <li>Schau dir das Produkt auf Amazon an</li>
+                            <li>Klick in die <strong>Adressleiste</strong> oben (wo die URL steht)</li>
+                            <li>Wähle alles: <strong>Strg+A</strong> (Windows) / <strong>Cmd+A</strong> (Mac)</li>
+                            <li>Kopieren: <strong>Strg+C</strong> (Windows) / <strong>Cmd+C</strong> (Mac)</li>
+                            <li className="font-semibold text-green-700">✅ Link ist jetzt im Speicher!</li>
+                            <li>Im Feld unten: Rechtsklick → <strong>"Einfügen"</strong> oder <strong>Strg+V</strong> / <strong>Cmd+V</strong></li>
+                          </ol>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
@@ -332,7 +368,7 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
         )}
       </div>
 
-      {/* FILTER MODAL - SCHRITT 1 - REORGANISIERT */}
+      {/* FILTER MODAL - MIT STAGIGEM FLOW UND RADIO-BUTTONS FÜR PREIS */}
       {showFiltersModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-lg max-w-4xl w-full my-8 shadow-2xl">
@@ -342,89 +378,146 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
                 ✕
               </button>
             </div>
-            <div className="p-8 space-y-6 max-h-96 overflow-y-auto">
-              {/* CATEGORY FILTER - OBEN */}
-              <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded">
-                <h4 className="text-lg font-bold text-green-900 mb-4">🏷️ Nach Kategorie (optional):</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-2">
-                  {AMAZON_FILTERS.category.map((cat) => (
-                    <button
-                      key={cat.label}
-                      onClick={() => setSelectedCategory(cat)}
-                      className={`text-sm py-3 px-3 rounded font-semibold text-center transition ${
-                        selectedCategory?.label === cat.label
-                          ? 'bg-green-600 text-white ring-2 ring-green-300'
-                          : 'bg-green-500 hover:bg-green-600 text-white'
-                      }`}
-                    >
-                      {cat.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+            <div className="p-8 space-y-8 max-h-96 overflow-y-auto">
 
-              {/* AGE FILTER */}
-              <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
-                <h4 className="text-lg font-bold text-blue-900 mb-4">👥 Nach Altersbereich (optional):</h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-2">
-                  {AMAZON_FILTERS.age.map((age) => (
-                    <button
-                      key={age.label}
-                      onClick={() => setSelectedAge(age)}
-                      className={`text-sm py-3 px-3 rounded font-semibold text-center transition ${
-                        selectedAge?.label === age.label
-                          ? 'bg-blue-600 text-white ring-2 ring-blue-300'
-                          : 'bg-blue-500 hover:bg-blue-600 text-white'
-                      }`}
-                    >
-                      {age.label}
-                    </button>
-                  ))}
+              {/* STAGE 1: PRICE SELECTION - REQUIRED & PROMINENT */}
+              <div className="bg-gradient-to-br from-orange-50 to-amber-50 border-2 border-orange-300 p-6 rounded-lg shadow-md">
+                <div className="flex items-baseline gap-2 mb-4">
+                  <h4 className="text-lg font-bold text-orange-900">💰 SCHRITT 1: Budget wählen</h4>
+                  <span className="text-xs font-semibold text-white bg-red-500 px-2 py-0.5 rounded">ERFORDERLICH</span>
                 </div>
-              </div>
+                <p className="text-sm text-gray-700 mb-4">Deine Gruppenbudget: <strong>{group.budget}</strong> - Wähle eine Preisspanne:</p>
 
-              {/* GENDER FILTER */}
-              <div className="bg-purple-50 border-l-4 border-purple-400 p-4 rounded">
-                <h4 className="text-lg font-bold text-purple-900 mb-4">👫 Nach Geschlecht (optional):</h4>
-                <div className="grid grid-cols-2 gap-2">
-                  {AMAZON_FILTERS.gender.map((gender) => (
-                    <button
-                      key={gender.label}
-                      onClick={() => setSelectedGender(gender)}
-                      className={`text-sm py-3 px-3 rounded font-semibold text-center transition ${
-                        selectedGender?.label === gender.label
-                          ? 'bg-purple-600 text-white ring-2 ring-purple-300'
-                          : 'bg-purple-500 hover:bg-purple-600 text-white'
-                      }`}
-                    >
-                      {gender.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* BUDGET FILTER - UNTEN - INITIIERT DEN LINK */}
-              <div className="bg-orange-50 border-l-4 border-orange-400 p-4 rounded border-2 border-orange-300">
-                <h4 className="text-lg font-bold text-orange-900 mb-4">💰 Nach Budget ({group.budget}) - Wähle um zu Amazon zu gehen:</h4>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                   {AMAZON_FILTERS.price.map((range) => (
-                    <a
+                    <label
                       key={range.label}
-                      href={range.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => setShowFiltersModal(false)}
-                      className="text-sm bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white py-3 px-2 rounded font-bold text-center transition shadow-md"
+                      className={`flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition ${
+                        selectedPrice?.label === range.label
+                          ? 'bg-orange-200 border-orange-600 shadow-md'
+                          : 'bg-white border-gray-300 hover:border-orange-400'
+                      }`}
                     >
-                      {range.label}
-                    </a>
+                      <input
+                        type="radio"
+                        name="price"
+                        value={range.label}
+                        checked={selectedPrice?.label === range.label}
+                        onChange={() => setSelectedPrice(range)}
+                        className="w-4 h-4 accent-orange-500"
+                      />
+                      <span className="text-sm font-semibold text-gray-900">{range.label}</span>
+                    </label>
                   ))}
                 </div>
+
+                {!selectedPrice && (
+                  <p className="text-xs text-orange-700 mt-3 bg-orange-100 p-2 rounded">
+                    ℹ️ Wähle ein Budget oben, um zum nächsten Schritt zu gehen
+                  </p>
+                )}
               </div>
 
-              <p className="text-sm text-gray-600 text-center bg-gray-100 p-4 rounded">
-                💡 Wähle optional Kategorie, Alter und Geschlecht, dann klick auf einen Preis um zur Amazon.de Geschenke-Übersicht zu gehen!
-              </p>
+              {/* STAGE 2: OPTIONAL FILTERS */}
+              {selectedPrice && (
+                <>
+                  {/* CATEGORY FILTER */}
+                  <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded">
+                    <div className="flex items-baseline gap-2 mb-4">
+                      <h4 className="text-lg font-bold text-green-900">🏷️ SCHRITT 2: Kategorie (optional)</h4>
+                      <span className="text-xs text-gray-600">— Skip für alle Geschenke</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {AMAZON_FILTERS.category.map((cat) => (
+                        <button
+                          key={cat.label}
+                          onClick={() => setSelectedCategory(cat)}
+                          className={`text-sm py-3 px-3 rounded font-semibold text-center transition ${
+                            selectedCategory?.label === cat.label
+                              ? 'bg-green-600 text-white ring-2 ring-green-300'
+                              : 'bg-green-500 hover:bg-green-600 text-white'
+                          }`}
+                        >
+                          {cat.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* AGE FILTER */}
+                  <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+                    <div className="flex items-baseline gap-2 mb-4">
+                      <h4 className="text-lg font-bold text-blue-900">👥 SCHRITT 3: Altersbereich (optional)</h4>
+                      <span className="text-xs text-gray-600">— Skip für alle Altersgruppen</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {AMAZON_FILTERS.age.map((age) => (
+                        <button
+                          key={age.label}
+                          onClick={() => setSelectedAge(age)}
+                          className={`text-sm py-3 px-3 rounded font-semibold text-center transition ${
+                            selectedAge?.label === age.label
+                              ? 'bg-blue-600 text-white ring-2 ring-blue-300'
+                              : 'bg-blue-500 hover:bg-blue-600 text-white'
+                          }`}
+                        >
+                          {age.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* GENDER FILTER */}
+                  <div className="bg-purple-50 border-l-4 border-purple-400 p-4 rounded">
+                    <div className="flex items-baseline gap-2 mb-4">
+                      <h4 className="text-lg font-bold text-purple-900">👫 SCHRITT 4: Geschlecht (optional)</h4>
+                      <span className="text-xs text-gray-600">— Skip für alle Geschlechter</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {AMAZON_FILTERS.gender.map((gender) => (
+                        <button
+                          key={gender.label}
+                          onClick={() => setSelectedGender(gender)}
+                          className={`text-sm py-3 px-3 rounded font-semibold text-center transition ${
+                            selectedGender?.label === gender.label
+                              ? 'bg-purple-600 text-white ring-2 ring-purple-300'
+                              : 'bg-purple-500 hover:bg-purple-600 text-white'
+                          }`}
+                        >
+                          {gender.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* BIG CALL-TO-ACTION BUTTON */}
+                  <div className="space-y-4 pt-4">
+                    <button
+                      onClick={() => {
+                        const filters = [];
+                        if (selectedPrice) filters.push(selectedPrice.link);
+                        if (selectedCategory) filters.push(selectedCategory.link);
+                        if (selectedAge) filters.push(selectedAge.link);
+                        if (selectedGender) filters.push(selectedGender.link);
+
+                        // Use first filter link or just the price link
+                        const targetLink = filters[0];
+                        if (targetLink) {
+                          window.open(targetLink, '_blank');
+                          setShowFiltersModal(false);
+                        }
+                      }}
+                      className="w-full py-5 px-6 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white rounded-lg font-bold text-xl transition shadow-lg transform hover:scale-105"
+                    >
+                      🚀 LOS GEHT'S ZU AMAZON!
+                    </button>
+
+                    <p className="text-xs text-gray-600 text-center bg-gray-50 p-3 rounded">
+                      💡 Klick auf den Button und Amazon öffnet sich mit deinen Filtern. Dort kannst du nach Produkten suchen, Preise checken und den Link kopieren!
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
