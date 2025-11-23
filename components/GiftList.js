@@ -212,7 +212,7 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
       {/* PHASE 1: ANLEITUNG & AMAZON-FLOW (Akkordeon - Blau) */}
       {/* ════════════════════════════════════════════════════════ */}
       
-      <div className="bg-gradient-to-r from-blue-50 via-blue-25 to-blue-50 rounded-lg border-2 border-blue-300 overflow-hidden shadow-md">
+      <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border-2 border-blue-300 overflow-hidden shadow-md">
         {/* Header - Immer sichtbar */}
         <button
           onClick={() => setExpandedStep(Array.isArray(expandedStep) && expandedStep.includes(1) ? expandedStep.filter(s => s !== 1) : [...(Array.isArray(expandedStep) ? expandedStep : []), 1])}
@@ -303,7 +303,7 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
       {/* PHASE 2: GESCHENK EINTRAGEN (Akkordeon - Grün) */}
       {/* ════════════════════════════════════════════════════════ */}
 
-      <div className="bg-gradient-to-r from-green-50 via-green-25 to-green-50 rounded-lg border-2 border-green-300 overflow-hidden shadow-md">
+      <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg border-2 border-green-300 overflow-hidden shadow-md">
         {/* Header - Immer sichtbar */}
         <button
           onClick={() => setExpandedStep(Array.isArray(expandedStep) && expandedStep.includes(2) ? expandedStep.filter(s => s !== 2) : [...(Array.isArray(expandedStep) ? expandedStep : []), 2])}
@@ -473,7 +473,7 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
                 Klick auf einen Link, um auf Amazon zu gehen und nach Produkten in deinem Budget zu suchen:
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-                {AMAZON_PRICE_RANGES.map((range) => (
+                {AMAZON_FILTERS.price.map((range) => (
                   <a key={range.label} href={range.link} target="_blank" rel="noopener noreferrer" onClick={() => setShowAmazonModal(false)} className="text-sm bg-orange-500 hover:bg-orange-600 text-white py-3 px-2 rounded font-semibold text-center transition">
                     {range.label}
                   </a>
@@ -524,7 +524,7 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
         ) : (
           <div className="p-8 text-center">
             <p className="text-gray-500 italic">Noch keine Geschenke hinzugefügt</p>
-            <p className="text-xs text-gray-400 mt-2">Folge den 4 Schritten oben, um deine erste Wunschliste zu erstellen</p>
+            <p className="text-xs text-gray-400 mt-2">Folge der Anleitung oben, um deine erste Wunschliste zu erstellen</p>
           </div>
         )}
       </div>
