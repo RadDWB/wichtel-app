@@ -36,7 +36,7 @@ export default function JoinGroup() {
   const [group, setGroup] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [step, setStep] = useState(1); // 1: Join | 1.5: GiftChoice | 2: Gifts | 3: Exclusions | 4: Complete
+  const [step, setStep] = useState(1); // 1: Join | pin-create | pin-verify | 1.5: GiftChoice | 2: Gifts | 3: Exclusions | 4: Complete
   const [selectedParticipant, setSelectedParticipant] = useState(null);
   const [nameEdit, setNameEdit] = useState('');
   const [emailEdit, setEmailEdit] = useState('');
@@ -44,7 +44,7 @@ export default function JoinGroup() {
   const [wantsSurprise, setWantsSurprise] = useState(false); // Ich möchte überrascht werden
   const [participantPin, setParticipantPin] = useState(''); // Optional PIN for participant protection
   const [pinConfirmed, setPinConfirmed] = useState(false); // Track if PIN step is done
-  const [tempPin, setTempPin] = useState(''); // Temporary PIN during Step 4.5 setup
+  const [tempPin, setTempPin] = useState(''); // Temporary PIN during PIN creation/verification
   const [pinVerificationError, setPinVerificationError] = useState(''); // Error message for PIN verification
   const stepRef = useRef(step); // Track step without causing effect re-runs
   const [showNoGiftsDialog, setShowNoGiftsDialog] = useState(false);
@@ -222,9 +222,7 @@ export default function JoinGroup() {
     // Store participant ID first (before checking anything)
     localStorage.setItem(`participant_${groupId}`, participant.id);
 
-    // Check if this participant was previously selected (indicated by localStorage)
-    const previousParticipantId = localStorage.getItem(`participant_${groupId}`);
-    const wasParticipantPreviouslySelected = previousParticipantId === participant.id;
+    // Check if this participant has a stored PIN
     const storedPin = localStorage.getItem(`participant_pin_${groupId}_${participant.id}`);
 
     // Set participant data
@@ -235,18 +233,15 @@ export default function JoinGroup() {
     setTempPin(''); // Reset PIN input
     setPinVerificationError(''); // Clear any previous errors
 
-    // If participant was previously selected and has a PIN, require verification
-    if (wasParticipantPreviouslySelected && storedPin) {
-      setPinConfirmed(false); // Not confirmed yet
-      setStep(1.5); // Go to PIN verification screen
-    } else if (storedPin) {
-      // PIN exists but first time selecting - still show verification
+    // NEW LOGIC: PIN required FIRST!
+    if (storedPin) {
+      // PIN exists → Verify it
       setPinConfirmed(false);
-      setStep(1.5); // Go to PIN verification screen
+      setStep('pin-verify');
     } else {
-      // No PIN set - skip to gift choice
-      setPinConfirmed(true); // Already "verified" since no PIN
-      setStep(1.5); // Go to gift choice
+      // No PIN → Create one NOW!
+      setPinConfirmed(false);
+      setStep('pin-create');
     }
   };
 
@@ -393,6 +388,200 @@ export default function JoinGroup() {
                 className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition"
               >
                 👨‍💼 Ich bin der Organisator - zum Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // NEW: Step 'pin-create' - Create PIN immediately after clicking name (BEFORE everything else!)
+  if (step === 'pin-create' && selectedParticipant) {
+    const pinError = tempPin && (tempPin.length < 4 || tempPin.length > 6 || !/^\d+$/.test(tempPin));
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
+        <div className="container mx-auto py-12 px-4 max-w-2xl">
+          <div className="bg-white rounded-lg p-8 shadow-md">
+            <h2 className="text-3xl font-bold mb-2">🔐 PIN erstellen</h2>
+            <p className="text-gray-600 mb-6">
+              Hallo {selectedParticipant.name}! Erstelle eine PIN, um deine Wunschliste zu schützen.
+            </p>
+
+            <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-4 mb-6">
+              <p className="text-sm text-blue-900 mb-3 font-semibold">
+                🔐 Wofür brauchst du die PIN?
+              </p>
+              <ul className="text-sm text-blue-800 space-y-2 ml-4">
+                <li>✅ <strong>Schutz:</strong> Nur du kannst deine Wunschliste sehen und bearbeiten</li>
+                <li>✅ <strong>Nach Auslosung:</strong> Du brauchst die PIN, um zu sehen wem du etwas schenken musst</li>
+                <li>✅ <strong>Einfach:</strong> 4-6 Ziffern, die du dir gut merken kannst</li>
+              </ul>
+            </div>
+
+            {error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+                {error}
+              </div>
+            )}
+
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium mb-2 text-gray-700">
+                  📝 Deine PIN (4-6 Ziffern)
+                </label>
+                <input
+                  type="password"
+                  value={tempPin}
+                  onChange={(e) => {
+                    setTempPin(e.target.value);
+                    setError('');
+                  }}
+                  placeholder="z.B. 123456"
+                  className={`input-field w-full ${pinError ? 'border-red-500' : ''}`}
+                  autoFocus
+                />
+                {pinError && (
+                  <p className="text-xs text-red-600 mt-2">
+                    ❌ PIN muss aus 4-6 Ziffern bestehen (nur Zahlen!)
+                  </p>
+                )}
+                {tempPin && !pinError && (
+                  <p className="text-xs text-green-600 mt-2">
+                    ✅ PIN ist gültig
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setStep(1);
+                  setSelectedParticipant(null);
+                  setTempPin('');
+                  setError('');
+                }}
+                className="flex-1 btn-outline"
+              >
+                ← Zurück
+              </button>
+              <button
+                onClick={() => {
+                  // Validate PIN
+                  if (!tempPin.trim()) {
+                    setError('❌ PIN ist erforderlich. Bitte setze eine PIN.');
+                    return;
+                  }
+                  if (tempPin.length < 4 || tempPin.length > 6 || !/^\d+$/.test(tempPin)) {
+                    setError('❌ PIN muss aus 4-6 Ziffern bestehen (nur Zahlen!)');
+                    return;
+                  }
+
+                  // Save PIN
+                  localStorage.setItem(`participant_pin_${groupId}_${selectedParticipant.id}`, tempPin);
+                  setParticipantPin(tempPin);
+                  setPinConfirmed(true);
+                  setTempPin('');
+                  console.log('✅ PIN saved and confirmed');
+
+                  // Go to Gift Choice
+                  setStep(1.5);
+                }}
+                disabled={!tempPin || tempPin.length < 4 || tempPin.length > 6 || !/^\d+$/.test(tempPin)}
+                className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                ✅ PIN speichern & Weiter
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // NEW: Step 'pin-verify' - Verify PIN (when PIN exists)
+  if (step === 'pin-verify' && selectedParticipant && participantPin) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
+        <div className="container mx-auto py-12 px-4 max-w-2xl">
+          <div className="bg-white rounded-lg p-8 shadow-md">
+            <h2 className="text-3xl font-bold mb-2">🔐 PIN eingeben</h2>
+            <p className="text-gray-600 mb-6">
+              Willkommen zurück, {selectedParticipant.name}! Gib deine PIN ein, um fortzufahren.
+            </p>
+
+            {pinVerificationError && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+                {pinVerificationError}
+              </div>
+            )}
+
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium mb-2">PIN</label>
+                <input
+                  type="password"
+                  value={tempPin}
+                  onChange={(e) => {
+                    setTempPin(e.target.value);
+                    setPinVerificationError(''); // Clear error when typing
+                  }}
+                  placeholder="Gib deine PIN ein"
+                  className="input-field w-full"
+                  autoFocus
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      // Verify on Enter key
+                      if (tempPin === participantPin || tempPin === RECOVERY_PIN) {
+                        setPinConfirmed(true);
+                        setTempPin('');
+                        setStep(group.drawn ? 1 : 1.5); // Nach Draw: Teilnehmerliste, VOR Draw: Gift Choice
+                      } else {
+                        setPinVerificationError('❌ PIN ist falsch. Bitte versuche es erneut.');
+                      }
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+              <p className="text-sm text-blue-900">
+                🔑 <strong>PIN vergessen?</strong><br/>
+                Verwende Recovery-PIN: <code className="bg-white px-2 py-1 rounded">999999</code> oder kontaktiere den Organisator
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setSelectedParticipant(null);
+                  setParticipantPin('');
+                  setTempPin('');
+                  setPinConfirmed(false);
+                  setPinVerificationError('');
+                  setStep(1);
+                }}
+                className="flex-1 btn-outline"
+              >
+                ← Zurück
+              </button>
+              <button
+                onClick={() => {
+                  if (tempPin === participantPin || tempPin === RECOVERY_PIN) {
+                    setPinConfirmed(true);
+                    setTempPin('');
+                    setPinVerificationError('');
+                    setStep(group.drawn ? 1 : 1.5); // Nach Draw: Teilnehmerliste, VOR Draw: Gift Choice
+                  } else {
+                    setPinVerificationError('❌ PIN ist falsch. Bitte versuche es erneut.');
+                  }
+                }}
+                className="flex-1 btn-primary"
+              >
+                ✅ Bestätigen
               </button>
             </div>
           </div>
@@ -970,107 +1159,6 @@ export default function JoinGroup() {
     );
   }
 
-  // Step 4.5: Set PIN after completing list - MANDATORY
-  if (step === 4.5 && selectedParticipant && !group.drawn) {
-    const pinError = tempPin && (tempPin.length < 4 || tempPin.length > 6 || !/^\d+$/.test(tempPin));
-
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
-        <div className="container mx-auto py-12 px-4 max-w-2xl">
-          <div className="bg-white rounded-lg p-8 shadow-md">
-            <h2 className="text-3xl font-bold mb-2">🔐 PIN erstellen - Schritt 3 (Erforderlich)</h2>
-            <p className="text-gray-600 mb-6">
-              Die PIN ist ein wichtiger Schutzmechanismus und muss gesetzt werden, um fortzufahren.
-            </p>
-
-            <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-4 mb-6">
-              <p className="text-sm text-blue-900 mb-3 font-semibold">
-                🔐 Das ist deine PIN-Schritt:
-              </p>
-              <ul className="text-sm text-blue-800 space-y-2 ml-4">
-                <li>✅ <strong>Jetzt:</strong> Erstelle eine sichere PIN (4-6 Ziffern)</li>
-                <li>✅ <strong>Später:</strong> Du brauchst die PIN, um deinen Wichtelpartner nach der Auslosung zu sehen</li>
-                <li>✅ <strong>Sicherheit:</strong> Nur mit der PIN können deine Daten auf diesem Gerät bearbeitet werden</li>
-              </ul>
-            </div>
-
-            {error && (
-              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-                {error}
-              </div>
-            )}
-
-            <div className="space-y-4 mb-6">
-              <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700">
-                  📝 Deine PIN (4-6 Ziffern)
-                </label>
-                <input
-                  type="password"
-                  value={tempPin}
-                  onChange={(e) => {
-                    setTempPin(e.target.value);
-                    setError('');
-                  }}
-                  placeholder="z.B. 123456"
-                  className={`input-field w-full ${pinError ? 'border-red-500' : ''}`}
-                  autoFocus
-                />
-                {pinError && (
-                  <p className="text-xs text-red-600 mt-2">
-                    ❌ PIN muss aus 4-6 Ziffern bestehen (nur Zahlen!)
-                  </p>
-                )}
-                {tempPin && !pinError && (
-                  <p className="text-xs text-green-600 mt-2">
-                    ✅ PIN ist gültig
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setStep(4);
-                  setTempPin('');
-                  setError('');
-                }}
-                className="flex-1 btn-outline"
-              >
-                ← Zurück
-              </button>
-              <button
-                onClick={() => {
-                  // Validate PIN
-                  if (!tempPin.trim()) {
-                    setError('❌ PIN ist erforderlich. Bitte setze eine PIN.');
-                    return;
-                  }
-                  if (tempPin.length < 4 || tempPin.length > 6 || !/^\d+$/.test(tempPin)) {
-                    setError('❌ PIN muss aus 4-6 Ziffern bestehen (nur Zahlen!)');
-                    return;
-                  }
-
-                  // Save PIN
-                  localStorage.setItem(`participant_pin_${groupId}_${selectedParticipant.id}`, tempPin);
-                  setParticipantPin(tempPin);
-                  setPinConfirmed(true);
-                  console.log('✅ PIN saved and confirmed');
-                  setStep(4);
-                }}
-                disabled={!tempPin || tempPin.length < 4 || tempPin.length > 6 || !/^\d+$/.test(tempPin)}
-                className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                ✅ PIN speichern & Fertig
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   // Step 4: Waiting for draw
   if (step === 4 && selectedParticipant && !group.drawn) {
     return (
@@ -1116,7 +1204,7 @@ export default function JoinGroup() {
               {!participantPin ? (
                 <button
                   onClick={() => {
-                    setStep(4.5); // Go to PIN setup step
+                    setStep('pin-create'); // Go to PIN creation step (fallback - should not normally happen)
                   }}
                   className="w-full mt-6 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold py-4 rounded-lg text-lg transition transform hover:scale-105"
                 >
