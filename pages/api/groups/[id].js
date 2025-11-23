@@ -1,14 +1,39 @@
 import { getGroup, saveGroup } from '../../../lib/kv';
 
+const getCookies = (req) => {
+  const header = req.headers?.cookie;
+  if (!header) return {};
+  return Object.fromEntries(
+    header.split(';').map((c) => {
+      const [k, v] = c.trim().split('=');
+      return [k, decodeURIComponent(v || '')];
+    })
+  );
+};
+
+const logSession = (phase, req, extra = {}) => {
+  const cookies = getCookies(req);
+  const sessionId = cookies.sessionId || req.headers['x-session-id'] || null;
+  console.log(
+    `[session-debug] phase=${phase} route=${req.url} method=${req.method} sessionId=${sessionId || 'none'} cookies=${JSON.stringify(
+      cookies
+    )} extra=${JSON.stringify(extra)}`
+  );
+  return sessionId;
+};
+
 export default async function handler(req, res) {
   const { id } = req.query;
+  const sessionId = logSession('groups/[id]:entry', req, { id });
 
   if (req.method === 'GET') {
     try {
+      logSession('groups/[id]:before-getGroup', req, { id, sessionId });
       const group = await getGroup(id);
       if (!group) {
         return res.status(404).json({ error: 'Group not found' });
       }
+      logSession('groups/[id]:after-getGroup', req, { id, sessionId, found: !!group });
       return res.status(200).json(group);
     } catch (error) {
       console.error('Error fetching group:', error);
@@ -37,7 +62,9 @@ export default async function handler(req, res) {
         createdAt: req.body.createdAt || new Date().toISOString(),
       };
 
+      logSession('groups/[id]:before-saveGroup', req, { id, sessionId });
       await saveGroup(id, group);
+      logSession('groups/[id]:after-saveGroup', req, { id, sessionId });
       return res.status(200).json(group);
     } catch (error) {
       console.error('Error saving group:', error);

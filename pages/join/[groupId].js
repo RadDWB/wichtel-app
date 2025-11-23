@@ -50,11 +50,31 @@ export default function JoinGroup() {
   const [showNoGiftsDialog, setShowNoGiftsDialog] = useState(false);
   const [currentGifts, setCurrentGifts] = useState([]); // Store gifts for current participant during step 2
   const [organizerPin, setOrganizerPin] = useState(''); // Store organizer PIN to redirect back correctly
+  const [sessionCreating, setSessionCreating] = useState(false);
 
   // Update ref when step changes
   useEffect(() => {
     stepRef.current = step;
   }, [step]);
+
+  const createParticipantSession = async (pinValue) => {
+    if (!groupId || !selectedParticipant?.id || !pinValue) return;
+    try {
+      setSessionCreating(true);
+      const resp = await fetch('/api/session/participant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ groupId, participantId: selectedParticipant.id, pin: pinValue }),
+      });
+      if (!resp.ok) {
+        console.warn('Session creation failed', await resp.text());
+      }
+    } catch (err) {
+      console.error('Error creating participant session:', err);
+    } finally {
+      setSessionCreating(false);
+    }
+  };
 
   useEffect(() => {
     if (groupId) {
@@ -261,7 +281,7 @@ export default function JoinGroup() {
       ...group,
       participants: group.participants.map(p =>
         p.id === selectedParticipant.id
-          ? { ...p, name: nameEdit, email: emailEdit || null }
+          ? { ...p, name: nameEdit, email: emailEdit || null, pin: participantPin || p.pin || null }
           : p
       ),
     };
@@ -490,6 +510,7 @@ export default function JoinGroup() {
                   setParticipantPin(tempPin);
                   setPinConfirmed(true);
                   setTempPin('');
+                  createParticipantSession(tempPin);
                   console.log('✅ PIN saved and confirmed');
 
                   // After Draw: Don't change step - post-draw view will render automatically
@@ -550,6 +571,7 @@ export default function JoinGroup() {
                       if (tempPin === participantPin || tempPin === RECOVERY_PIN) {
                         setPinConfirmed(true);
                         setTempPin('');
+                        createParticipantSession(tempPin);
                         // Before Draw: go weiter zum Gift-Choice
                         if (!group.drawn) {
                           setStep(1.5);
@@ -590,6 +612,7 @@ export default function JoinGroup() {
                     setPinConfirmed(true);
                     setTempPin('');
                     setPinVerificationError('');
+                    createParticipantSession(tempPin);
                     if (!group.drawn) {
                       setStep(1.5);
                     }
@@ -671,6 +694,7 @@ export default function JoinGroup() {
                     id: Date.now().toString(),
                     name: nameEdit,
                     email: emailEdit || null,
+                    pin: participantPin || null,
                   };
                   const updated = {
                     ...group,

@@ -3,8 +3,19 @@
 
 import { getGroup } from '../../../lib/kv';
 
+const getCookies = (req) => {
+  const header = req.headers?.cookie;
+  if (!header) return {};
+  return Object.fromEntries(
+    header.split(';').map((c) => {
+      const [k, v] = c.trim().split('=');
+      return [k, decodeURIComponent(v || '')];
+    })
+  );
+};
+
 const logSession = (phase, req, extra = {}) => {
-  const cookies = req.cookies || {};
+  const cookies = getCookies(req);
   const sessionId = cookies.sessionId || req.headers['x-session-id'] || null;
   console.log(
     `[session-debug] phase=${phase} route=${req.url} method=${req.method} sessionId=${sessionId || 'none'} cookies=${JSON.stringify(
