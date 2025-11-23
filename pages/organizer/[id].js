@@ -452,39 +452,6 @@ export default function OrganizerDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
           {/* Left Column - Link & Email */}
           <div className="lg:col-span-1">
-            {/* Link Card */}
-            <div className="card bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-300 shadow-lg mb-6">
-              <h3 className="section-title text-blue-900 mb-4">🔗 Dein Organisations-Link</h3>
-
-              <p className="text-sm text-gray-700 mb-3">
-                Speichere diesen Link als Lesezeichen oder sende ihn dir per Email, um jederzeit deinen Überblick zu sehen:
-              </p>
-
-              <div className="bg-white rounded border border-blue-300 p-3 mb-4 font-mono text-xs break-all">
-                {getOrganizerLink()}
-              </div>
-
-              <div className="space-y-2">
-                <button
-                  onClick={() => copyToClipboard('organizer')}
-                  className="w-full btn-secondary bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-semibold transition"
-                >
-                  {copiedType === 'organizer' ? '✅ Kopiert!' : '📋 Link kopieren'}
-                </button>
-
-                <button
-                  onClick={sendViaEmail}
-                  className="w-full btn-secondary bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-semibold transition"
-                >
-                  📧 Per Email senden
-                </button>
-              </div>
-
-              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-xs text-gray-700">
-                <strong>💡 Tipp:</strong> Speichere diesen Link als Lesezeichen (Strg+D / Cmd+D) in deinem Browser, um schnell darauf zurückzukommen.
-              </div>
-            </div>
-
             {/* Group Info Card */}
             <div className="card bg-white shadow-lg">
               <h3 className="section-title mb-4">📋 Gruppen-Infos</h3>
@@ -1003,6 +970,38 @@ export default function OrganizerDashboard() {
           )}
         </div>
 
+        {/* Organisations-Link Card - Bottom */}
+        <div className="card bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-300 shadow-lg mt-12 mb-12">
+          <h3 className="section-title text-blue-900 mb-4">🔗 Dein Organisations-Link</h3>
+
+          <p className="text-sm text-gray-700 mb-3">
+            Speichere diesen Link als Lesezeichen oder sende ihn dir per Email, um jederzeit deinen Überblick zu sehen:
+          </p>
+
+          <div className="bg-white rounded border border-blue-300 p-3 mb-4 font-mono text-xs break-all">
+            {getOrganizerLink()}
+          </div>
+
+          <div className="space-y-2">
+            <button
+              onClick={() => copyToClipboard('organizer')}
+              className="w-full btn-secondary bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-semibold transition"
+            >
+              {copiedType === 'organizer' ? '✅ Kopiert!' : '📋 Link kopieren'}
+            </button>
+
+            <button
+              onClick={sendViaEmail}
+              className="w-full btn-secondary bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-semibold transition"
+            >
+              📧 Per Email senden
+            </button>
+          </div>
+
+          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-xs text-gray-700">
+            <strong>💡 Tipp:</strong> Speichere diesen Link als Lesezeichen (Strg+D / Cmd+D) in deinem Browser, um schnell darauf zurückzukommen.
+          </div>
+        </div>
 
         {/* Amazon Affiliate Section - Smart Filters for Gift Shopping */}
         {group.drawn && (
