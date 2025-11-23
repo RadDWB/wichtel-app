@@ -115,4 +115,3 @@ export default function AmazonFilterSelector({ preselectedPrice = null, compact 
     </div>
   );
 }
-
