@@ -204,7 +204,7 @@ export default function AdminDashboard() {
           </div>
 
           {groups.length > 0 ? (
-            <div className="overflow-hidden">
+            <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-gray-700 text-white font-semibold">
@@ -217,13 +217,13 @@ export default function AdminDashboard() {
                       />
                     </th>
                     <th className="px-4 py-3 text-left">Gruppe</th>
+                    <th className="px-4 py-3 text-center">Aktionen</th>
                     <th className="px-4 py-3 text-left">Budget</th>
                     <th className="px-4 py-3 text-left">Teilnehmer</th>
                     <th className="px-4 py-3 text-left">Adressen</th>
                     <th className="px-4 py-3 text-left">Status</th>
                     <th className="px-4 py-3 text-left">Erstellt</th>
                     <th className="px-4 py-3 text-left">PIN</th>
-                    <th className="px-4 py-3 text-left">Aktionen</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -244,6 +244,31 @@ export default function AdminDashboard() {
                         <div>
                           <p className="font-semibold text-white">{group.name}</p>
                           <p className="text-xs text-gray-400 font-mono truncate">{group.id}</p>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex gap-1 justify-center">
+                          <a
+                            href={`/organizer/${group.id}`}
+                            className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs font-semibold"
+                            title="Organizer Dashboard"
+                          >
+                            🔐
+                          </a>
+                          <a
+                            href={`/admin/groups/${group.id}`}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-semibold"
+                            title="Details anschauen"
+                          >
+                            👁️
+                          </a>
+                          <button
+                            onClick={() => handleDeleteGroup(group.id)}
+                            className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs font-semibold"
+                            title="Einzeln löschen"
+                          >
+                            🗑️
+                          </button>
                         </div>
                       </td>
                       <td className="px-4 py-3 text-gray-300">{group.budget}</td>
@@ -273,31 +298,6 @@ export default function AdminDashboard() {
                         ) : (
                           <p className="text-gray-500 text-xs">-</p>
                         )}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex gap-1">
-                          <a
-                            href={`/organizer/${group.id}`}
-                            className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs font-semibold"
-                            title="Organizer Dashboard"
-                          >
-                            🔐
-                          </a>
-                          <a
-                            href={`/admin/groups/${group.id}`}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-semibold"
-                            title="Details anschauen"
-                          >
-                            👁️
-                          </a>
-                          <button
-                            onClick={() => handleDeleteGroup(group.id)}
-                            className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs font-semibold"
-                            title="Einzeln löschen"
-                          >
-                            🗑️
-                          </button>
-                        </div>
                       </td>
                     </tr>
                   ))}
