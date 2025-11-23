@@ -36,7 +36,7 @@ export default function JoinGroup() {
   const [group, setGroup] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [step, setStep] = useState(1); // 1: Join | 1.5: GiftChoice | 2: Gifts | 3: Exclusions | 4: Complete
+  const [step, setStep] = useState(1); // 1: Join | pin-create | pin-verify | 1.5: GiftChoice | 2: Gifts | 3: Exclusions | 4: Complete
   const [selectedParticipant, setSelectedParticipant] = useState(null);
   const [nameEdit, setNameEdit] = useState('');
   const [emailEdit, setEmailEdit] = useState('');
@@ -44,7 +44,7 @@ export default function JoinGroup() {
   const [wantsSurprise, setWantsSurprise] = useState(false); // Ich möchte überrascht werden
   const [participantPin, setParticipantPin] = useState(''); // Optional PIN for participant protection
   const [pinConfirmed, setPinConfirmed] = useState(false); // Track if PIN step is done
-  const [tempPin, setTempPin] = useState(''); // Temporary PIN during Step 4.5 setup
+  const [tempPin, setTempPin] = useState(''); // Temporary PIN during PIN creation/verification
   const [pinVerificationError, setPinVerificationError] = useState(''); // Error message for PIN verification
   const stepRef = useRef(step); // Track step without causing effect re-runs
   const [showNoGiftsDialog, setShowNoGiftsDialog] = useState(false);
@@ -69,11 +69,11 @@ export default function JoinGroup() {
       }
     }
 
-    // Refresh group status every 15 seconds (reduced from 5s for mobile performance)
-    // BUT: Only poll on steps 1, 3, 4 - NOT on step 2 (gift entry) to avoid form disruption
+    // Refresh group status every 15 seconds but ONLY when waiting for draw (Step 4)
+    // This prevents unnecessary reloads and page blinking on other steps
     const interval = setInterval(() => {
-      // Check ref to see if we should poll (don't block on step change)
-      if (stepRef.current !== 2 && stepRef.current !== 1.5) {
+      // Only poll if waiting for draw (Step 4) and draw hasn't happened yet
+      if (stepRef.current === 4 && !group?.drawn) {
         loadGroup();
       }
     }, 15000);
@@ -222,9 +222,7 @@ export default function JoinGroup() {
     // Store participant ID first (before checking anything)
     localStorage.setItem(`participant_${groupId}`, participant.id);
 
-    // Check if this participant was previously selected (indicated by localStorage)
-    const previousParticipantId = localStorage.getItem(`participant_${groupId}`);
-    const wasParticipantPreviouslySelected = previousParticipantId === participant.id;
+    // Check if this participant has a stored PIN
     const storedPin = localStorage.getItem(`participant_pin_${groupId}_${participant.id}`);
 
     // Set participant data
@@ -235,18 +233,15 @@ export default function JoinGroup() {
     setTempPin(''); // Reset PIN input
     setPinVerificationError(''); // Clear any previous errors
 
-    // If participant was previously selected and has a PIN, require verification
-    if (wasParticipantPreviouslySelected && storedPin) {
-      setPinConfirmed(false); // Not confirmed yet
-      setStep(1.5); // Go to PIN verification screen
-    } else if (storedPin) {
-      // PIN exists but first time selecting - still show verification
+    // NEW LOGIC: PIN required FIRST!
+    if (storedPin) {
+      // PIN exists → Verify it
       setPinConfirmed(false);
-      setStep(1.5); // Go to PIN verification screen
+      setStep('pin-verify');
     } else {
-      // No PIN set - skip to gift choice
-      setPinConfirmed(true); // Already "verified" since no PIN
-      setStep(1.5); // Go to gift choice
+      // No PIN → Create one NOW!
+      setPinConfirmed(false);
+      setStep('pin-create');
     }
   };
 
@@ -393,6 +388,214 @@ export default function JoinGroup() {
                 className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition"
               >
                 👨‍💼 Ich bin der Organisator - zum Dashboard
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // NEW: Step 'pin-create' - Create PIN immediately after clicking name (BEFORE everything else!)
+  if (step === 'pin-create' && selectedParticipant) {
+    const pinError = tempPin && (tempPin.length < 4 || tempPin.length > 6 || !/^\d+$/.test(tempPin));
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
+        <div className="container mx-auto py-12 px-4 max-w-2xl">
+          <div className="bg-white rounded-lg p-8 shadow-md">
+            <h2 className="text-3xl font-bold mb-2">🔐 PIN erstellen</h2>
+            <p className="text-gray-600 mb-6">
+              Hallo {selectedParticipant.name}! Erstelle eine PIN, um deine Wunschliste zu schützen.
+            </p>
+
+            <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-4 mb-6">
+              <p className="text-sm text-blue-900 mb-3 font-semibold">
+                🔐 Wofür brauchst du die PIN?
+              </p>
+              <ul className="text-sm text-blue-800 space-y-2 ml-4">
+                <li>✅ <strong>Schutz:</strong> Nur du kannst deine Wunschliste sehen und bearbeiten</li>
+                <li>✅ <strong>Nach Auslosung:</strong> Du brauchst die PIN, um zu sehen wem du etwas schenken musst</li>
+                <li>✅ <strong>Einfach:</strong> 4-6 Ziffern, die du dir gut merken kannst</li>
+              </ul>
+            </div>
+
+            {error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+                {error}
+              </div>
+            )}
+
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium mb-2 text-gray-700">
+                  📝 Deine PIN (4-6 Ziffern)
+                </label>
+                <input
+                  type="password"
+                  value={tempPin}
+                  onChange={(e) => {
+                    setTempPin(e.target.value);
+                    setError('');
+                  }}
+                  placeholder="z.B. 123456"
+                  className={`input-field w-full ${pinError ? 'border-red-500' : ''}`}
+                  autoFocus
+                />
+                {pinError && (
+                  <p className="text-xs text-red-600 mt-2">
+                    ❌ PIN muss aus 4-6 Ziffern bestehen (nur Zahlen!)
+                  </p>
+                )}
+                {tempPin && !pinError && (
+                  <p className="text-xs text-green-600 mt-2">
+                    ✅ PIN ist gültig
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setStep(1);
+                  setSelectedParticipant(null);
+                  setTempPin('');
+                  setError('');
+                }}
+                className="flex-1 btn-outline"
+              >
+                ← Zurück
+              </button>
+              <button
+                onClick={() => {
+                  // Validate PIN
+                  if (!tempPin.trim()) {
+                    setError('❌ PIN ist erforderlich. Bitte setze eine PIN.');
+                    return;
+                  }
+                  if (tempPin.length < 4 || tempPin.length > 6 || !/^\d+$/.test(tempPin)) {
+                    setError('❌ PIN muss aus 4-6 Ziffern bestehen (nur Zahlen!)');
+                    return;
+                  }
+
+                  // Save PIN
+                  localStorage.setItem(`participant_pin_${groupId}_${selectedParticipant.id}`, tempPin);
+                  setParticipantPin(tempPin);
+                  setPinConfirmed(true);
+                  setTempPin('');
+                  console.log('✅ PIN saved and confirmed');
+
+                  // After Draw: Don't change step - post-draw view will render automatically
+                  // Before Draw: Go to gift choice menu
+                  if (!group.drawn) {
+                    setStep(1.5); // VOR Draw: Gift Choice
+                  }
+                  // POST Draw: Keep current step, post-draw view renders automatically
+                }}
+                disabled={!tempPin || tempPin.length < 4 || tempPin.length > 6 || !/^\d+$/.test(tempPin)}
+                className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                ✅ PIN speichern & Weiter
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // NEW: Step 'pin-verify' - Verify PIN (when PIN exists)
+  if (step === 'pin-verify' && selectedParticipant && participantPin) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
+        <div className="container mx-auto py-12 px-4 max-w-2xl">
+          <div className="bg-white rounded-lg p-8 shadow-md">
+            <h2 className="text-3xl font-bold mb-2">🔐 PIN eingeben</h2>
+            <p className="text-gray-600 mb-6">
+              Willkommen zurück, {selectedParticipant.name}! Gib deine PIN ein, um fortzufahren.
+            </p>
+
+            {pinVerificationError && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+                {pinVerificationError}
+              </div>
+            )}
+
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium mb-2">PIN</label>
+                <input
+                  type="password"
+                  value={tempPin}
+                  onChange={(e) => {
+                    setTempPin(e.target.value);
+                    setPinVerificationError(''); // Clear error when typing
+                  }}
+                  placeholder="Gib deine PIN ein"
+                  className="input-field w-full"
+                  autoFocus
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      // Verify on Enter key
+                      if (tempPin === participantPin || tempPin === RECOVERY_PIN) {
+                        setPinConfirmed(true);
+                        setTempPin('');
+                        // After Draw: Don't change step - render logic will show post-draw view automatically
+                        // Before Draw: Go to gift choice menu
+                        if (!group.drawn) {
+                          setStep(1.5); // VOR Draw: Gift Choice
+                        }
+                        // POST Draw: Keep current step, post-draw view renders with group.drawn && selectedParticipant condition
+                      } else {
+                        setPinVerificationError('❌ PIN ist falsch. Bitte versuche es erneut.');
+                      }
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+              <p className="text-sm text-blue-900">
+                🔑 <strong>PIN vergessen?</strong><br/>
+                Verwende Recovery-PIN: <code className="bg-white px-2 py-1 rounded">999999</code> oder kontaktiere den Organisator
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setSelectedParticipant(null);
+                  setParticipantPin('');
+                  setTempPin('');
+                  setPinConfirmed(false);
+                  setPinVerificationError('');
+                  setStep(1);
+                }}
+                className="flex-1 btn-outline"
+              >
+                ← Zurück
+              </button>
+              <button
+                onClick={() => {
+                  if (tempPin === participantPin || tempPin === RECOVERY_PIN) {
+                    setPinConfirmed(true);
+                    setTempPin('');
+                    setPinVerificationError('');
+                    // After Draw: Don't change step - render logic will show post-draw view automatically
+                    // Before Draw: Go to gift choice menu
+                    if (!group.drawn) {
+                      setStep(1.5); // VOR Draw: Gift Choice
+                    }
+                    // POST Draw: Keep current step, post-draw view renders with group.drawn && selectedParticipant condition
+                  } else {
+                    setPinVerificationError('❌ PIN ist falsch. Bitte versuche es erneut.');
+                  }
+                }}
+                className="flex-1 btn-primary"
+              >
+                ✅ Bestätigen
               </button>
             </div>
           </div>
@@ -689,46 +892,50 @@ export default function JoinGroup() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            {/* Option 1: Wunschliste erstellen */}
-            <button
-              onClick={() => {
-                setWantsSurprise(false);
-                setStep(2);
-              }}
-              className="block p-8 border-2 border-blue-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition bg-white shadow-md"
-            >
-              <div className="text-5xl mb-4">📝</div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-3">Wunschliste erstellen</h2>
-              <p className="text-gray-700 text-left">
-                Ich möchte meine eigene Liste erstellen und genau angeben, was ich mir wünsche.
-              </p>
-              <div className="mt-6 text-sm text-gray-600 text-left space-y-2">
-                <p>✅ Bis zu 10 Artikel</p>
-                <p>✅ Mit Amazon-Links</p>
-                <p>✅ Mit Kategorien</p>
-              </div>
-            </button>
+          <div className="space-y-4 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-3">
+              {/* Option 1: Wunschliste erstellen */}
+              <button
+                onClick={() => {
+                  setWantsSurprise(false);
+                  setStep(2);
+                }}
+                className="block p-6 border-2 border-blue-400 rounded-lg hover:border-blue-700 hover:bg-blue-50 transition bg-white shadow-md"
+              >
+                <div className="text-4xl mb-3">📝</div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">Wunschliste</h3>
+                <p className="text-sm text-gray-700 text-left">
+                  Ich möchte eine eigene Liste erstellen.
+                </p>
+              </button>
 
-            {/* Option 2: Überrascht werden */}
-            <button
-              onClick={() => {
-                setWantsSurprise(true);
-                setStep(3); // Skip to exclusions directly
-              }}
-              className="block p-8 border-2 border-purple-300 rounded-lg hover:border-purple-600 hover:bg-purple-50 transition bg-white shadow-md"
-            >
-              <div className="text-5xl mb-4">🎉</div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-3">Überrascht werden</h2>
-              <p className="text-gray-700 text-left">
-                Ich möchte mich überraschen lassen und keine Wunschliste angeben.
-              </p>
-              <div className="mt-6 text-sm text-gray-600 text-left space-y-2">
-                <p>✨ Keine Liste nötig</p>
-                <p>✨ Spannung bewahren</p>
-                <p>✨ Überraschungs-Spaß</p>
+              {/* OR Divider */}
+              <div className="hidden md:flex items-center justify-center">
+                <div className="text-center">
+                  <p className="text-gray-400 font-medium">ODER</p>
+                </div>
               </div>
-            </button>
+
+              {/* Option 2: Überrascht werden */}
+              <button
+                onClick={() => {
+                  setWantsSurprise(true);
+                  setStep(3); // Skip to exclusions directly
+                }}
+                className="block p-6 border-2 border-purple-400 rounded-lg hover:border-purple-700 hover:bg-purple-50 transition bg-white shadow-md"
+              >
+                <div className="text-4xl mb-3">🎉</div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">Überrascht werden</h3>
+                <p className="text-sm text-gray-700 text-left">
+                  Ich möchte mich überraschen lassen.
+                </p>
+              </button>
+            </div>
+
+            {/* Mobile OR Divider */}
+            <div className="md:hidden text-center">
+              <p className="text-gray-400 font-medium text-sm">ODER</p>
+            </div>
           </div>
 
           <div className="space-y-3">
@@ -785,15 +992,6 @@ export default function JoinGroup() {
               {currentGifts.length > 0
                 ? '✅ Du hast bereits eine Liste erstellt. Du kannst sie hier bearbeiten oder ergänzen.'
                 : 'Das ist deine persönliche Seite. Hier trägst du deine Geschenkwünsche ein.'}
-            </p>
-          </div>
-
-          <div className="max-w-2xl mx-auto mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-            <h2 className="font-bold text-blue-900 mb-2">📋 Schritt 1: Geschenkeliste erstellen</h2>
-            <p className="text-sm text-blue-800">
-              {currentGifts.length > 0
-                ? `Du hast bereits ${currentGifts.length} Geschenk${currentGifts.length !== 1 ? 'e' : ''} auf deiner Liste. Du kannst diese bearbeiten, löschen oder weitere hinzufügen.`
-                : 'Erstelle deine Geschenkeliste. Sobald ALLE Teilnehmer ihre Listen fertig haben, wird der Organisator die Auslosung starten.'}
             </p>
           </div>
 
@@ -863,12 +1061,6 @@ export default function JoinGroup() {
             </div>
           </div>
 
-          <div className="max-w-2xl mx-auto mb-6 bg-purple-50 border-l-4 border-purple-500 p-4 rounded">
-            <h2 className="font-bold text-purple-900 mb-2">🎁 Phase 2: Persönliche Ausschlüsse (optional)</h2>
-            <p className="text-sm text-purple-800">
-              Wenn du möchtest, kannst du eine Person ausschließen, der/dem du kein Geschenk kaufen möchtest. Zum Beispiel dein Partner, Familie oder enge Freunde.
-            </p>
-          </div>
 
           <h1 className="text-3xl font-bold mb-6">🚫 Wen möchtest du ausschließen?</h1>
 
@@ -979,107 +1171,6 @@ export default function JoinGroup() {
     );
   }
 
-  // Step 4.5: Set PIN after completing list - MANDATORY
-  if (step === 4.5 && selectedParticipant && !group.drawn) {
-    const pinError = tempPin && (tempPin.length < 4 || tempPin.length > 6 || !/^\d+$/.test(tempPin));
-
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
-        <div className="container mx-auto py-12 px-4 max-w-2xl">
-          <div className="bg-white rounded-lg p-8 shadow-md">
-            <h2 className="text-3xl font-bold mb-2">🔐 PIN erstellen - Schritt 3 (Erforderlich)</h2>
-            <p className="text-gray-600 mb-6">
-              Die PIN ist ein wichtiger Schutzmechanismus und muss gesetzt werden, um fortzufahren.
-            </p>
-
-            <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-4 mb-6">
-              <p className="text-sm text-blue-900 mb-3 font-semibold">
-                🔐 Das ist deine PIN-Schritt:
-              </p>
-              <ul className="text-sm text-blue-800 space-y-2 ml-4">
-                <li>✅ <strong>Jetzt:</strong> Erstelle eine sichere PIN (4-6 Ziffern)</li>
-                <li>✅ <strong>Später:</strong> Du brauchst die PIN, um deinen Wichtelpartner nach der Auslosung zu sehen</li>
-                <li>✅ <strong>Sicherheit:</strong> Nur mit der PIN können deine Daten auf diesem Gerät bearbeitet werden</li>
-              </ul>
-            </div>
-
-            {error && (
-              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-                {error}
-              </div>
-            )}
-
-            <div className="space-y-4 mb-6">
-              <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700">
-                  📝 Deine PIN (4-6 Ziffern)
-                </label>
-                <input
-                  type="password"
-                  value={tempPin}
-                  onChange={(e) => {
-                    setTempPin(e.target.value);
-                    setError('');
-                  }}
-                  placeholder="z.B. 123456"
-                  className={`input-field w-full ${pinError ? 'border-red-500' : ''}`}
-                  autoFocus
-                />
-                {pinError && (
-                  <p className="text-xs text-red-600 mt-2">
-                    ❌ PIN muss aus 4-6 Ziffern bestehen (nur Zahlen!)
-                  </p>
-                )}
-                {tempPin && !pinError && (
-                  <p className="text-xs text-green-600 mt-2">
-                    ✅ PIN ist gültig
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setStep(4);
-                  setTempPin('');
-                  setError('');
-                }}
-                className="flex-1 btn-outline"
-              >
-                ← Zurück
-              </button>
-              <button
-                onClick={() => {
-                  // Validate PIN
-                  if (!tempPin.trim()) {
-                    setError('❌ PIN ist erforderlich. Bitte setze eine PIN.');
-                    return;
-                  }
-                  if (tempPin.length < 4 || tempPin.length > 6 || !/^\d+$/.test(tempPin)) {
-                    setError('❌ PIN muss aus 4-6 Ziffern bestehen (nur Zahlen!)');
-                    return;
-                  }
-
-                  // Save PIN
-                  localStorage.setItem(`participant_pin_${groupId}_${selectedParticipant.id}`, tempPin);
-                  setParticipantPin(tempPin);
-                  setPinConfirmed(true);
-                  console.log('✅ PIN saved and confirmed');
-                  setStep(4);
-                }}
-                disabled={!tempPin || tempPin.length < 4 || tempPin.length > 6 || !/^\d+$/.test(tempPin)}
-                className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                ✅ PIN speichern & Fertig
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   // Step 4: Waiting for draw
   if (step === 4 && selectedParticipant && !group.drawn) {
     return (
@@ -1092,51 +1183,6 @@ export default function JoinGroup() {
               Du bist angemeldet und alles wurde gespeichert. 🎊
             </p>
 
-            {/* Primary: PIN Protection Section - Status Display */}
-            <div className={`border-2 rounded-lg p-6 mb-8 ${participantPin ? 'bg-green-50 border-green-300' : 'bg-gradient-to-r from-blue-50 to-purple-50 border-blue-300'}`}>
-              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2" style={{color: participantPin ? '#15803d' : '#1e3a8a'}}>
-                🔐 PIN erstellen - Schritt 3
-              </h2>
-
-              <div className="space-y-4 text-gray-700">
-                <p className="font-semibold text-lg">Wofür brauchst du die PIN?</p>
-
-                <div className="space-y-3 bg-white rounded p-4 border border-gray-300">
-                  <div className="flex gap-3">
-                    <span className="text-xl min-w-fit">📝</span>
-                    <div>
-                      <p className="font-semibold text-gray-900">3(a) Wunschliste bearbeiten</p>
-                      <p className="text-sm text-gray-600">Deine PIN schützt deine Wunschliste bis zur Auslosung. Damit können nur du – und nicht jeder auf diesem Gerät – deine Geschenke ändern.</p>
-                    </div>
-                  </div>
-
-                  <div className="border-t border-gray-200"></div>
-
-                  <div className="flex gap-3">
-                    <span className="text-xl min-w-fit">👁️</span>
-                    <div>
-                      <p className="font-semibold text-gray-900">3(b) Wichtelpartner nach Auslosung sehen</p>
-                      <p className="text-sm text-gray-600">Nach der Auslosung brauchst du deine PIN, um deinen Wichtelpartner und dessen Wunschliste zu sehen. Nur so wird die Überraschung bewahrt!</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {!participantPin ? (
-                <button
-                  onClick={() => {
-                    setStep(4.5); // Go to PIN setup step
-                  }}
-                  className="w-full mt-6 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold py-4 rounded-lg text-lg transition transform hover:scale-105"
-                >
-                  🔐 PIN jetzt erstellen
-                </button>
-              ) : (
-                <div className="mt-6 p-4 bg-green-100 border-2 border-green-400 rounded-lg text-green-900 font-semibold text-center">
-                  ✅ PIN gespeichert! Du bist jetzt geschützt.
-                </div>
-              )}
-            </div>
 
             {/* Secondary: What Happens Next */}
             <div className="bg-orange-50 border-2 border-orange-300 rounded-lg p-6 mb-8">
@@ -1165,6 +1211,15 @@ export default function JoinGroup() {
               >
                 ✏️ Zur Wunschliste
               </button>
+            </div>
+
+            <div className="bg-gray-50 border-l-4 border-gray-400 rounded-lg p-4 mb-6 text-sm text-gray-700">
+              <p className="mb-2">
+                <strong>ℹ️ Du kannst diese Seite nun verlassen.</strong>
+              </p>
+              <p className="text-xs text-gray-600 mb-3">
+                💡 <strong>Hinweis:</strong> Die Seite wird in regelmäßigen Abständen neu geladen, um den Status zu überprüfen. Das ist normal und kein Fehler!
+              </p>
             </div>
 
             <div className="flex gap-3">
@@ -1252,6 +1307,18 @@ export default function JoinGroup() {
                   participantId={partnerId}
                   isViewing={true}
                 />
+              </div>
+            )}
+
+            {/* Optional: Back to Dashboard for Organizer */}
+            {orgParticipant && (
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <div className="text-xs text-gray-600 mb-3 text-center">
+                  Du bist Organisator dieser Gruppe
+                </div>
+                <Link href={organizerPin ? `/organizer/${groupId}?showPin=${organizerPin}` : `/organizer/${groupId}`} className="block w-full text-center p-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-lg font-semibold transition">
+                  📊 Zurück zum Dashboard
+                </Link>
               </div>
             )}
           </div>

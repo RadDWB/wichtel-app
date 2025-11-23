@@ -159,8 +159,8 @@ export default function DrawPage() {
           <div className="bg-white rounded-lg p-12 shadow-lg">
             <div className="text-6xl mb-4 animate-bounce">🎉</div>
             <h1 className="text-4xl font-bold text-green-600 mb-4">Auslosung erfolgreich!</h1>
-            <p className="text-xl text-gray-700 mb-8">
-              Die Wichtel-Paarungen wurden generiert. Jeder Teilnehmer kann jetzt seinen Partner und dessen Wunschliste sehen!
+            <p className="text-xl text-gray-700 mb-2">
+              Die Wichtel-Paarungen wurden generiert. Jeder Teilnehmer kann jetzt seinen Partner und dessen Wunschliste sehen, wenn er seinen PIN eingibt.
             </p>
 
             <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded mb-8 text-left">
@@ -173,6 +173,37 @@ export default function DrawPage() {
                 <li>✅ Jeder kann direkt auf Amazon einkaufen</li>
                 <li>✅ Wir nehmen am Amazon Affiliate Programm teil – Sie unterstützen uns durch Ihre Käufe!</li>
               </ul>
+            </div>
+
+            {/* Participant Share Link Section - ORANGE BOX */}
+            <div className="bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-300 rounded-lg p-6 mb-8 text-left shadow-md">
+              <h2 className="text-xl font-bold text-orange-900 mb-3">📢 Link für Teilnehmer kopieren & versenden:</h2>
+              <p className="text-sm text-gray-700 mb-4">
+                Kopiere diesen Link und versende ihn an alle Teilnehmer. Sie können damit ihre Wichtel-Partner sehen:
+              </p>
+              <div className="flex gap-2 mb-4">
+                <input
+                  type="text"
+                  value={`${typeof window !== 'undefined' ? window.location.origin : ''}/join/${id}`}
+                  readOnly
+                  className="flex-1 px-3 py-2 bg-white border-2 border-orange-300 rounded-lg font-mono text-sm text-gray-800"
+                />
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${typeof window !== 'undefined' ? window.location.origin : ''}/join/${id}`);
+                    alert('✅ Link kopiert!');
+                  }}
+                  className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg transition whitespace-nowrap"
+                >
+                  📋 Kopieren
+                </button>
+              </div>
+              <div className="bg-white p-4 rounded border-l-4 border-orange-400">
+                <p className="text-xs text-gray-700 font-semibold mb-2">Nachricht zum Versenden:</p>
+                <p className="text-xs text-gray-600 leading-relaxed">
+                  „Hallo zusammen! 🎁 Die Auslosung ist vorbei! Klickt auf diesen Link, um zu sehen, wen ihr beschenken müsst und welche Wunschliste euer Wichtel-Partner hat: {`${typeof window !== 'undefined' ? window.location.origin : ''}/join/${id}`}"
+                </p>
+              </div>
             </div>
 
             {/* Prominent Amazon Affiliate Section */}
