@@ -209,19 +209,19 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
       )}
 
       {/* ════════════════════════════════════════════════════════ */}
-      {/* PHASE 1: ANLEITUNG & AMAZON-FLOW (Akkordeon - Blau) */}
+      {/* PHASE 1: AMAZON-FLOW (Akkordeon - Blau) */}
       {/* ════════════════════════════════════════════════════════ */}
-      
+
       <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border-2 border-blue-300 overflow-hidden shadow-md">
         {/* Header - Immer sichtbar */}
         <button
           onClick={() => setExpandedStep(Array.isArray(expandedStep) && expandedStep.includes(1) ? expandedStep.filter(s => s !== 1) : [...(Array.isArray(expandedStep) ? expandedStep : []), 1])}
           className="w-full px-6 py-5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-3 text-left text-white"
         >
-          <span className="flex-shrink-0 text-2xl">📖</span>
+          <span className="flex-shrink-0 text-2xl">🔍</span>
           <div className="flex-1">
-            <p className="font-bold text-lg">So funktioniert's - 3 einfache Schritte</p>
-            <p className="text-xs text-blue-100 mt-0.5">Lies das BEVOR du zu Amazon gehst!</p>
+            <p className="font-bold text-lg">A) Produkt auf Amazon suchen</p>
+            <p className="text-xs text-blue-100 mt-0.5">Filter nutzen & Artikel auf Amazon auswählen</p>
           </div>
           <span className="text-xl text-blue-100" style={{transform: (Array.isArray(expandedStep) && expandedStep.includes(1)) ? 'rotate(180deg)' : 'rotate(0deg)'}}>▼</span>
         </button>
@@ -229,63 +229,35 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
         {/* Content */}
         {(Array.isArray(expandedStep) && expandedStep.includes(1)) && (
           <div className="px-6 py-6 bg-blue-50 border-t border-blue-200 space-y-4">
-            <div className="bg-white p-4 rounded-lg border-l-4 border-blue-500 space-y-3">
-              <div className="flex gap-3">
-                <div className="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-sm">A</div>
-                <div className="flex-1">
-                  <p className="font-bold text-gray-900">Auf Amazon.de gehen</p>
-                  <p className="text-sm text-gray-700 mt-1">Klick unten auf den großen Button \"Zu Amazon gehen\" und nutze die Filter, um das perfekte Geschenk zu finden. Denke dabei an die Vorlieben der Person!</p>
-                  <p className="text-xs text-blue-600 mt-2 bg-blue-100 p-2 rounded">💡 Tipp: Nutze die vorgegebenen Filter (Alter, Geschlecht, Budget) um schneller zu finden</p>
-                </div>
-              </div>
+            <div className="bg-white p-4 rounded-lg border-l-4 border-blue-500 space-y-3 text-sm">
+              <p className="font-semibold text-gray-900">📖 So funktioniert's:</p>
+              <ol className="list-decimal list-inside space-y-2 ml-2 text-gray-700">
+                <li>Klick auf den Button unten \"🔍 JETZT ZU AMAZON GEHEN\"</li>
+                <li>Nutze die vorgegebenen <strong>Filter</strong> (Budget, Alter, Geschlecht, Kategorie) um schneller das richtige Geschenk zu finden</li>
+                <li>Schau Dir Bilder, Beschreibung, Rezensionen und Preis an</li>
+                <li>Passt der Artikel zu deinem Budget? Dann füge ihn der Liste hinzu!</li>
+              </ol>
 
-              <div className="flex gap-3">
-                <div className="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-sm">B</div>
-                <div className="flex-1">
-                  <p className="font-bold text-gray-900">Produkt auswählen & erkunden</p>
-                  <p className="text-sm text-gray-700 mt-1">Schau Dir die Bilder, Beschreibung, Rezensionen und den Preis an. Passt es zu Deinem Budget?</p>
-                </div>
-              </div>
-
-              <div className="flex gap-3">
-                <div className="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-sm">C</div>
-                <div className="flex-1">
-                  <p className="font-bold text-gray-900">Link kopieren & zurückkommen</p>
-                  <p className="text-sm text-gray-700 mt-1">Kopiere die URL und komm zurück zu dieser App um den Geschenk-Link einzutragen.</p>
-                  <div className="text-xs text-blue-600 mt-2 bg-blue-100 p-3 rounded space-y-2">
-                    {isMobile ? (
-                      isIOS ? (
-                        <>
-                          <p className="font-semibold">📱 iPhone - So kopierst du den Link:</p>
-                          <ol className="list-decimal list-inside space-y-1 ml-1">
-                            <li>Tippe oben rechts auf das <strong>[Teilen-Icon]</strong> (Pfeil im Quadrat)</li>
-                            <li>Wähle <strong>"Link kopieren"</strong></li>
-                            <li>Wechsel zur Wichtel-App und füge den Link ein</li>
-                          </ol>
-                        </>
-                      ) : (
-                        <>
-                          <p className="font-semibold">🤖 Android - So kopierst du den Link:</p>
-                          <ol className="list-decimal list-inside space-y-1 ml-1">
-                            <li>Tippe lange (3 Sekunden) auf die <strong>URL in der Adresszeile</strong></li>
-                            <li>Wähle <strong>"Link kopieren"</strong> oder <strong>"URL kopieren"</strong></li>
-                            <li>Wechsel zur Wichtel-App und füge den Link ein</li>
-                          </ol>
-                        </>
-                      )
-                    ) : (
-                      <>
-                        <p className="font-semibold">🖥️ Desktop - So kopierst du den Link:</p>
-                        <ol className="list-decimal list-inside space-y-1 ml-1">
-                          <li>Klick in die <strong>Adresszeile</strong> oben im Browser</li>
-                          <li>Drücke <strong>Strg+A (Windows)</strong> oder <strong>Cmd+A (Mac)</strong> um alles zu markieren</li>
-                          <li>Drücke <strong>Strg+C (Windows)</strong> oder <strong>Cmd+C (Mac)</strong> zum Kopieren</li>
-                          <li>Füge den Link unten bei \"Amazon-Link\" ein</li>
-                        </ol>
-                      </>
-                    )}
-                  </div>
-                </div>
+              <div className="text-xs text-blue-600 mt-3 bg-blue-100 p-3 rounded space-y-2">
+                <p className="font-semibold">💡 Tipp zum Link kopieren:</p>
+                {isMobile ? (
+                  isIOS ? (
+                    <ol className="list-decimal list-inside space-y-1 ml-1">
+                      <li>Tippe oben rechts auf das <strong>[Teilen-Icon]</strong></li>
+                      <li>Wähle <strong>"Link kopieren"</strong></li>
+                    </ol>
+                  ) : (
+                    <ol className="list-decimal list-inside space-y-1 ml-1">
+                      <li>Halte die <strong>URL in der Adresszeile</strong> lange gedrückt</li>
+                      <li>Wähle <strong>"Link kopieren"</strong></li>
+                    </ol>
+                  )
+                ) : (
+                  <ol className="list-decimal list-inside space-y-1 ml-1">
+                    <li>Klick in die <strong>Adresszeile</strong> und wähle alles mit <strong>Strg+A</strong></li>
+                    <li>Kopiere mit <strong>Strg+C</strong> (Windows) / <strong>Cmd+C</strong> (Mac)</li>
+                  </ol>
+                )}
               </div>
             </div>
 
@@ -311,8 +283,8 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
         >
           <span className="flex-shrink-0 text-2xl">🎁</span>
           <div className="flex-1">
-            <p className="font-bold text-lg">Geschenk hier eintragen</p>
-            <p className="text-xs text-green-100 mt-0.5">Name + Link (Link ist optional!)</p>
+            <p className="font-bold text-lg">B) In Wunschliste übertragen</p>
+            <p className="text-xs text-green-100 mt-0.5">Name + Amazon-Link eintragen</p>
           </div>
           <span className="text-xl text-green-100" style={{transform: (Array.isArray(expandedStep) && expandedStep.includes(2)) ? 'rotate(180deg)' : 'rotate(0deg)'}}>▼</span>
         </button>

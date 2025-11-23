@@ -878,46 +878,50 @@ export default function JoinGroup() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            {/* Option 1: Wunschliste erstellen */}
-            <button
-              onClick={() => {
-                setWantsSurprise(false);
-                setStep(2);
-              }}
-              className="block p-8 border-2 border-blue-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition bg-white shadow-md"
-            >
-              <div className="text-5xl mb-4">📝</div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-3">Wunschliste erstellen</h2>
-              <p className="text-gray-700 text-left">
-                Ich möchte meine eigene Liste erstellen und genau angeben, was ich mir wünsche.
-              </p>
-              <div className="mt-6 text-sm text-gray-600 text-left space-y-2">
-                <p>✅ Bis zu 10 Artikel</p>
-                <p>✅ Mit Amazon-Links</p>
-                <p>✅ Mit Kategorien</p>
-              </div>
-            </button>
+          <div className="space-y-4 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-3">
+              {/* Option 1: Wunschliste erstellen */}
+              <button
+                onClick={() => {
+                  setWantsSurprise(false);
+                  setStep(2);
+                }}
+                className="block p-6 border-2 border-blue-400 rounded-lg hover:border-blue-700 hover:bg-blue-50 transition bg-white shadow-md"
+              >
+                <div className="text-4xl mb-3">📝</div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">Wunschliste</h3>
+                <p className="text-sm text-gray-700 text-left">
+                  Ich möchte eine eigene Liste erstellen.
+                </p>
+              </button>
 
-            {/* Option 2: Überrascht werden */}
-            <button
-              onClick={() => {
-                setWantsSurprise(true);
-                setStep(3); // Skip to exclusions directly
-              }}
-              className="block p-8 border-2 border-purple-300 rounded-lg hover:border-purple-600 hover:bg-purple-50 transition bg-white shadow-md"
-            >
-              <div className="text-5xl mb-4">🎉</div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-3">Überrascht werden</h2>
-              <p className="text-gray-700 text-left">
-                Ich möchte mich überraschen lassen und keine Wunschliste angeben.
-              </p>
-              <div className="mt-6 text-sm text-gray-600 text-left space-y-2">
-                <p>✨ Keine Liste nötig</p>
-                <p>✨ Spannung bewahren</p>
-                <p>✨ Überraschungs-Spaß</p>
+              {/* OR Divider */}
+              <div className="hidden md:flex items-center justify-center">
+                <div className="text-center">
+                  <p className="text-gray-400 font-medium">ODER</p>
+                </div>
               </div>
-            </button>
+
+              {/* Option 2: Überrascht werden */}
+              <button
+                onClick={() => {
+                  setWantsSurprise(true);
+                  setStep(3); // Skip to exclusions directly
+                }}
+                className="block p-6 border-2 border-purple-400 rounded-lg hover:border-purple-700 hover:bg-purple-50 transition bg-white shadow-md"
+              >
+                <div className="text-4xl mb-3">🎉</div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">Überrascht werden</h3>
+                <p className="text-sm text-gray-700 text-left">
+                  Ich möchte mich überraschen lassen.
+                </p>
+              </button>
+            </div>
+
+            {/* Mobile OR Divider */}
+            <div className="md:hidden text-center">
+              <p className="text-gray-400 font-medium text-sm">ODER</p>
+            </div>
           </div>
 
           <div className="space-y-3">
@@ -1043,12 +1047,6 @@ export default function JoinGroup() {
             </div>
           </div>
 
-          <div className="max-w-2xl mx-auto mb-6 bg-purple-50 border-l-4 border-purple-500 p-4 rounded">
-            <h2 className="font-bold text-purple-900 mb-2">🎁 Phase 2: Persönliche Ausschlüsse (optional)</h2>
-            <p className="text-sm text-purple-800">
-              Wenn du möchtest, kannst du eine Person ausschließen, der/dem du kein Geschenk kaufen möchtest. Zum Beispiel dein Partner, Familie oder enge Freunde.
-            </p>
-          </div>
 
           <h1 className="text-3xl font-bold mb-6">🚫 Wen möchtest du ausschließen?</h1>
 
@@ -1171,51 +1169,6 @@ export default function JoinGroup() {
               Du bist angemeldet und alles wurde gespeichert. 🎊
             </p>
 
-            {/* Primary: PIN Protection Section - Status Display */}
-            <div className={`border-2 rounded-lg p-6 mb-8 ${participantPin ? 'bg-green-50 border-green-300' : 'bg-gradient-to-r from-blue-50 to-purple-50 border-blue-300'}`}>
-              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2" style={{color: participantPin ? '#15803d' : '#1e3a8a'}}>
-                🔐 PIN erstellen - Schritt 3
-              </h2>
-
-              <div className="space-y-4 text-gray-700">
-                <p className="font-semibold text-lg">Wofür brauchst du die PIN?</p>
-
-                <div className="space-y-3 bg-white rounded p-4 border border-gray-300">
-                  <div className="flex gap-3">
-                    <span className="text-xl min-w-fit">📝</span>
-                    <div>
-                      <p className="font-semibold text-gray-900">3(a) Wunschliste bearbeiten</p>
-                      <p className="text-sm text-gray-600">Deine PIN schützt deine Wunschliste bis zur Auslosung. Damit können nur du – und nicht jeder auf diesem Gerät – deine Geschenke ändern.</p>
-                    </div>
-                  </div>
-
-                  <div className="border-t border-gray-200"></div>
-
-                  <div className="flex gap-3">
-                    <span className="text-xl min-w-fit">👁️</span>
-                    <div>
-                      <p className="font-semibold text-gray-900">3(b) Wichtelpartner nach Auslosung sehen</p>
-                      <p className="text-sm text-gray-600">Nach der Auslosung brauchst du deine PIN, um deinen Wichtelpartner und dessen Wunschliste zu sehen. Nur so wird die Überraschung bewahrt!</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {!participantPin ? (
-                <button
-                  onClick={() => {
-                    setStep('pin-create'); // Go to PIN creation step (fallback - should not normally happen)
-                  }}
-                  className="w-full mt-6 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold py-4 rounded-lg text-lg transition transform hover:scale-105"
-                >
-                  🔐 PIN jetzt erstellen
-                </button>
-              ) : (
-                <div className="mt-6 p-4 bg-green-100 border-2 border-green-400 rounded-lg text-green-900 font-semibold text-center">
-                  ✅ PIN gespeichert! Du bist jetzt geschützt.
-                </div>
-              )}
-            </div>
 
             {/* Secondary: What Happens Next */}
             <div className="bg-orange-50 border-2 border-orange-300 rounded-lg p-6 mb-8">
@@ -1244,6 +1197,15 @@ export default function JoinGroup() {
               >
                 ✏️ Zur Wunschliste
               </button>
+            </div>
+
+            <div className="bg-gray-50 border-l-4 border-gray-400 rounded-lg p-4 mb-6 text-sm text-gray-700">
+              <p className="mb-2">
+                <strong>ℹ️ Du kannst diese Seite nun verlassen.</strong>
+              </p>
+              <p className="text-xs text-gray-600 mb-3">
+                💡 <strong>Hinweis:</strong> Die Seite wird in regelmäßigen Abständen neu geladen, um den Status zu überprüfen. Das ist normal und kein Fehler!
+              </p>
             </div>
 
             <div className="flex gap-3">
