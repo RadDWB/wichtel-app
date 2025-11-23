@@ -225,7 +225,11 @@ export default function JoinGroup() {
     // Check if this participant has a stored PIN using participant.id
     const newKey = `participant_pin_${groupId}_${participant.id}`;
     const legacyKey = `participant_pin_${participant.id}`;
-    const storedPin = localStorage.getItem(newKey) || localStorage.getItem(legacyKey);
+    const legacyPin = localStorage.getItem(legacyKey);
+    const storedPin = localStorage.getItem(newKey) || legacyPin;
+    if (!localStorage.getItem(newKey) && legacyPin) {
+      localStorage.setItem(newKey, legacyPin); // migrate once so future logins work
+    }
 
     // Set participant data
     setSelectedParticipant(participant);

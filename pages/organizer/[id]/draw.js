@@ -206,8 +206,8 @@ export default function DrawPage() {
               </div>
               <div className="bg-white p-4 rounded border-l-4 border-orange-400">
                 <p className="text-xs text-gray-700 font-semibold mb-2">Nachricht zum Versenden:</p>
-                <p className="text-xs text-gray-600 leading-relaxed">
-                  {`„Hallo zusammen! 🎁 Die Auslosung ist vorbei! Klickt auf diesen Link, um zu sehen, wen ihr beschenken müsst und welche Wunschliste euer Wichtel-Partner hat: ${typeof window !== 'undefined' ? window.location.origin : ''}/join/${id}`}
+                <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-wrap">
+                  {postDrawShareText}
                 </p>
               </div>
             </div>
