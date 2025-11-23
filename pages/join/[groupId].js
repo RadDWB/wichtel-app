@@ -512,7 +512,7 @@ export default function JoinGroup() {
   }
 
   // NEW: Step 'pin-verify' - Verify PIN (when PIN exists)
-  if (step === 'pin-verify' && selectedParticipant && participantPin) {
+  if (step === 'pin-verify' && selectedParticipant && participantPin && !pinConfirmed) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
         <div className="container mx-auto py-12 px-4 max-w-2xl">
@@ -550,12 +550,10 @@ export default function JoinGroup() {
                       if (tempPin === participantPin || tempPin === RECOVERY_PIN) {
                         setPinConfirmed(true);
                         setTempPin('');
-                        // After Draw: Don't change step - render logic will show post-draw view automatically
-                        // Before Draw: Go to gift choice menu
+                        // Before Draw: go weiter zum Gift-Choice
                         if (!group.drawn) {
-                          setStep(1.5); // VOR Draw: Gift Choice
+                          setStep(1.5);
                         }
-                        // POST Draw: Keep current step, post-draw view renders with group.drawn && selectedParticipant condition
                       } else {
                         setPinVerificationError('❌ PIN ist falsch. Bitte versuche es erneut.');
                       }
@@ -592,12 +590,9 @@ export default function JoinGroup() {
                     setPinConfirmed(true);
                     setTempPin('');
                     setPinVerificationError('');
-                    // After Draw: Don't change step - render logic will show post-draw view automatically
-                    // Before Draw: Go to gift choice menu
                     if (!group.drawn) {
-                      setStep(1.5); // VOR Draw: Gift Choice
+                      setStep(1.5);
                     }
-                    // POST Draw: Keep current step, post-draw view renders with group.drawn && selectedParticipant condition
                   } else {
                     setPinVerificationError('❌ PIN ist falsch. Bitte versuche es erneut.');
                   }
