@@ -222,8 +222,8 @@ export default function JoinGroup() {
     // Store participant ID first (before checking anything)
     localStorage.setItem(`participant_${groupId}`, participant.id);
 
-    // Check if this participant has a stored PIN
-    const storedPin = localStorage.getItem(`participant_pin_${groupId}_${participant.id}`);
+    // Check if this participant has a stored PIN using participant.id
+    const storedPin = localStorage.getItem(`participant_pin_${participant.id}`);
 
     // Set participant data
     setSelectedParticipant(participant);
@@ -559,7 +559,7 @@ export default function JoinGroup() {
             <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
               <p className="text-sm text-blue-900">
                 🔑 <strong>PIN vergessen?</strong><br/>
-                Verwende Recovery-PIN: <code className="bg-white px-2 py-1 rounded">999999</code> oder kontaktiere den Organisator
+                Bitte kontaktiere den Organisator für Hilfe
               </p>
             </div>
 
