@@ -789,12 +789,15 @@ export default function JoinGroup() {
           </div>
 
           <div className="max-w-2xl mx-auto mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-            <h2 className="font-bold text-blue-900 mb-2">📋 Schritt 1: Geschenkeliste erstellen</h2>
-            <p className="text-sm text-blue-800">
-              {currentGifts.length > 0
-                ? `Du hast bereits ${currentGifts.length} Geschenk${currentGifts.length !== 1 ? 'e' : ''} auf deiner Liste. Du kannst diese bearbeiten, löschen oder weitere hinzufügen.`
-                : 'Erstelle deine Geschenkeliste. Sobald ALLE Teilnehmer ihre Listen fertig haben, wird der Organisator die Auslosung starten.'}
+            <h2 className="font-bold text-blue-900 mb-2">🎁 {selectedParticipant.name}s Wunschliste erstellen</h2>
+            <p className="text-sm text-blue-800 mb-2">
+              Das ist deine persönliche Seite. Hier trägst du deine Geschenkwünsche ein. Sobald ALLE Teilnehmer ihre Listen fertig haben, wird der Organisator die Auslosung starten.
             </p>
+            {currentGifts.length > 0 && (
+              <p className="text-sm text-blue-700 bg-blue-100 p-2 rounded">
+                ✅ Du hast bereits ${currentGifts.length} Geschenk${currentGifts.length !== 1 ? 'e' : ''} auf deiner Liste. Du kannst diese bearbeiten, löschen oder weitere hinzufügen.
+              </p>
+            )}
           </div>
 
           <GiftList
