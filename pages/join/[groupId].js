@@ -517,7 +517,10 @@ export default function JoinGroup() {
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
         <div className="container mx-auto py-12 px-4 max-w-2xl">
           <div className="bg-white rounded-lg p-8 shadow-md">
-            <h2 className="text-3xl font-bold mb-2">🔐 PIN eingeben</h2>
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-3xl font-bold">🔐 PIN eingeben</h2>
+              <span className="text-xs text-gray-400 font-mono">v{APP_VERSION}</span>
+            </div>
             <p className="text-gray-600 mb-6">
               Willkommen zurück, {selectedParticipant.name}! Gib deine PIN ein, um fortzufahren.
             </p>

@@ -209,6 +209,15 @@ export default function DrawPage() {
                 <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-wrap">
                   {postDrawShareText}
                 </p>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(postDrawShareText);
+                    alert('✅ Text kopiert!');
+                  }}
+                  className="mt-3 px-3 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-xs font-semibold transition"
+                >
+                  📋 Text kopieren
+                </button>
               </div>
             </div>
 
