@@ -62,6 +62,37 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
   const [isIOS, setIsIOS] = useState(false);
   const [isAndroid, setIsAndroid] = useState(false);
 
+  // Helper function to auto-detect price from group budget
+  const getRecommendedPrice = () => {
+    if (!group?.budget) return AMAZON_FILTERS.price[2]; // Default to 10-15€
+
+    const budget = group.budget.toLowerCase();
+
+    // Map common budget values to price ranges
+    if (budget.includes('5€') || budget === '5') return AMAZON_FILTERS.price[1]; // 5-10€
+    if (budget.includes('10€') || budget === '10') return AMAZON_FILTERS.price[2]; // 10-15€
+    if (budget.includes('15€') || budget === '15') return AMAZON_FILTERS.price[3]; // 15-20€
+    if (budget.includes('20€') || budget === '20') return AMAZON_FILTERS.price[4]; // 20-30€
+    if (budget.includes('30€') || budget === '30') return AMAZON_FILTERS.price[5]; // 30-50€
+    if (budget.includes('50€') || budget === '50') return AMAZON_FILTERS.price[6]; // 50-100€
+    if (budget.includes('100€') || budget === '100') return AMAZON_FILTERS.price[7]; // 100+€
+
+    // Fallback: try to find first price range that fits
+    const budgetNum = parseInt(budget);
+    if (!isNaN(budgetNum)) {
+      if (budgetNum <= 5) return AMAZON_FILTERS.price[0]; // 1-5€
+      if (budgetNum <= 10) return AMAZON_FILTERS.price[1]; // 5-10€
+      if (budgetNum <= 15) return AMAZON_FILTERS.price[2]; // 10-15€
+      if (budgetNum <= 20) return AMAZON_FILTERS.price[3]; // 15-20€
+      if (budgetNum <= 30) return AMAZON_FILTERS.price[4]; // 20-30€
+      if (budgetNum <= 50) return AMAZON_FILTERS.price[5]; // 30-50€
+      if (budgetNum <= 100) return AMAZON_FILTERS.price[6]; // 50-100€
+      return AMAZON_FILTERS.price[7]; // 100+€
+    }
+
+    return AMAZON_FILTERS.price[2]; // Default to 10-15€
+  };
+
   // Detect mobile and OS on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -69,7 +100,7 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
       const mobile = /iPhone|iPad|iPod|Android/i.test(ua);
       const ios = /iPhone|iPad|iPod/i.test(ua);
       const android = /Android/i.test(ua);
-      
+
       setIsMobile(mobile);
       setIsIOS(ios);
       setIsAndroid(android);
@@ -298,7 +329,14 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
             </div>
 
             <button
-              onClick={() => setShowFiltersModal(true)}
+              onClick={() => {
+                // Auto-detect price from budget and reset optional filters
+                setSelectedPrice(getRecommendedPrice());
+                setSelectedAge(null);
+                setSelectedGender(null);
+                setSelectedCategory(null);
+                setShowFiltersModal(true);
+              }}
               className="w-full py-4 px-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg font-bold text-lg transition shadow-lg flex items-center justify-center gap-2"
             >
               🔍 JETZT ZU AMAZON GEHEN →
@@ -384,9 +422,10 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
               <div className="bg-gradient-to-br from-orange-50 to-amber-50 border-2 border-orange-300 p-6 rounded-lg shadow-md">
                 <div className="flex items-baseline gap-2 mb-4">
                   <h4 className="text-lg font-bold text-orange-900">💰 SCHRITT 1: Budget wählen</h4>
-                  <span className="text-xs font-semibold text-white bg-red-500 px-2 py-0.5 rounded">ERFORDERLICH</span>
+                  <span className="text-xs font-semibold text-white bg-green-500 px-2 py-0.5 rounded">✓ Vorausgewählt</span>
                 </div>
-                <p className="text-sm text-gray-700 mb-4">Deine Gruppenbudget: <strong>{group.budget}</strong> - Wähle eine Preisspanne:</p>
+                <p className="text-sm text-gray-700 mb-2">Deine Gruppenbudget: <strong>{group.budget}</strong></p>
+                <p className="text-xs text-orange-700 bg-orange-100 p-2 rounded mb-4">💡 Basierend auf deinem Budget haben wir eine Preisspanne vorausgewählt. Du kannst aber auch anders wählen!</p>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                   {AMAZON_FILTERS.price.map((range) => (
@@ -411,11 +450,6 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
                   ))}
                 </div>
 
-                {!selectedPrice && (
-                  <p className="text-xs text-orange-700 mt-3 bg-orange-100 p-2 rounded">
-                    ℹ️ Wähle ein Budget oben, um zum nächsten Schritt zu gehen
-                  </p>
-                )}
               </div>
 
               {/* STAGE 2: OPTIONAL FILTERS */}
