@@ -3,6 +3,17 @@
 
 import { getGroup } from '../../../lib/kv';
 
+const logSession = (phase, req, extra = {}) => {
+  const cookies = req.cookies || {};
+  const sessionId = cookies.sessionId || req.headers['x-session-id'] || null;
+  console.log(
+    `[session-debug] phase=${phase} route=${req.url} method=${req.method} sessionId=${sessionId || 'none'} cookies=${JSON.stringify(
+      cookies
+    )} extra=${JSON.stringify(extra)}`
+  );
+  return sessionId;
+};
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -11,11 +22,14 @@ export default async function handler(req, res) {
   try {
     const { groupId, pin } = req.body;
 
+    const sessionId = logSession('verify-pin:entry', req, { groupId });
+
     if (!groupId || !pin) {
       return res.status(400).json({ error: 'groupId and pin required' });
     }
 
     // Fetch the group from KV store
+    logSession('verify-pin:before-getGroup', req, { groupId, sessionId });
     const group = await getGroup(groupId);
 
     if (!group) {
