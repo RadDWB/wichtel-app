@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { getGroup, saveGroup } from '../../../lib/kv-client';
+import { getPostDrawShareText } from '../../../lib/constants';
 
 // Force SSR to prevent static generation errors
 export const getServerSideProps = async () => {
@@ -91,6 +92,8 @@ export default function DrawPage() {
     return AMAZON_AFFILIATE_LINKS.all;
   };
 
+  const getParticipantLink = () => `${typeof window !== 'undefined' ? window.location.origin : ''}/join/${id}`;
+
   const performDraw = async () => {
     if (!window.confirm('⚠️ WARNUNG: Das Auslosen kann NICHT rückgängig gemacht werden! Sicher fortfahren?')) {
       return;
@@ -153,6 +156,9 @@ export default function DrawPage() {
   }
 
   if (success) {
+    const participantLink = getParticipantLink();
+    const postDrawShareText = getPostDrawShareText(participantLink);
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50 flex items-center justify-center">
         <div className="text-center max-w-2xl">
@@ -184,13 +190,13 @@ export default function DrawPage() {
               <div className="flex gap-2 mb-4">
                 <input
                   type="text"
-                  value={`${typeof window !== 'undefined' ? window.location.origin : ''}/join/${id}`}
+                  value={participantLink}
                   readOnly
                   className="flex-1 px-3 py-2 bg-white border-2 border-orange-300 rounded-lg font-mono text-sm text-gray-800"
                 />
                 <button
                   onClick={() => {
-                    navigator.clipboard.writeText(`${typeof window !== 'undefined' ? window.location.origin : ''}/join/${id}`);
+                    navigator.clipboard.writeText(participantLink);
                     alert('✅ Link kopiert!');
                   }}
                   className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg transition whitespace-nowrap"

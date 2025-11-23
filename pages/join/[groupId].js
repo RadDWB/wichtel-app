@@ -223,7 +223,9 @@ export default function JoinGroup() {
     localStorage.setItem(`participant_${groupId}`, participant.id);
 
     // Check if this participant has a stored PIN using participant.id
-    const storedPin = localStorage.getItem(`participant_pin_${participant.id}`);
+    const newKey = `participant_pin_${groupId}_${participant.id}`;
+    const legacyKey = `participant_pin_${participant.id}`;
+    const storedPin = localStorage.getItem(newKey) || localStorage.getItem(legacyKey);
 
     // Set participant data
     setSelectedParticipant(participant);
