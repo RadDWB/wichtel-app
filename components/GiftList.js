@@ -565,8 +565,8 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
                       key={range.label}
                       className={`flex items-center gap-2 p-3 rounded-lg border-2 cursor-pointer transition ${
                         selectedPrice?.label === range.label
-                          ? 'bg-orange-200 border-orange-600 shadow-md'
-                          : 'bg-white border-gray-300 hover:border-orange-400'
+                          ? 'bg-orange-600 border-orange-700 text-white shadow-md'
+                          : 'bg-white border-gray-300 text-gray-900 hover:border-orange-400'
                       }`}
                     >
                       <input
@@ -577,7 +577,7 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
                         onChange={() => setSelectedPrice(range)}
                         className="w-4 h-4 accent-orange-500"
                       />
-                      <span className="text-sm font-semibold text-gray-900">
+                      <span className="text-sm font-semibold">
                         {range.label}
                       </span>
                     </label>
@@ -603,7 +603,7 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
                       className={`text-sm py-3 px-3 rounded font-semibold text-center transition ${
                         selectedCategory?.label === cat.label
                           ? 'bg-green-600 text-white ring-2 ring-green-300'
-                          : 'bg-green-500 hover:bg-green-600 text-white'
+                          : 'bg-green-100 text-green-900 hover:bg-green-200'
                       }`}
                     >
                       {cat.label}
@@ -630,7 +630,7 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
                       className={`text-sm py-3 px-3 rounded font-semibold text-center transition ${
                         selectedAge?.label === age.label
                           ? 'bg-blue-600 text-white ring-2 ring-blue-300'
-                          : 'bg-blue-500 hover:bg-blue-600 text-white'
+                          : 'bg-blue-100 text-blue-900 hover:bg-blue-200'
                       }`}
                     >
                       {age.label}
@@ -657,7 +657,7 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
                       className={`text-sm py-3 px-3 rounded font-semibold text-center transition ${
                         selectedGender?.label === gender.label
                           ? 'bg-purple-600 text-white ring-2 ring-purple-300'
-                          : 'bg-purple-500 hover:bg-purple-600 text-white'
+                          : 'bg-purple-100 text-purple-900 hover:bg-purple-200'
                       }`}
                     >
                       {gender.label}
@@ -765,14 +765,14 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
             ✅ Maximale Anzahl erreicht!
           </p>
           <p className="text-xs text-green-800 mt-1">
-            Du hast die maximale Anzahl von 10 Geschenken erreicht.
+            Du hast die maximale Anzahl von 10 Geschenken erreicht!
           </p>
         </div>
       )}
 
       {/* Footer */}
       <div className="text-center text-xs text-gray-500 py-4 space-y-1">
-        <p>💚 Amazon-Links werden automatisch mit unserem Affiliate-Link verknüpft</p>
+        <p>💚 Amazon-Links werden automatisch generiert, wir nehmen am Affiliate Programm teil!</p>
         <p className="text-gray-400">Wunschliste vdev2</p>
       </div>
     </div>
