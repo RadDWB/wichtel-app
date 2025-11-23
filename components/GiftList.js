@@ -45,8 +45,7 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
   const [gifts, setGifts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showAmazonModal, setShowAmazonModal] = useState(false);
-  const [expandedStep, setExpandedStep] = useState([1, 2]);  // Changed: Start with both step 1 and 2 expanded
+  const [expandedStep, setExpandedStep] = useState([1, 2]);  // Start mit beiden Schritten offen
   const [showFiltersModal, setShowFiltersModal] = useState(false);
   const [newGift, setNewGift] = useState({ name: '', link: '', category: 'other', price: '' });
 
@@ -64,33 +63,33 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
 
   // Helper function to auto-detect price from group budget
   const getRecommendedPrice = () => {
-    if (!group?.budget) return AMAZON_FILTERS.price[2]; // Default to 10-15€
+    if (!group?.budget) return AMAZON_FILTERS.price[2]; // Default zu 10-15 €
 
     const budget = group.budget.toLowerCase();
 
     // Map common budget values to price ranges
-    if (budget.includes('5€') || budget === '5') return AMAZON_FILTERS.price[1]; // 5-10€
-    if (budget.includes('10€') || budget === '10') return AMAZON_FILTERS.price[2]; // 10-15€
-    if (budget.includes('15€') || budget === '15') return AMAZON_FILTERS.price[3]; // 15-20€
-    if (budget.includes('20€') || budget === '20') return AMAZON_FILTERS.price[4]; // 20-30€
-    if (budget.includes('30€') || budget === '30') return AMAZON_FILTERS.price[5]; // 30-50€
-    if (budget.includes('50€') || budget === '50') return AMAZON_FILTERS.price[6]; // 50-100€
-    if (budget.includes('100€') || budget === '100') return AMAZON_FILTERS.price[7]; // 100+€
+    if (budget.includes('5€') || budget === '5') return AMAZON_FILTERS.price[1]; // 5-10 €
+    if (budget.includes('10€') || budget === '10') return AMAZON_FILTERS.price[2]; // 10-15 €
+    if (budget.includes('15€') || budget === '15') return AMAZON_FILTERS.price[3]; // 15-20 €
+    if (budget.includes('20€') || budget === '20') return AMAZON_FILTERS.price[4]; // 20-30 €
+    if (budget.includes('30€') || budget === '30') return AMAZON_FILTERS.price[5]; // 30-50 €
+    if (budget.includes('50€') || budget === '50') return AMAZON_FILTERS.price[6]; // 50-100 €
+    if (budget.includes('100€') || budget === '100') return AMAZON_FILTERS.price[7]; // 100+ €
 
     // Fallback: try to find first price range that fits
     const budgetNum = parseInt(budget);
     if (!isNaN(budgetNum)) {
-      if (budgetNum <= 5) return AMAZON_FILTERS.price[0]; // 1-5€
-      if (budgetNum <= 10) return AMAZON_FILTERS.price[1]; // 5-10€
-      if (budgetNum <= 15) return AMAZON_FILTERS.price[2]; // 10-15€
-      if (budgetNum <= 20) return AMAZON_FILTERS.price[3]; // 15-20€
-      if (budgetNum <= 30) return AMAZON_FILTERS.price[4]; // 20-30€
-      if (budgetNum <= 50) return AMAZON_FILTERS.price[5]; // 30-50€
-      if (budgetNum <= 100) return AMAZON_FILTERS.price[6]; // 50-100€
-      return AMAZON_FILTERS.price[7]; // 100+€
+      if (budgetNum <= 5) return AMAZON_FILTERS.price[0]; // 1-5 €
+      if (budgetNum <= 10) return AMAZON_FILTERS.price[1]; // 5-10 €
+      if (budgetNum <= 15) return AMAZON_FILTERS.price[2]; // 10-15 €
+      if (budgetNum <= 20) return AMAZON_FILTERS.price[3]; // 15-20 €
+      if (budgetNum <= 30) return AMAZON_FILTERS.price[4]; // 20-30 €
+      if (budgetNum <= 50) return AMAZON_FILTERS.price[5]; // 30-50 €
+      if (budgetNum <= 100) return AMAZON_FILTERS.price[6]; // 50-100 €
+      return AMAZON_FILTERS.price[7]; // 100+ €
     }
 
-    return AMAZON_FILTERS.price[2]; // Default to 10-15€
+    return AMAZON_FILTERS.price[2]; // Default zu 10-15 €
   };
 
   // Detect mobile and OS on mount
@@ -106,6 +105,7 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
       setIsAndroid(android);
     }
   }, []);
+
   useEffect(() => {
     loadGifts();
   }, [groupId, participantId]);
@@ -215,7 +215,12 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
                   <div className="flex-1">
                     <h4 className="font-bold text-lg mb-2">🎁 {gift.name}</h4>
                     {gift.link && (
-                      <a href={gift.link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-medium inline-flex items-center gap-2">
+                      <a
+                        href={gift.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline font-medium inline-flex items-center gap-2"
+                      >
                         🔗 Auf Amazon anschauen
                       </a>
                     )}
@@ -231,7 +236,7 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
     );
   }
 
-  // Edit mode - COMPLETELY REDESIGNED
+  // Edit mode
   return (
     <div className="space-y-6">
       {error && (
@@ -247,81 +252,146 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
       <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border-2 border-blue-300 overflow-hidden shadow-md">
         {/* Header - Immer sichtbar */}
         <button
-          onClick={() => setExpandedStep(Array.isArray(expandedStep) && expandedStep.includes(1) ? expandedStep.filter(s => s !== 1) : [...(Array.isArray(expandedStep) ? expandedStep : []), 1])}
+          onClick={() =>
+            setExpandedStep(
+              Array.isArray(expandedStep) && expandedStep.includes(1)
+                ? expandedStep.filter(s => s !== 1)
+                : [...(Array.isArray(expandedStep) ? expandedStep : []), 1]
+            )
+          }
           className="w-full px-6 py-5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-3 text-left text-white"
         >
           <span className="flex-shrink-0 text-2xl">🔍</span>
           <div className="flex-1">
             <p className="font-bold text-lg">A) Produkt auf Amazon suchen</p>
-            <p className="text-xs text-blue-100 mt-0.5">Filter nutzen & Artikel auf Amazon auswählen</p>
+            <p className="text-xs text-blue-100 mt-0.5">
+              Budget wählen & Artikel auf Amazon anschauen
+            </p>
           </div>
-          <span className="text-xl text-blue-100" style={{transform: (Array.isArray(expandedStep) && expandedStep.includes(1)) ? 'rotate(180deg)' : 'rotate(0deg)'}}>▼</span>
+          <span
+            className="text-xl text-blue-100"
+            style={{
+              transform:
+                Array.isArray(expandedStep) && expandedStep.includes(1)
+                  ? 'rotate(180deg)'
+                  : 'rotate(0deg)',
+            }}
+          >
+            ▼
+          </span>
         </button>
 
         {/* Content */}
-        {(Array.isArray(expandedStep) && expandedStep.includes(1)) && (
+        {Array.isArray(expandedStep) && expandedStep.includes(1) && (
           <div className="px-6 py-6 bg-blue-50 border-t border-blue-200 space-y-4">
             <div className="bg-white p-4 rounded-lg border-l-4 border-blue-500 space-y-3 text-sm">
               <p className="font-semibold text-gray-900">📖 So funktioniert's:</p>
               <ol className="list-decimal list-inside space-y-2 ml-2 text-gray-700">
-                <li>Klick auf den Button unten \"🔍 JETZT ZU AMAZON GEHEN\"</li>
-                <li>Nutze die vorgegebenen <strong>Filter</strong> (Budget, Alter, Geschlecht, Kategorie) um schneller das richtige Geschenk zu finden</li>
-                <li>Schau Dir Bilder, Beschreibung, Rezensionen und Preis an</li>
-                <li>Passt der Artikel zu deinem Budget? Dann füge ihn der Liste hinzu!</li>
+                <li>Klick auf den Button unten „🔍 JETZT ZU AMAZON GEHEN“</li>
+                <li>
+                  Wähle eine <strong>Preisspanne (Budget)</strong>, die zu eurer Wichtel-Runde passt
+                </li>
+                <li>Schau dir Bilder, Beschreibung, Rezensionen und Preis an</li>
+                <li>
+                  Passt der Artikel zu deinem Budget? Dann füge ihn der Liste hinzu!
+                </li>
               </ol>
 
               <div className="text-xs text-blue-600 mt-3 bg-blue-100 p-3 rounded space-y-2">
-                <p className="font-semibold flex items-center justify-between cursor-pointer hover:text-blue-800" onClick={() => setShowLinkHelp(!showLinkHelp)}>
+                <p
+                  className="font-semibold flex items-center justify-between cursor-pointer hover:text-blue-800"
+                  onClick={() => setShowLinkHelp(!showLinkHelp)}
+                >
                   💡 Link kopieren
-                  <span style={{transform: showLinkHelp ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s'}} className="ml-2">▼</span>
+                  <span
+                    style={{
+                      transform: showLinkHelp ? 'rotate(180deg)' : 'rotate(0deg)',
+                      transition: 'transform 0.2s',
+                    }}
+                    className="ml-2"
+                  >
+                    ▼
+                  </span>
                 </p>
 
                 {showLinkHelp && (
                   <div className="mt-2 pt-2 border-t border-blue-300 space-y-3">
                     {isMobile ? (
                       isIOS ? (
-                        <>
-                          <div className="bg-white p-2 rounded text-gray-900">
-                            <p className="font-semibold text-sm mb-2">📱 iPhone - So kopierst du den Link:</p>
-                            <ol className="list-decimal list-inside space-y-1 ml-1 text-xs">
-                              <li>Schau dir das Produkt auf Amazon an</li>
-                              <li>Oben rechts: Tippe auf das <strong>[Teilen-Icon]</strong> (Quadrat mit ↑)</li>
-                              <li>Im Menü: Scroll nach unten und wähle <strong>"Link kopieren"</strong></li>
-                              <li className="font-semibold text-green-700">✅ Link ist jetzt im Speicher!</li>
-                              <li>Komm zurück zu dieser App</li>
-                              <li>Im Feld unten: Tippe lange drücken → <strong>"Einfügen"</strong></li>
-                            </ol>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="bg-white p-2 rounded text-gray-900">
-                            <p className="font-semibold text-sm mb-2">🤖 Android - So kopierst du den Link:</p>
-                            <ol className="list-decimal list-inside space-y-1 ml-1 text-xs">
-                              <li>Schau dir das Produkt auf Amazon an</li>
-                              <li>Halte die <strong>URL-Adressleiste</strong> oben für 2-3 Sekunden gedrückt</li>
-                              <li>Im Popup-Menü: Wähle <strong>"Link kopieren"</strong> oder <strong>"URL kopieren"</strong></li>
-                              <li className="font-semibold text-green-700">✅ Link ist jetzt im Speicher!</li>
-                              <li>Komm zurück zu dieser App</li>
-                              <li>Im Feld unten: Tippe lange drücken → <strong>"Einfügen"</strong></li>
-                            </ol>
-                          </div>
-                        </>
-                      )
-                    ) : (
-                      <>
                         <div className="bg-white p-2 rounded text-gray-900">
-                          <p className="font-semibold text-sm mb-2">🖥️ Desktop/Laptop - So kopierst du den Link:</p>
+                          <p className="font-semibold text-sm mb-2">
+                            📱 iPhone - So kopierst du den Link:
+                          </p>
                           <ol className="list-decimal list-inside space-y-1 ml-1 text-xs">
                             <li>Schau dir das Produkt auf Amazon an</li>
-                            <li>Klick in die <strong>Adressleiste</strong> oben (wo die URL steht)</li>
-                            <li>Wähle alles: <strong>Strg+A</strong> (Windows) / <strong>Cmd+A</strong> (Mac)</li>
-                            <li>Kopieren: <strong>Strg+C</strong> (Windows) / <strong>Cmd+C</strong> (Mac)</li>
-                            <li className="font-semibold text-green-700">✅ Link ist jetzt im Speicher!</li>
-                            <li>Im Feld unten: Rechtsklick → <strong>"Einfügen"</strong> oder <strong>Strg+V</strong> / <strong>Cmd+V</strong></li>
+                            <li>
+                              Oben rechts: Tippe auf das <strong>[Teilen-Icon]</strong> (Quadrat
+                              mit ↑)
+                            </li>
+                            <li>
+                              Im Menü: Scroll nach unten und wähle{' '}
+                              <strong>"Link kopieren"</strong>
+                            </li>
+                            <li className="font-semibold text-green-700">
+                              ✅ Link ist jetzt im Speicher!
+                            </li>
+                            <li>Komm zurück zu dieser App</li>
+                            <li>
+                              Im Feld unten: Tippe lange → <strong>"Einfügen"</strong>
+                            </li>
                           </ol>
                         </div>
-                      </>
+                      ) : (
+                        <div className="bg-white p-2 rounded text-gray-900">
+                          <p className="font-semibold text-sm mb-2">
+                            🤖 Android - So kopierst du den Link:
+                          </p>
+                          <ol className="list-decimal list-inside space-y-1 ml-1 text-xs">
+                            <li>Schau dir das Produkt auf Amazon an</li>
+                            <li>
+                              Halte die <strong>URL-Adressleiste</strong> oben kurz gedrückt
+                            </li>
+                            <li>
+                              Im Popup-Menü: Wähle <strong>"Link kopieren"</strong> oder{' '}
+                              <strong>"URL kopieren"</strong>
+                            </li>
+                            <li className="font-semibold text-green-700">
+                              ✅ Link ist jetzt im Speicher!
+                            </li>
+                            <li>Komm zurück zu dieser App</li>
+                            <li>
+                              Im Feld unten: Tippe lange → <strong>"Einfügen"</strong>
+                            </li>
+                          </ol>
+                        </div>
+                      )
+                    ) : (
+                      <div className="bg-white p-2 rounded text-gray-900">
+                        <p className="font-semibold text-sm mb-2">
+                          🖥️ Desktop/Laptop - So kopierst du den Link:
+                        </p>
+                        <ol className="list-decimal list-inside space-y-1 ml-1 text-xs">
+                          <li>Schau dir das Produkt auf Amazon an</li>
+                          <li>
+                            Klick in die <strong>Adressleiste</strong> oben (wo die URL steht)
+                          </li>
+                          <li>
+                            Wähle alles: <strong>Strg+A</strong> (Windows) /{' '}
+                            <strong>Cmd+A</strong> (Mac)
+                          </li>
+                          <li>
+                            Kopieren: <strong>Strg+C</strong> (Windows) /{' '}
+                            <strong>Cmd+C</strong> (Mac)
+                          </li>
+                          <li className="font-semibold text-green-700">
+                            ✅ Link ist jetzt im Speicher!
+                          </li>
+                          <li>
+                            Im Feld unten: Rechtsklick → <strong>"Einfügen"</strong> oder{' '}
+                            <strong>Strg+V</strong> / <strong>Cmd+V</strong>
+                          </li>
+                        </ol>
+                      </div>
                     )}
                   </div>
                 )}
@@ -352,7 +422,13 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
       <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg border-2 border-green-300 overflow-hidden shadow-md">
         {/* Header - Immer sichtbar */}
         <button
-          onClick={() => setExpandedStep(Array.isArray(expandedStep) && expandedStep.includes(2) ? expandedStep.filter(s => s !== 2) : [...(Array.isArray(expandedStep) ? expandedStep : []), 2])}
+          onClick={() =>
+            setExpandedStep(
+              Array.isArray(expandedStep) && expandedStep.includes(2)
+                ? expandedStep.filter(s => s !== 2)
+                : [...(Array.isArray(expandedStep) ? expandedStep : []), 2]
+            )
+          }
           className="w-full px-6 py-5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 transition flex items-center gap-3 text-left text-white"
         >
           <span className="flex-shrink-0 text-2xl">🎁</span>
@@ -360,11 +436,21 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
             <p className="font-bold text-lg">B) In Wunschliste übertragen</p>
             <p className="text-xs text-green-100 mt-0.5">Name + Amazon-Link eintragen</p>
           </div>
-          <span className="text-xl text-green-100" style={{transform: (Array.isArray(expandedStep) && expandedStep.includes(2)) ? 'rotate(180deg)' : 'rotate(0deg)'}}>▼</span>
+          <span
+            className="text-xl text-green-100"
+            style={{
+              transform:
+                Array.isArray(expandedStep) && expandedStep.includes(2)
+                  ? 'rotate(180deg)'
+                  : 'rotate(0deg)',
+            }}
+          >
+            ▼
+          </span>
         </button>
 
         {/* Content */}
-        {(Array.isArray(expandedStep) && expandedStep.includes(2)) && (
+        {Array.isArray(expandedStep) && expandedStep.includes(2) && (
           <div className="px-6 py-6 bg-green-50 border-t border-green-200 space-y-4">
             <div>
               <label className="block text-sm font-semibold mb-2 text-gray-900">
@@ -406,26 +492,36 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
         )}
       </div>
 
-      {/* FILTER MODAL - MIT STAGIGEM FLOW UND RADIO-BUTTONS FÜR PREIS */}
+      {/* FILTER MODAL */}
       {showFiltersModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-lg max-w-4xl w-full my-8 shadow-2xl">
             <div className="sticky top-0 bg-gradient-to-r from-orange-500 to-amber-500 text-white p-6 flex items-center justify-between">
               <h3 className="text-2xl font-bold">🔍 Amazon Filter - Finde das perfekte Geschenk</h3>
-              <button onClick={() => setShowFiltersModal(false)} className="text-3xl font-bold hover:text-orange-200 transition">
+              <button
+                onClick={() => setShowFiltersModal(false)}
+                className="text-3xl font-bold hover:text-orange-200 transition"
+              >
                 ✕
               </button>
             </div>
             <div className="p-8 space-y-8 max-h-96 overflow-y-auto">
-
-              {/* STAGE 1: PRICE SELECTION - REQUIRED & PROMINENT */}
+              {/* STAGE 1: PRICE SELECTION */}
               <div className="bg-gradient-to-br from-orange-50 to-amber-50 border-2 border-orange-300 p-6 rounded-lg shadow-md">
                 <div className="flex items-baseline gap-2 mb-4">
                   <h4 className="text-lg font-bold text-orange-900">💰 SCHRITT 1: Budget wählen</h4>
-                  <span className="text-xs font-semibold text-white bg-green-500 px-2 py-0.5 rounded">✓ Vorausgewählt</span>
+                  <span className="text-xs font-semibold text-white bg-green-500 px-2 py-0.5 rounded">
+                    ✓ Vorausgewählt
+                  </span>
                 </div>
-                <p className="text-sm text-gray-700 mb-2">Deine Gruppenbudget: <strong>{group.budget}</strong></p>
-                <p className="text-xs text-orange-700 bg-orange-100 p-2 rounded mb-4">💡 Basierend auf deinem Budget haben wir eine Preisspanne vorausgewählt. Du kannst aber auch anders wählen!</p>
+                <p className="text-sm text-gray-700 mb-2">
+                  Dein Gruppenbudget:{' '}
+                  <strong>{group?.budget ?? 'kein Budget eingetragen'}</strong>
+                </p>
+                <p className="text-xs text-orange-700 bg-orange-100 p-2 rounded mb-4">
+                  💡 Basierend auf deinem Budget haben wir eine Preisspanne vorausgewählt. Du kannst
+                  aber auch eine andere wählen!
+                </p>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                   {AMAZON_FILTERS.price.map((range) => (
@@ -449,17 +545,19 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
                     </label>
                   ))}
                 </div>
-
               </div>
 
-              {/* STAGE 2: OPTIONAL FILTERS */}
+              {/* STAGE 2: OPTIONALE gedankliche Filter (nur zur Inspiration) */}
               {selectedPrice && (
                 <>
-                  {/* CATEGORY FILTER */}
                   <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded">
                     <div className="flex items-baseline gap-2 mb-4">
-                      <h4 className="text-lg font-bold text-green-900">🏷️ SCHRITT 2: Kategorie (optional)</h4>
-                      <span className="text-xs text-gray-600">— Skip für alle Geschenke</span>
+                      <h4 className="text-lg font-bold text-green-900">
+                        🏷️ SCHRITT 2: Kategorie (optional)
+                      </h4>
+                      <span className="text-xs text-gray-600">
+                        — Nur zur Orientierung, der Amazon-Link nutzt dein Budget
+                      </span>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {AMAZON_FILTERS.category.map((cat) => (
@@ -478,11 +576,14 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
                     </div>
                   </div>
 
-                  {/* AGE FILTER */}
                   <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
                     <div className="flex items-baseline gap-2 mb-4">
-                      <h4 className="text-lg font-bold text-blue-900">👥 SCHRITT 3: Altersbereich (optional)</h4>
-                      <span className="text-xs text-gray-600">— Skip für alle Altersgruppen</span>
+                      <h4 className="text-lg font-bold text-blue-900">
+                        👥 SCHRITT 3: Altersbereich (optional)
+                      </h4>
+                      <span className="text-xs text-gray-600">
+                        — Nur als Hilfe beim Überlegen
+                      </span>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {AMAZON_FILTERS.age.map((age) => (
@@ -501,11 +602,14 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
                     </div>
                   </div>
 
-                  {/* GENDER FILTER */}
                   <div className="bg-purple-50 border-l-4 border-purple-400 p-4 rounded">
                     <div className="flex items-baseline gap-2 mb-4">
-                      <h4 className="text-lg font-bold text-purple-900">👫 SCHRITT 4: Geschlecht (optional)</h4>
-                      <span className="text-xs text-gray-600">— Skip für alle Geschlechter</span>
+                      <h4 className="text-lg font-bold text-purple-900">
+                        👫 SCHRITT 4: Geschlecht (optional)
+                      </h4>
+                      <span className="text-xs text-gray-600">
+                        — Hilft bei der Auswahl, beeinflusst aber den Link nicht
+                      </span>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       {AMAZON_FILTERS.gender.map((gender) => (
@@ -524,18 +628,11 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
                     </div>
                   </div>
 
-                  {/* BIG CALL-TO-ACTION BUTTON */}
+                  {/* CALL-TO-ACTION */}
                   <div className="space-y-4 pt-4">
                     <button
                       onClick={() => {
-                        const filters = [];
-                        if (selectedPrice) filters.push(selectedPrice.link);
-                        if (selectedCategory) filters.push(selectedCategory.link);
-                        if (selectedAge) filters.push(selectedAge.link);
-                        if (selectedGender) filters.push(selectedGender.link);
-
-                        // Use first filter link or just the price link
-                        const targetLink = filters[0];
+                        const targetLink = selectedPrice?.link;
                         if (targetLink) {
                           window.open(targetLink, '_blank');
                           setShowFiltersModal(false);
@@ -547,40 +644,13 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
                     </button>
 
                     <p className="text-xs text-gray-600 text-center bg-gray-50 p-3 rounded">
-                      💡 Klick auf den Button und Amazon öffnet sich mit deinen Filtern. Dort kannst du nach Produkten suchen, Preise checken und den Link kopieren!
+                      💡 Amazon öffnet sich mit deiner gewählten{' '}
+                      <strong>Preisspanne (Budget)</strong>. Dort kannst du nach passenden
+                      Geschenkideen suchen und den Link kopieren.
                     </p>
                   </div>
                 </>
               )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* AMAZON SHOPPING MODAL */}
-      {showAmazonModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-96 overflow-y-auto shadow-2xl">
-            <div className="sticky top-0 bg-orange-500 text-white p-4 flex items-center justify-between">
-              <h3 className="text-lg font-bold">🛍️ Amazon Filter - Schnelle Links</h3>
-              <button onClick={() => setShowAmazonModal(false)} className="text-2xl font-bold hover:text-orange-200 transition">
-                ✕
-              </button>
-            </div>
-            <div className="p-6">
-              <p className="text-sm text-gray-700 mb-6">
-                Klick auf einen Link, um auf Amazon zu gehen und nach Produkten in deinem Budget zu suchen:
-              </p>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-                {AMAZON_FILTERS.price.map((range) => (
-                  <a key={range.label} href={range.link} target="_blank" rel="noopener noreferrer" onClick={() => setShowAmazonModal(false)} className="text-sm bg-orange-500 hover:bg-orange-600 text-white py-3 px-2 rounded font-semibold text-center transition">
-                    {range.label}
-                  </a>
-                ))}
-              </div>
-              <p className="text-xs text-gray-600 text-center">
-                💡 Die Links öffnen Amazon mit vordefinierten Filtern für Geschenkideen
-              </p>
             </div>
           </div>
         </div>
@@ -597,7 +667,10 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
         {gifts.length > 0 ? (
           <div className="divide-y divide-gray-200">
             {gifts.map((gift, index) => (
-              <div key={gift.id} className="p-4 hover:bg-gray-50 transition flex justify-between items-start gap-4">
+              <div
+                key={gift.id}
+                className="p-4 hover:bg-gray-50 transition flex justify-between items-start gap-4"
+              >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold">
@@ -605,16 +678,24 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
                     </span>
                     <h4 className="font-bold text-gray-900 truncate">🎁 {gift.name}</h4>
                   </div>
-                  {gift.link && (
-                    <a href={gift.link} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline block truncate">
+                  {gift.link ? (
+                    <a
+                      href={gift.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-600 hover:underline block truncate"
+                    >
                       🔗 Amazon Link anschauen →
                     </a>
-                  )}
-                  {!gift.link && (
+                  ) : (
                     <p className="text-xs text-gray-500 italic">Kein Link hinterlegt</p>
                   )}
                 </div>
-                <button onClick={() => removeGift(gift.id)} className="flex-shrink-0 text-red-600 hover:text-red-700 hover:bg-red-50 p-2 rounded transition" title="Löschen">
+                <button
+                  onClick={() => removeGift(gift.id)}
+                  className="flex-shrink-0 text-red-600 hover:text-red-700 hover:bg-red-50 p-2 rounded transition"
+                  title="Löschen"
+                >
                   🗑️
                 </button>
               </div>
@@ -623,7 +704,9 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
         ) : (
           <div className="p-8 text-center">
             <p className="text-gray-500 italic">Noch keine Geschenke hinzugefügt</p>
-            <p className="text-xs text-gray-400 mt-2">Folge der Anleitung oben, um deine erste Wunschliste zu erstellen</p>
+            <p className="text-xs text-gray-400 mt-2">
+              Folge der Anleitung oben, um deine erste Wunschliste zu erstellen
+            </p>
           </div>
         )}
       </div>
@@ -631,14 +714,16 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
       {gifts.length >= 10 && (
         <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded">
           <p className="text-sm text-green-900 font-semibold">✅ Maximale Anzahl erreicht!</p>
-          <p className="text-xs text-green-800 mt-1">Du hast die maximale Anzahl von 10 Geschenken erreicht.</p>
+          <p className="text-xs text-green-800 mt-1">
+            Du hast die maximale Anzahl von 10 Geschenken erreicht.
+          </p>
         </div>
       )}
 
       {/* FUSSZEILE */}
       <div className="text-center text-xs text-gray-500 py-4 space-y-1">
         <p>💚 Amazon-Links werden automatisch mit unserem Affiliate-Link verknüpft</p>
-        <p className="text-gray-400">Wunschliste v1.0</p>
+        <p className="text-gray-400">Wunschliste v{APP_VERSION}</p>
       </div>
     </div>
   );
