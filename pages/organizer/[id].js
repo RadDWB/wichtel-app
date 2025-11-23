@@ -42,15 +42,9 @@ export default function OrganizerDashboard() {
 
   useEffect(() => {
     if (id) {
-      // Store showPin in localStorage immediately
+      // If showPin in URL, verify it server-side FIRST
       if (showPin) {
-        localStorage.setItem(`organizer_pin_${id}`, showPin);
-        // Also store in the organizer_ key for authentication
-        localStorage.setItem(`organizer_${id}`, JSON.stringify({
-          pin: showPin,
-          verifiedAt: new Date().toISOString()
-        }));
-        setAuthenticated(true);
+        verifyPinServerSide();
       } else {
         // Check if authenticated via PIN from localStorage
         const stored = localStorage.getItem(`organizer_${id}`);
@@ -72,6 +66,42 @@ export default function OrganizerDashboard() {
       }
     }
   }, [id, showPin]);
+
+  // Server-side PIN verification
+  const verifyPinServerSide = async () => {
+    try {
+      const response = await fetch('/api/organizer/verify-pin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          groupId: id,
+          pin: showPin
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.authenticated) {
+          // PIN is valid - store in localStorage
+          localStorage.setItem(`organizer_${id}`, JSON.stringify({
+            pin: showPin,
+            verifiedAt: new Date().toISOString()
+          }));
+          setAuthenticated(true);
+        } else {
+          setAuthenticated(false);
+          setPinError('❌ Ungültige PIN');
+        }
+      } else {
+        setAuthenticated(false);
+        setPinError('❌ Ungültige PIN');
+      }
+    } catch (err) {
+      console.error('Error verifying PIN:', err);
+      setAuthenticated(false);
+      setPinError('Fehler beim Überprüfen der PIN');
+    }
+  };
 
   // Separate effect for loading data when authenticated
   useEffect(() => {
