@@ -179,31 +179,6 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
   // Edit mode - COMPLETELY REDESIGNED
   return (
     <div className="space-y-6">
-      {/* HEADER MIT VERSION UND FORTSCHRITT */}
-      <div className="bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-300 rounded-lg p-6 shadow-md sticky top-0 z-30">
-        <div className="flex items-center justify-between gap-4 mb-4">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900">🎁 Wunschliste erstellen</h2>
-            <p className="text-sm text-gray-600 mt-1">Schritt für Schritt deine Geschenkeliste anlegen</p>
-          </div>
-          <span className="inline-block bg-gradient-to-r from-orange-500 to-amber-500 text-white px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap">
-            v{APP_VERSION}
-          </span>
-        </div>
-
-        {/* Progress Indicator - 10 Circles */}
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-gray-700 mr-2">{gifts.length}/10</span>
-          <div className="flex gap-1.5 flex-wrap">
-            {Array.from({ length: 10 }).map((_, i) => (
-              <div key={i} className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition ${i < gifts.length ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-500'}`}>
-                {i < gifts.length ? '✓' : i + 1}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
           {error}
