@@ -486,8 +486,12 @@ export default function JoinGroup() {
                   setTempPin('');
                   console.log('✅ PIN saved and confirmed');
 
-                  // Go to Gift Choice
-                  setStep(1.5);
+                  // After Draw: Don't change step - post-draw view will render automatically
+                  // Before Draw: Go to gift choice menu
+                  if (!group.drawn) {
+                    setStep(1.5); // VOR Draw: Gift Choice
+                  }
+                  // POST Draw: Keep current step, post-draw view renders automatically
                 }}
                 disabled={!tempPin || tempPin.length < 4 || tempPin.length > 6 || !/^\d+$/.test(tempPin)}
                 className="flex-1 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
@@ -537,7 +541,12 @@ export default function JoinGroup() {
                       if (tempPin === participantPin || tempPin === RECOVERY_PIN) {
                         setPinConfirmed(true);
                         setTempPin('');
-                        setStep(group.drawn ? 1 : 1.5); // Nach Draw: Teilnehmerliste, VOR Draw: Gift Choice
+                        // After Draw: Don't change step - render logic will show post-draw view automatically
+                        // Before Draw: Go to gift choice menu
+                        if (!group.drawn) {
+                          setStep(1.5); // VOR Draw: Gift Choice
+                        }
+                        // POST Draw: Keep current step, post-draw view renders with group.drawn && selectedParticipant condition
                       } else {
                         setPinVerificationError('❌ PIN ist falsch. Bitte versuche es erneut.');
                       }
@@ -574,7 +583,12 @@ export default function JoinGroup() {
                     setPinConfirmed(true);
                     setTempPin('');
                     setPinVerificationError('');
-                    setStep(group.drawn ? 1 : 1.5); // Nach Draw: Teilnehmerliste, VOR Draw: Gift Choice
+                    // After Draw: Don't change step - render logic will show post-draw view automatically
+                    // Before Draw: Go to gift choice menu
+                    if (!group.drawn) {
+                      setStep(1.5); // VOR Draw: Gift Choice
+                    }
+                    // POST Draw: Keep current step, post-draw view renders with group.drawn && selectedParticipant condition
                   } else {
                     setPinVerificationError('❌ PIN ist falsch. Bitte versuche es erneut.');
                   }
