@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { getGroup, saveGroup } from '../../../lib/kv-client';
+import { getPostDrawShareText } from '../../../lib/constants';
 
 // Force SSR to prevent static generation errors
 export const getServerSideProps = async () => {
@@ -91,6 +92,8 @@ export default function DrawPage() {
     return AMAZON_AFFILIATE_LINKS.all;
   };
 
+  const getParticipantLink = () => `${typeof window !== 'undefined' ? window.location.origin : ''}/join/${id}`;
+
   const performDraw = async () => {
     if (!window.confirm('⚠️ WARNUNG: Das Auslosen kann NICHT rückgängig gemacht werden! Sicher fortfahren?')) {
       return;
@@ -153,6 +156,9 @@ export default function DrawPage() {
   }
 
   if (success) {
+    const participantLink = getParticipantLink();
+    const postDrawShareText = getPostDrawShareText(participantLink);
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50 flex items-center justify-center">
         <div className="text-center max-w-2xl">
@@ -175,38 +181,40 @@ export default function DrawPage() {
               </ul>
             </div>
 
-            {/* Participant Share Link Section - ORANGE BOX */}
+            {/*             {/* Participant Share Text Section - matches dashboard text copy */}
             <div className="bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-300 rounded-lg p-6 mb-8 text-left shadow-md">
-              <h2 className="text-xl font-bold text-orange-900 mb-3">📢 Link für Teilnehmer kopieren & versenden:</h2>
+              <h2 className="text-xl font-bold text-orange-900 mb-3">📢 Text für Teilnehmer kopieren & versenden:</h2>
               <p className="text-sm text-gray-700 mb-4">
-                Kopiere diesen Link und versende ihn an alle Teilnehmer. Sie können damit ihre Wichtel-Partner sehen:
+                Kopiere den kompletten Nachrichtentext (inkl. Link) und versende ihn an alle Teilnehmer.
               </p>
-              <div className="flex gap-2 mb-4">
-                <input
-                  type="text"
-                  value={`${typeof window !== 'undefined' ? window.location.origin : ''}/join/${id}`}
-                  readOnly
-                  className="flex-1 px-3 py-2 bg-white border-2 border-orange-300 rounded-lg font-mono text-sm text-gray-800"
-                />
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(`${typeof window !== 'undefined' ? window.location.origin : ''}/join/${id}`);
-                    alert('✅ Link kopiert!');
-                  }}
-                  className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg transition whitespace-nowrap"
-                >
-                  📋 Kopieren
-                </button>
-              </div>
-              <div className="bg-white p-4 rounded border-l-4 border-orange-400">
+              <div className="bg-white p-4 rounded border-l-4 border-orange-400 mb-4">
                 <p className="text-xs text-gray-700 font-semibold mb-2">Nachricht zum Versenden:</p>
-                <p className="text-xs text-gray-600 leading-relaxed">
-                  „Hallo zusammen! 🎁 Die Auslosung ist vorbei! Klickt auf diesen Link, um zu sehen, wen ihr beschenken müsst und welche Wunschliste euer Wichtel-Partner hat: {`${typeof window !== 'undefined' ? window.location.origin : ''}/join/${id}`}"
-                </p>
+                <textarea
+                  value={postDrawShareText}
+                  onChange={() => {}}
+                  readOnly
+                  className="w-full text-xs text-gray-600 leading-relaxed whitespace-pre-wrap bg-white border border-orange-200 rounded p-3 font-mono"
+                  rows={6}
+                />
               </div>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(postDrawShareText);
+                  const btn = document.getElementById('copy-share-text');
+                  if (btn) {
+                    btn.innerText = '✅ Kopiert';
+                    setTimeout(() => {
+                      btn.innerText = '📋 Text kopieren';
+                    }, 1200);
+                  }
+                }}
+                id="copy-share-text"
+                className="px-4 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg transition w-full md:w-auto"
+              >
+                📋 Text kopieren
+              </button>
             </div>
-
-            {/* Prominent Amazon Affiliate Section */}
+{/* Prominent Amazon Affiliate Section */}
             <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-400 rounded-lg p-6 mb-8 shadow-md">
               <h2 className="text-2xl font-bold text-orange-900 mb-3">🛍️ Jetzt einkaufen gehen!</h2>
               <p className="text-gray-700 mb-5">

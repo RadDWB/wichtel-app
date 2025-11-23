@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { getGroup, getGifts } from '../../lib/kv-client';
 import AmazonFilterSelector from '../../components/AmazonFilterSelector';
-import { APP_VERSION, getInvitationText } from '../../lib/constants';
+import { APP_VERSION, getInvitationText, getPostDrawShareText } from '../../lib/constants';
 
 // Force SSR to prevent static generation errors
 export const getServerSideProps = async () => {
@@ -238,6 +238,8 @@ export default function OrganizerDashboard() {
     return `${typeof window !== 'undefined' ? window.location.origin : ''}/${id}/pairings`;
   };
 
+  const getPairingsShareText = () => getPostDrawShareText(getParticipantLink());
+
   const [copiedType, setCopiedType] = useState(null);
   const [copiedRecoveryPin, setCopiedRecoveryPin] = useState(false);
 
@@ -398,6 +400,7 @@ export default function OrganizerDashboard() {
   }
 
   const stats = completionStats();
+  const pairingsShareText = getPairingsShareText();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
@@ -730,13 +733,13 @@ export default function OrganizerDashboard() {
             </p>
 
             <div className="bg-white rounded border border-red-300 p-4 mb-4 whitespace-pre-wrap font-mono text-xs text-gray-800">
-              {`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link und melde dich an, um deinen Wichtelpartner zu sehen:\n\n${typeof window !== 'undefined' ? window.location.origin : ''}/join/${id}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`}
+              {pairingsShareText}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
               <button
                 onClick={() => {
-                  navigator.clipboard.writeText(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link und melde dich an, um deinen Wichtelpartner zu sehen:\n\n${typeof window !== 'undefined' ? window.location.origin : ''}/join/${id}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`);
+                  navigator.clipboard.writeText(pairingsShareText);
                   setCopiedType('pairings');
                   setTimeout(() => setCopiedType(null), 2000);
                 }}
@@ -751,7 +754,7 @@ export default function OrganizerDashboard() {
                 </button>
                 <div className="absolute hidden group-hover:flex bg-gray-900 text-white text-xs rounded-lg p-3 right-0 md:left-0 mt-2 w-48 z-10 flex-col gap-2">
                   <a
-                    href={`https://wa.me/?text=${encodeURIComponent(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link und melde dich an, um deinen Wichtelpartner zu sehen:\n\n${typeof window !== 'undefined' ? window.location.origin : ''}/join/${id}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`)}`}
+                    href={`https://wa.me/?text=${encodeURIComponent(pairingsShareText)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-green-400 block"
@@ -759,7 +762,7 @@ export default function OrganizerDashboard() {
                     💬 WhatsApp
                   </a>
                   <a
-                    href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link und melde dich an, um deinen Wichtelpartner zu sehen:\n\n${typeof window !== 'undefined' ? window.location.origin : ''}/join/${id}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`)}`}
+                    href={`https://api.whatsapp.com/send?text=${encodeURIComponent(pairingsShareText)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-green-400 block text-xs"
@@ -767,7 +770,7 @@ export default function OrganizerDashboard() {
                     💬 WhatsApp (App)
                   </a>
                   <a
-                    href={`https://signal.me/#p/${encodeURIComponent(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link und melde dich an, um deinen Wichtelpartner zu sehen:\n\n${typeof window !== 'undefined' ? window.location.origin : ''}/join/${id}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`)}`}
+                    href={`https://signal.me/#p/${encodeURIComponent(pairingsShareText)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-blue-400 block"
@@ -775,14 +778,14 @@ export default function OrganizerDashboard() {
                     🔒 Signal
                   </a>
                   <a
-                    href={`mailto:?body=${encodeURIComponent(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link und melde dich an, um deinen Wichtelpartner zu sehen:\n\n${typeof window !== 'undefined' ? window.location.origin : ''}/join/${id}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`)}`}
+                    href={`mailto:?body=${encodeURIComponent(pairingsShareText)}`}
                     className="hover:text-blue-400 block"
                   >
                     📧 Email
                   </a>
                   <button
                     onClick={() => {
-                      navigator.clipboard.writeText(`Hallo,\n\ndie Wichtel-Paarungen wurden ausgelost! Klick auf den Link und melde dich an, um deinen Wichtelpartner zu sehen:\n\n${typeof window !== 'undefined' ? window.location.origin : ''}/join/${id}\n\n⚠️ Du brauchst deine PIN, um die Seite zu öffnen.\nWenn du deine PIN vergessen hast, wende dich an den Organisator!\n\nViel Spaß beim Einkaufen! 🎁`);
+                      navigator.clipboard.writeText(pairingsShareText);
                       setCopiedType('pairingShare');
                       setTimeout(() => setCopiedType(null), 2000);
                     }}

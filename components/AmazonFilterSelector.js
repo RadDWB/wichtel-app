@@ -1,15 +1,22 @@
-import { useState } from 'react';
-import { AUDIENCES, CATEGORIES, PRICE_LABELS, PRICE_RANGES, generateAmazonUrl } from '../lib/amazon-filters';
+import { useEffect, useState } from 'react';
+import { AUDIENCES, CATEGORIES, GENDERS, PRICE_LABELS, PRICE_RANGES, generateAmazonUrl } from '../lib/amazon-filters';
 
 export default function AmazonFilterSelector({ preselectedPrice = null, compact = false }) {
   const [selectedAudience, setSelectedAudience] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedPrice, setSelectedPrice] = useState(preselectedPrice || null);
+  const [selectedGender, setSelectedGender] = useState(null);
 
   const getAmazonLink = (priceRange) => {
     const priceRangeKey = PRICE_RANGES[priceRange] || null;
-    return generateAmazonUrl(priceRangeKey, selectedAudience, selectedCategory);
+    return generateAmazonUrl(priceRangeKey, selectedAudience, selectedCategory, selectedGender);
   };
+
+  useEffect(() => {
+    if (preselectedPrice) {
+      setSelectedPrice(preselectedPrice);
+    }
+  }, [preselectedPrice]);
 
   return (
     <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-400 rounded-lg p-6 shadow-md">
@@ -30,6 +37,26 @@ export default function AmazonFilterSelector({ preselectedPrice = null, compact 
               }`}
             >
               {audience.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Gender Selection */}
+      <div className="mb-6">
+        <p className="text-sm font-semibold text-gray-900 mb-3">Geschlecht:</p>
+        <div className="grid grid-cols-3 gap-2">
+          {Object.entries(GENDERS).map(([key, gender]) => (
+            <button
+              key={key}
+              onClick={() => setSelectedGender(selectedGender === key ? null : key)}
+              className={`py-2 px-3 rounded-lg font-semibold text-sm transition ${
+                selectedGender === key
+                  ? 'bg-purple-600 text-white shadow-md'
+                  : 'bg-white border border-gray-300 text-gray-700 hover:border-purple-400'
+              }`}
+            >
+              {gender.label}
             </button>
           ))}
         </div>

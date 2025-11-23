@@ -50,11 +50,31 @@ export default function JoinGroup() {
   const [showNoGiftsDialog, setShowNoGiftsDialog] = useState(false);
   const [currentGifts, setCurrentGifts] = useState([]); // Store gifts for current participant during step 2
   const [organizerPin, setOrganizerPin] = useState(''); // Store organizer PIN to redirect back correctly
+  const [sessionCreating, setSessionCreating] = useState(false);
 
   // Update ref when step changes
   useEffect(() => {
     stepRef.current = step;
   }, [step]);
+
+  const createParticipantSession = async (pinValue) => {
+    if (!groupId || !selectedParticipant?.id || !pinValue) return;
+    try {
+      setSessionCreating(true);
+      const resp = await fetch('/api/session/participant', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ groupId, participantId: selectedParticipant.id, pin: pinValue }),
+      });
+      if (!resp.ok) {
+        console.warn('Session creation failed', await resp.text());
+      }
+    } catch (err) {
+      console.error('Error creating participant session:', err);
+    } finally {
+      setSessionCreating(false);
+    }
+  };
 
   useEffect(() => {
     if (groupId) {
@@ -222,8 +242,14 @@ export default function JoinGroup() {
     // Store participant ID first (before checking anything)
     localStorage.setItem(`participant_${groupId}`, participant.id);
 
-    // Check if this participant has a stored PIN
-    const storedPin = localStorage.getItem(`participant_pin_${groupId}_${participant.id}`);
+    // Check if this participant has a stored PIN using participant.id
+    const newKey = `participant_pin_${groupId}_${participant.id}`;
+    const legacyKey = `participant_pin_${participant.id}`;
+    const legacyPin = localStorage.getItem(legacyKey);
+    const storedPin = localStorage.getItem(newKey) || legacyPin;
+    if (!localStorage.getItem(newKey) && legacyPin) {
+      localStorage.setItem(newKey, legacyPin); // migrate once so future logins work
+    }
 
     // Set participant data
     setSelectedParticipant(participant);
@@ -255,7 +281,7 @@ export default function JoinGroup() {
       ...group,
       participants: group.participants.map(p =>
         p.id === selectedParticipant.id
-          ? { ...p, name: nameEdit, email: emailEdit || null }
+          ? { ...p, name: nameEdit, email: emailEdit || null, pin: participantPin || p.pin || null }
           : p
       ),
     };
@@ -484,6 +510,7 @@ export default function JoinGroup() {
                   setParticipantPin(tempPin);
                   setPinConfirmed(true);
                   setTempPin('');
+                  createParticipantSession(tempPin);
                   console.log('✅ PIN saved and confirmed');
 
                   // After Draw: Don't change step - post-draw view will render automatically
@@ -506,12 +533,15 @@ export default function JoinGroup() {
   }
 
   // NEW: Step 'pin-verify' - Verify PIN (when PIN exists)
-  if (step === 'pin-verify' && selectedParticipant && participantPin) {
+  if (step === 'pin-verify' && selectedParticipant && participantPin && !pinConfirmed) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
         <div className="container mx-auto py-12 px-4 max-w-2xl">
           <div className="bg-white rounded-lg p-8 shadow-md">
-            <h2 className="text-3xl font-bold mb-2">🔐 PIN eingeben</h2>
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-3xl font-bold">🔐 PIN eingeben</h2>
+              <span className="text-xs text-gray-400 font-mono">v{APP_VERSION}</span>
+            </div>
             <p className="text-gray-600 mb-6">
               Willkommen zurück, {selectedParticipant.name}! Gib deine PIN ein, um fortzufahren.
             </p>
@@ -541,12 +571,11 @@ export default function JoinGroup() {
                       if (tempPin === participantPin || tempPin === RECOVERY_PIN) {
                         setPinConfirmed(true);
                         setTempPin('');
-                        // After Draw: Don't change step - render logic will show post-draw view automatically
-                        // Before Draw: Go to gift choice menu
+                        createParticipantSession(tempPin);
+                        // Before Draw: go weiter zum Gift-Choice
                         if (!group.drawn) {
-                          setStep(1.5); // VOR Draw: Gift Choice
+                          setStep(1.5);
                         }
-                        // POST Draw: Keep current step, post-draw view renders with group.drawn && selectedParticipant condition
                       } else {
                         setPinVerificationError('❌ PIN ist falsch. Bitte versuche es erneut.');
                       }
@@ -559,7 +588,7 @@ export default function JoinGroup() {
             <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
               <p className="text-sm text-blue-900">
                 🔑 <strong>PIN vergessen?</strong><br/>
-                Verwende Recovery-PIN: <code className="bg-white px-2 py-1 rounded">999999</code> oder kontaktiere den Organisator
+                Bitte kontaktiere den Organisator für Hilfe
               </p>
             </div>
 
@@ -583,12 +612,10 @@ export default function JoinGroup() {
                     setPinConfirmed(true);
                     setTempPin('');
                     setPinVerificationError('');
-                    // After Draw: Don't change step - render logic will show post-draw view automatically
-                    // Before Draw: Go to gift choice menu
+                    createParticipantSession(tempPin);
                     if (!group.drawn) {
-                      setStep(1.5); // VOR Draw: Gift Choice
+                      setStep(1.5);
                     }
-                    // POST Draw: Keep current step, post-draw view renders with group.drawn && selectedParticipant condition
                   } else {
                     setPinVerificationError('❌ PIN ist falsch. Bitte versuche es erneut.');
                   }
@@ -667,6 +694,7 @@ export default function JoinGroup() {
                     id: Date.now().toString(),
                     name: nameEdit,
                     email: emailEdit || null,
+                    pin: participantPin || null,
                   };
                   const updated = {
                     ...group,
@@ -1273,7 +1301,7 @@ export default function JoinGroup() {
                 {/* Amazon Shopping Filters - Directly under header */}
                 <div className="mb-6">
                   <AmazonFilterSelector
-                    preselectedPrice="20-30"
+                    preselectedPrice={getBudgetPriceRange(group?.budget)}
                     compact={false}
                   />
                 </div>
