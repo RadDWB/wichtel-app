@@ -12,9 +12,6 @@ export default function AdminDashboard() {
     totalGroups: 0,
     totalParticipants: 0,
     drawnGroups: 0,
-    participantsWithWishlist: 0,
-    avgWishlistSize: 0,
-    participationRate: 0,
     avgBudget: 0,
   });
 
@@ -55,14 +52,7 @@ export default function AdminDashboard() {
       const totalParticipants = allGroups.reduce((sum, g) => sum + (g.participants?.length || 0), 0);
       const drawnGroups = allGroups.filter(g => g.drawn).length;
 
-      // Wishlist stats - estimate from group data
-      // Since we can't easily count actual wishlist items without loading them,
-      // we assume participants who joined likely added wishlists
-      const participantsWithWishlist = Math.round(totalParticipants * 0.7); // Estimate 70%
-      const avgWishlistSize = totalParticipants > 0 ? Math.round(participantsWithWishlist / (totalParticipants || 1) * 5) : 0; // Avg 5 items if participated
-      const participationRate = totalParticipants > 0 ? Math.round((participantsWithWishlist / totalParticipants) * 100) : 0;
-
-      // Budget stats
+      // Budget stats - only real data we can calculate from groups
       const totalBudget = allGroups.reduce((sum, g) => {
         const budget = parseInt(g.budget?.replace('€', '').trim()) || 0;
         return sum + budget;
@@ -73,9 +63,6 @@ export default function AdminDashboard() {
         totalGroups,
         totalParticipants,
         drawnGroups,
-        participantsWithWishlist,
-        avgWishlistSize,
-        participationRate,
         avgBudget,
       };
       setStats(stats);
@@ -178,8 +165,8 @@ export default function AdminDashboard() {
       </div>
 
       <div className="container mx-auto p-6 max-w-7xl">
-        {/* Stats Grid - 2 rows */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {/* Stats Grid - only real data */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
           <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg p-6 text-white">
             <div className="text-3xl font-bold">{stats.totalGroups}</div>
             <p className="text-blue-200 mt-1 text-sm">Gruppen gesamt</p>
@@ -190,23 +177,11 @@ export default function AdminDashboard() {
           </div>
           <div className="bg-gradient-to-br from-purple-600 to-purple-700 rounded-lg p-6 text-white">
             <div className="text-3xl font-bold">{stats.drawnGroups}</div>
-            <p className="text-purple-200 mt-1 text-sm">Gruppen ausgelost</p>
+            <p className="text-purple-200 mt-1 text-sm">Ausgelost</p>
           </div>
           <div className="bg-gradient-to-br from-orange-600 to-orange-700 rounded-lg p-6 text-white">
             <div className="text-3xl font-bold">{stats.avgBudget}€</div>
             <p className="text-orange-200 mt-1 text-sm">Ø Budget</p>
-          </div>
-          <div className="bg-gradient-to-br from-pink-600 to-pink-700 rounded-lg p-6 text-white">
-            <div className="text-3xl font-bold">{stats.participationRate}%</div>
-            <p className="text-pink-200 mt-1 text-sm">Teilnahmequote</p>
-          </div>
-          <div className="bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-lg p-6 text-white">
-            <div className="text-3xl font-bold">{stats.participantsWithWishlist}</div>
-            <p className="text-indigo-200 mt-1 text-sm">Mit Wunschliste</p>
-          </div>
-          <div className="bg-gradient-to-br from-cyan-600 to-cyan-700 rounded-lg p-6 text-white">
-            <div className="text-3xl font-bold">{stats.avgWishlistSize}</div>
-            <p className="text-cyan-200 mt-1 text-sm">Ø Wünsche</p>
           </div>
           <div className="bg-gradient-to-br from-red-600 to-red-700 rounded-lg p-6 text-white">
             <div className="text-3xl font-bold">{selectedGroups.size}</div>
