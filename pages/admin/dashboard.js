@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { isAdminLoggedIn, clearAdminSession, getAdminAuthHeader } from '../../lib/admin';
+import { getAllGroups, deleteGroup } from '../../lib/kv-client';
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -66,11 +67,11 @@ export default function AdminDashboard() {
     router.push('/');
   };
 
-  const deleteGroup = async (groupId) => {
+  const handleDeleteGroup = async (groupId) => {
     if (window.confirm('🗑️ Wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden!')) {
       try {
         // Delete from KV (primary - no fallback)
-        await deleteGroupKV(groupId);
+        await deleteGroup(groupId);
         console.log('✅ Group deleted from KV');
         loadGroups();
       } catch (kvErr) {
@@ -198,7 +199,7 @@ export default function AdminDashboard() {
                               👁️
                             </a>
                             <button
-                              onClick={() => deleteGroup(group.id)}
+                              onClick={() => handleDeleteGroup(group.id)}
                               className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm font-semibold"
                             >
                               🗑️
