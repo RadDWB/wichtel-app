@@ -154,6 +154,12 @@ export default function AdminGroupDetails() {
                         {p.name}
                       </p>
                       <p className="text-gray-400 text-sm font-mono">{p.id}</p>
+                      {p.address && (
+                        <div className="mt-2 p-3 bg-gray-700 rounded text-sm text-gray-300">
+                          <p className="font-semibold mb-1">📍 Adresse:</p>
+                          <p className="text-xs whitespace-pre-wrap">{p.address}</p>
+                        </div>
+                      )}
                     </div>
                     {group.drawn && group.pairing && group.pairing[p.id] && (
                       <div className="bg-purple-600 text-white px-3 py-1 rounded-full text-sm">
