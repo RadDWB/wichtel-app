@@ -41,7 +41,7 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showAmazonModal, setShowAmazonModal] = useState(false);
-  const [expandedStep, setExpandedStep] = useState(4);
+  const [expandedStep, setExpandedStep] = useState(1);  // Changed: Start with step 1 (Anleitung)
   const [showFiltersModal, setShowFiltersModal] = useState(false);
   const [newGift, setNewGift] = useState({ name: '', link: '', category: 'other', price: '' });
 
@@ -51,6 +51,24 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
   const [selectedGender, setSelectedGender] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
 
+  // Mobile & OS detection
+  const [isMobile, setIsMobile] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+  const [isAndroid, setIsAndroid] = useState(false);
+
+  // Detect mobile and OS on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const ua = navigator.userAgent;
+      const mobile = /iPhone|iPad|iPod|Android/i.test(ua);
+      const ios = /iPhone|iPad|iPod/i.test(ua);
+      const android = /Android/i.test(ua);
+      
+      setIsMobile(mobile);
+      setIsIOS(ios);
+      setIsAndroid(android);
+    }
+  }, []);
   useEffect(() => {
     loadGifts();
   }, [groupId, participantId]);
@@ -185,117 +203,135 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
         </div>
       )}
 
-      {/* SCHRITT AKKORDEON */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-md">
-        {/* SCHRITT 1 */}
-        <div className="border-b border-gray-200">
-          <button onClick={() => setExpandedStep(expandedStep === 1 ? null : 1)} className="w-full px-6 py-4 bg-gradient-to-r from-orange-50 to-amber-50 hover:from-orange-100 hover:to-amber-100 transition flex items-center gap-3 text-left">
-            <span className="flex-shrink-0 w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-sm">1</span>
-            <div className="flex-1">
-              <p className="font-bold text-gray-900">Gehe auf Amazon.de</p>
-              <p className="text-xs text-gray-600 mt-0.5">Nutze die Budget-Filter und Kategorie-Filter</p>
-            </div>
-            <span className="text-xl text-gray-500" style={{transform: expandedStep === 1 ? 'rotate(180deg)' : 'rotate(0deg)'}}>▼</span>
-          </button>
-          {expandedStep === 1 && (
-            <div className="px-6 py-6 bg-orange-50 border-t border-orange-100 text-center">
-              <p className="text-sm text-gray-700 mb-4">
-                Suche dein Wunschprodukt auf Amazon.de. Nutze die intelligenten Filter, um schnell zum richtigen Produkt zu gelangen!
-              </p>
-              <button
-                onClick={() => setShowFiltersModal(true)}
-                className="w-full py-4 px-6 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-lg font-bold text-lg transition shadow-lg"
-              >
-                🔍 Amazon Filter öffnen
-              </button>
-            </div>
-          )}
-        </div>
+      {/* ════════════════════════════════════════════════════════ */}
+      {/* PHASE 1: ANLEITUNG & AMAZON-FLOW (Akkordeon - Blau) */}
+      {/* ════════════════════════════════════════════════════════ */}
+      
+      <div className="bg-gradient-to-r from-blue-50 via-blue-25 to-blue-50 rounded-lg border-2 border-blue-300 overflow-hidden shadow-md">
+        {/* Header - Immer sichtbar */}
+        <button
+          onClick={() => setExpandedStep(expandedStep === 1 ? null : 1)}
+          className="w-full px-6 py-5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transition flex items-center gap-3 text-left text-white"
+        >
+          <span className="flex-shrink-0 text-2xl">📖</span>
+          <div className="flex-1">
+            <p className="font-bold text-lg">So funktioniert's - 3 einfache Schritte</p>
+            <p className="text-xs text-blue-100 mt-0.5">Lies das BEVOR du zu Amazon gehst!</p>
+          </div>
+          <span className="text-xl text-blue-100" style={{transform: expandedStep === 1 ? 'rotate(180deg)' : 'rotate(0deg)'}}>▼</span>
+        </button>
 
-        {/* SCHRITT 2 */}
-        <div className="border-b border-gray-200">
-          <button onClick={() => setExpandedStep(expandedStep === 2 ? null : 2)} className="w-full px-6 py-4 bg-gradient-to-r from-orange-50 to-amber-50 hover:from-orange-100 hover:to-amber-100 transition flex items-center gap-3 text-left">
-            <span className="flex-shrink-0 w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-sm">2</span>
-            <div className="flex-1">
-              <p className="font-bold text-gray-900">Produkt auswählen</p>
-              <p className="text-xs text-gray-600 mt-0.5">Klick auf das Produkt das dir gefällt</p>
-            </div>
-            <span className="text-xl text-gray-500" style={{transform: expandedStep === 2 ? 'rotate(180deg)' : 'rotate(0deg)'}}>▼</span>
-          </button>
-          {expandedStep === 2 && (
-            <div className="px-6 py-4 bg-orange-50 border-t border-orange-100">
-              <p className="text-sm text-gray-700">
-                Klicke auf das Produkt, das dir gefällt, und öffne die Produktseite. Du wirst dann die detaillierte Beschreibung, Preis und Kundenbewertungen sehen.
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* SCHRITT 3 */}
-        <div className="border-b border-gray-200">
-          <button onClick={() => setExpandedStep(expandedStep === 3 ? null : 3)} className="w-full px-6 py-4 bg-gradient-to-r from-orange-50 to-amber-50 hover:from-orange-100 hover:to-amber-100 transition flex items-center gap-3 text-left">
-            <span className="flex-shrink-0 w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-sm">3</span>
-            <div className="flex-1">
-              <p className="font-bold text-gray-900">Link kopieren</p>
-              <p className="text-xs text-gray-600 mt-0.5">Kopiere die URL aus der Adressleiste</p>
-            </div>
-            <span className="text-xl text-gray-500" style={{transform: expandedStep === 3 ? 'rotate(180deg)' : 'rotate(0deg)'}}>▼</span>
-          </button>
-          {expandedStep === 3 && (
-            <div className="px-6 py-4 bg-orange-50 border-t border-orange-100">
-              <p className="text-sm text-gray-700 mb-3">
-                Markiere die URL in der Adresszeile deines Browsers und kopiere sie. Beispiel:
-              </p>
-              <p className="text-xs bg-gray-200 rounded p-2 font-mono mb-3">
-                https://amazon.de/dp/B08N5WRWNW
-              </p>
-              <p className="text-xs text-blue-600">
-                📱 <strong>Mobile-Tipp:</strong> In der Amazon-App kannst du auch die „Teilen"-Funktion nutzen, um den Link zu kopieren!
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* SCHRITT 4 */}
-        <div>
-          <button onClick={() => setExpandedStep(expandedStep === 4 ? null : 4)} className="w-full px-6 py-4 bg-gradient-to-r from-blue-50 to-blue-50 hover:from-blue-100 hover:to-blue-100 transition flex items-center gap-3 text-left border-b border-blue-200">
-            <span className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-sm">4</span>
-            <div className="flex-1">
-              <p className="font-bold text-gray-900">Hier eintragen</p>
-              <p className="text-xs text-gray-600 mt-0.5">Link und Namen eingeben (Link optional)</p>
-            </div>
-            <span className="text-xl text-blue-600 font-bold">→</span>
-          </button>
-          {expandedStep === 4 && (
-            <div className="px-6 py-6 bg-blue-50 border-t border-blue-200 space-y-4">
-              <div>
-                <label className="block text-sm font-semibold mb-2 text-gray-900">
-                  🔗 Link eintragen (optional):
-                </label>
-                <input type="url" value={newGift.link} onChange={e => setNewGift({ ...newGift, link: e.target.value })} placeholder="https://amazon.de/dp/B08N5WRWNW" className="w-full border-2 border-gray-300 rounded-lg p-3 text-sm font-mono focus:border-blue-500 focus:outline-none" />
-                <p className="text-xs text-gray-600 mt-2">
-                  💡 Du kannst auch ein Geschenk eintragen, ohne einen Link anzugeben! Es ist jedoch für deinen Partner viel einfacher, wenn du einen Link hier reinkopierst.
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold mb-2 text-gray-900">
-                  📝 Gib dem Geschenk einen Namen:
-                </label>
-                <input type="text" value={newGift.name} onChange={e => setNewGift({ ...newGift, name: e.target.value })} placeholder="z.B. AirPods Pro, Thermoskanne, Mystery-Buch" className="w-full border-2 border-gray-300 rounded-lg p-3 text-sm focus:border-blue-500 focus:outline-none" />
+        {/* Content */}
+        {(expandedStep === 1 || expandedStep === null) && (
+          <div className="px-6 py-6 bg-blue-50 border-t border-blue-200 space-y-4">
+            <div className="bg-white p-4 rounded-lg border-l-4 border-blue-500 space-y-3">
+              <div className="flex gap-3">
+                <div className="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-sm">A</div>
+                <div className="flex-1">
+                  <p className="font-bold text-gray-900">Auf Amazon.de gehen</p>
+                  <p className="text-sm text-gray-700 mt-1">→ Filter nutzen, Produkt suchen</p>
+                </div>
               </div>
 
               <div className="flex gap-3">
-                <button onClick={() => setShowAmazonModal(true)} className="flex-1 py-3 px-4 bg-white border-2 border-orange-400 text-orange-600 rounded-lg font-semibold hover:bg-orange-50 transition text-sm">
-                  🔍 Amazon Filter öffnen
-                </button>
-                <button onClick={addGift} disabled={loading || !newGift.name.trim()} className="flex-1 py-3 px-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed text-sm">
-                  {loading ? '⏳ Wird hinzugefügt...' : '✨ Hinzufügen'}
-                </button>
+                <div className="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-sm">B</div>
+                <div className="flex-1">
+                  <p className="font-bold text-gray-900">Produkt auswählen</p>
+                  <p className="text-sm text-gray-700 mt-1">→ Auf Produktseite gehen</p>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <div className="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-sm">C</div>
+                <div className="flex-1">
+                  <p className="font-bold text-gray-900">Link kopieren & zurückkommen</p>
+                  <p className="text-sm text-gray-700 mt-1">
+                    → URL kopieren, zu Wichtel-App zurück<br/>
+                    <span className="text-xs text-gray-600 mt-1 block">
+                      💡 {isMobile ? (isIOS ? 'iPhone: [Teilen] → "Link kopieren"' : 'Android: Länger drücken → "Link kopieren"') : 'Desktop: Aus Adressleiste kopieren'}
+                    </span>
+                  </p>
+                </div>
               </div>
             </div>
-          )}
-        </div>
+
+            <button
+              onClick={() => setShowFiltersModal(true)}
+              className="w-full py-4 px-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg font-bold text-lg transition shadow-lg flex items-center justify-center gap-2"
+            >
+              🔍 JETZT ZU AMAZON GEHEN →
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* ════════════════════════════════════════════════════════ */}
+      {/* PHASE 2: GESCHENK EINTRAGEN (Akkordeon - Grün) */}
+      {/* ════════════════════════════════════════════════════════ */}
+
+      <div className="bg-gradient-to-r from-green-50 via-green-25 to-green-50 rounded-lg border-2 border-green-300 overflow-hidden shadow-md">
+        {/* Header - Immer sichtbar */}
+        <button
+          onClick={() => setExpandedStep(expandedStep === 2 ? null : 2)}
+          className="w-full px-6 py-5 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 transition flex items-center gap-3 text-left text-white"
+        >
+          <span className="flex-shrink-0 text-2xl">🎁</span>
+          <div className="flex-1">
+            <p className="font-bold text-lg">Geschenk hier eintragen</p>
+            <p className="text-xs text-green-100 mt-0.5">Name + Link (Link ist optional!)</p>
+          </div>
+          <span className="text-xl text-green-100" style={{transform: expandedStep === 2 ? 'rotate(180deg)' : 'rotate(0deg)'}}>▼</span>
+        </button>
+
+        {/* Content */}
+        {(expandedStep === 2 || expandedStep === null) && (
+          <div className="px-6 py-6 bg-green-50 border-t border-green-200 space-y-4">
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-gray-900">
+                📝 Gib dem Geschenk einen Namen:
+              </label>
+              <input
+                type="text"
+                value={newGift.name}
+                onChange={e => setNewGift({ ...newGift, name: e.target.value })}
+                placeholder="z.B. AirPods Pro, Thermoskanne, Mystery-Buch"
+                className="w-full border-2 border-gray-300 rounded-lg p-3 text-sm focus:border-green-500 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold mb-2 text-gray-900">
+                🔗 Amazon-Link (optional):
+              </label>
+              <input
+                type="url"
+                value={newGift.link}
+                onChange={e => setNewGift({ ...newGift, link: e.target.value })}
+                placeholder="https://amazon.de/dp/B08N5WRWNW"
+                className="w-full border-2 border-gray-300 rounded-lg p-3 text-sm font-mono focus:border-green-500 focus:outline-none"
+              />
+              <p className="text-xs text-gray-600 mt-2">
+                💡 Link einfach aus der Amazon-Adressleiste kopieren und hier einfügen
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowAmazonModal(true)}
+                className="flex-1 py-3 px-4 bg-white border-2 border-green-400 text-green-600 rounded-lg font-semibold hover:bg-green-50 transition text-sm"
+              >
+                🔍 Amazon Filter öffnen
+              </button>
+              <button
+                onClick={addGift}
+                disabled={loading || !newGift.name.trim()}
+                className="flex-1 py-3 px-4 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                {loading ? '⏳ Wird hinzugefügt...' : '✨ Hinzufügen'}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* FILTER MODAL - SCHRITT 1 - REORGANISIERT */}
