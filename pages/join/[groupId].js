@@ -69,11 +69,11 @@ export default function JoinGroup() {
       }
     }
 
-    // Refresh group status every 15 seconds (reduced from 5s for mobile performance)
-    // BUT: Only poll on steps 1, 3, 4 - NOT on step 2 (gift entry) to avoid form disruption
+    // Refresh group status every 15 seconds but ONLY when waiting for draw (Step 4)
+    // This prevents unnecessary reloads and page blinking on other steps
     const interval = setInterval(() => {
-      // Check ref to see if we should poll (don't block on step change)
-      if (stepRef.current !== 2 && stepRef.current !== 1.5) {
+      // Only poll if waiting for draw (Step 4) and draw hasn't happened yet
+      if (stepRef.current === 4 && !group?.drawn) {
         loadGroup();
       }
     }, 15000);
