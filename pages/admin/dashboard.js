@@ -204,7 +204,7 @@ export default function AdminDashboard() {
           </div>
 
           {groups.length > 0 ? (
-            <div className="overflow-x-auto">
+            <div className="overflow-hidden">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-gray-700 text-white font-semibold">
