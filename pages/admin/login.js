@@ -14,8 +14,16 @@ export default function AdminLogin() {
     setError('');
 
     try {
-      // Simple client-side check
-      if (setAdminSession(password)) {
+      // Verify password with API (runtime check)
+      const response = await fetch('/api/admin/verify-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+      });
+
+      if (response.ok) {
+        // Password is correct, set session and redirect
+        setAdminSession(password);
         router.push('/admin/dashboard');
       } else {
         setError('❌ Falsches Passwort. Bitte versuche es erneut.');
