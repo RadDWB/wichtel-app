@@ -183,24 +183,35 @@ export default function DrawPage() {
 
             {/*             {/* Participant Share Text Section - matches dashboard text copy */}
             <div className="bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-300 rounded-lg p-6 mb-8 text-left shadow-md">
-              <h2 className="text-xl font-bold text-orange-900 mb-3">?? Text f?r Teilnehmer kopieren & versenden:</h2>
+              <h2 className="text-xl font-bold text-orange-900 mb-3">📢 Text für Teilnehmer kopieren & versenden:</h2>
               <p className="text-sm text-gray-700 mb-4">
                 Kopiere den kompletten Nachrichtentext (inkl. Link) und versende ihn an alle Teilnehmer.
               </p>
               <div className="bg-white p-4 rounded border-l-4 border-orange-400 mb-4">
                 <p className="text-xs text-gray-700 font-semibold mb-2">Nachricht zum Versenden:</p>
-                <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-wrap">
-                  {postDrawShareText}
-                </p>
+                <textarea
+                  value={postDrawShareText}
+                  onChange={() => {}}
+                  readOnly
+                  className="w-full text-xs text-gray-600 leading-relaxed whitespace-pre-wrap bg-white border border-orange-200 rounded p-3 font-mono"
+                  rows={6}
+                />
               </div>
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(postDrawShareText);
-                  alert('? Text kopiert!');
+                  const btn = document.getElementById('copy-share-text');
+                  if (btn) {
+                    btn.innerText = '✅ Kopiert';
+                    setTimeout(() => {
+                      btn.innerText = '📋 Text kopieren';
+                    }, 1200);
+                  }
                 }}
+                id="copy-share-text"
                 className="px-4 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg transition w-full md:w-auto"
               >
-                ?? Text kopieren
+                📋 Text kopieren
               </button>
             </div>
 {/* Prominent Amazon Affiliate Section */}
