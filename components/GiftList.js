@@ -13,16 +13,21 @@ const AMAZON_FILTERS = {
     { label: '20-30 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A2000-3000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
     { label: '30-50 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A3000-5000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
     { label: '50-100 €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A5000-10000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '100+ €', link: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A10000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl' },
   ],
   age: [
     { label: '👶 Baby (0-2 Jahre)', link: 'https://www.amazon.de/s?k=baby+geschenke&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
     { label: '👧 Kind (3-7 Jahre)', link: 'https://www.amazon.de/s?k=kinder+geschenke&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
     { label: '🧒 Schulkind (8-12 Jahre)', link: 'https://www.amazon.de/s?k=schulkinder+geschenke&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
     { label: '👦 Teenager (13-17 Jahre)', link: 'https://www.amazon.de/s?k=teenager+geschenke&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '👨 Erwachsener (18-40 Jahre)', link: 'https://www.amazon.de/s?k=erwachsenen+geschenke&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '👩 Reifer (40-60 Jahre)', link: 'https://www.amazon.de/s?k=geschenke+für+reife+erwachsene&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '👴 Senioren (über 60 Jahre)', link: 'https://www.amazon.de/s?k=senioren+geschenke&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
   ],
   gender: [
-    { label: '👧 Für Mädchen', link: 'https://www.amazon.de/s?k=geschenke+für+mädchen&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
-    { label: '👦 Für Jungen', link: 'https://www.amazon.de/s?k=geschenke+für+jungen&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '👩 Weiblich', link: 'https://www.amazon.de/s?k=geschenke+für+frauen&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '👨 Männlich', link: 'https://www.amazon.de/s?k=geschenke+für+männer&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
+    { label: '❓ Egal', link: 'https://www.amazon.de/s?k=geschenkideen&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
   ],
   category: [
     { label: '📚 Bücher & E-Reader', link: 'https://www.amazon.de/s?k=bücher+geschenke&linkCode=ll2&tag=httpwwwspor03-21&language=de_DE&ref_=as_li_ss_tl' },
@@ -41,7 +46,7 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showAmazonModal, setShowAmazonModal] = useState(false);
-  const [expandedStep, setExpandedStep] = useState(1);  // Changed: Start with step 1 (Anleitung)
+  const [expandedStep, setExpandedStep] = useState(2);  // Changed: Start with step 2 (Geschenk hier eintragen)
   const [showFiltersModal, setShowFiltersModal] = useState(false);
   const [newGift, setNewGift] = useState({ name: '', link: '', category: 'other', price: '' });
 
@@ -229,15 +234,17 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
                 <div className="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-sm">A</div>
                 <div className="flex-1">
                   <p className="font-bold text-gray-900">Auf Amazon.de gehen</p>
-                  <p className="text-sm text-gray-700 mt-1">→ Filter nutzen, Produkt suchen</p>
+                  <p className="text-sm text-gray-700 mt-1">Klick oben auf \"Zu Amazon gehen\" und nutze die Filter, um das perfekte Geschenk zu finden. Denke dabei an die Vorlieben der Person!</p>
+                  <p className="text-xs text-blue-600 mt-2 bg-blue-100 p-2 rounded">💡 Tipp: Nutze die vorgegebenen Filter (Alter, Geschlecht, Budget) um schneller zu finden</p>
                 </div>
               </div>
 
               <div className="flex gap-3">
                 <div className="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-sm">B</div>
                 <div className="flex-1">
-                  <p className="font-bold text-gray-900">Produkt auswählen</p>
-                  <p className="text-sm text-gray-700 mt-1">→ Auf Produktseite gehen</p>
+                  <p className="font-bold text-gray-900">Produkt auswählen & erkunden</p>
+                  <p className="text-sm text-gray-700 mt-1">Schau Dir die Bilder, Beschreibung, Rezensionen und den Preis an. Passt es zu Deinem Budget?</p>
+                  <p className="text-xs text-blue-600 mt-2 bg-blue-100 p-2 rounded">💡 Tipp: Achte auf gute Bewertungen (4+ Sterne) und lies ein paar Kundenmeinungen</p>
                 </div>
               </div>
 
@@ -245,11 +252,9 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
                 <div className="flex-shrink-0 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-sm">C</div>
                 <div className="flex-1">
                   <p className="font-bold text-gray-900">Link kopieren & zurückkommen</p>
-                  <p className="text-sm text-gray-700 mt-1">
-                    → URL kopieren, zu Wichtel-App zurück<br/>
-                    <span className="text-xs text-gray-600 mt-1 block">
-                      💡 {isMobile ? (isIOS ? 'iPhone: [Teilen] → "Link kopieren"' : 'Android: Länger drücken → "Link kopieren"') : 'Desktop: Aus Adressleiste kopieren'}
-                    </span>
+                  <p className="text-sm text-gray-700 mt-1">Kopiere die URL und komm zurück zu dieser App um den Geschenk-Link einzutragen.</p>
+                  <p className="text-xs text-blue-600 mt-2 bg-blue-100 p-2 rounded">
+                    💡 {isMobile ? (isIOS ? '📱 iPhone: [Teilen-Icon oben] → "Link kopieren"' : '🤖 Android: [URL lange drücken] → "Link kopieren"') : '🖥️ Desktop: Strg+C oder Cmd+C zum Kopieren'}
                   </p>
                 </div>
               </div>
@@ -511,8 +516,9 @@ export default function GiftList({ group, groupId, participantId, isViewing = fa
       )}
 
       {/* FUSSZEILE */}
-      <div className="text-center text-xs text-gray-500 py-4">
+      <div className="text-center text-xs text-gray-500 py-4 space-y-1">
         <p>💚 Amazon-Links werden automatisch mit unserem Affiliate-Link verknüpft</p>
+        <p className="text-gray-400">Wunschliste v1.0</p>
       </div>
     </div>
   );
