@@ -1494,6 +1494,17 @@ export default function JoinGroup() {
                 onClick={async () => {
                   // Save participant data before moving to step 4 (skipStepChange=true so we control the transition)
                   await handleConfirmJoin(true);
+
+                  // Mark participant as joined in the database
+                  try {
+                    await fetch(`/api/groups/${groupId}/participants/${selectedParticipant.id}/join`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                    });
+                  } catch (err) {
+                    console.error('Error marking participant as joined:', err);
+                  }
+
                   setStep(4);
                 }}
                 className="flex-1 btn-primary"

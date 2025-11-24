@@ -592,9 +592,9 @@ export default function OrganizerDashboard() {
                 <div className="space-y-3">
                   {group.participants.map((participant) => {
                     const status = getParticipantStatus(participant.id);
-                    // Validate PIN status server-side first (from group data),
-                    // fallback to localStorage for legacy entries
-                    const participantHasPin = !!participant.pin || (typeof window !== 'undefined' && !!localStorage.getItem(`participant_pin_${id}_${participant.id}`));
+                    // Check if participant has joined (has joinedAt timestamp)
+                    // Fallback to checking PIN for backward compatibility with old data
+                    const participantHasJoined = !!participant.joinedAt || !!participant.pin || (typeof window !== 'undefined' && !!localStorage.getItem(`participant_pin_${id}_${participant.id}`));
 
                     return (
                       <div
@@ -613,13 +613,13 @@ export default function OrganizerDashboard() {
                             {/* PIN Status - Only show in FLEXIBLE mode */}
                             {group.settings?.surpriseMode !== 'mutual' && (
                               <div className="mt-2 flex items-center gap-2">
-                                {participantHasPin ? (
+                                {participantHasJoined ? (
                                   <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 border border-green-300 rounded text-xs font-semibold text-green-700">
-                                    🔐 PIN gesetzt
+                                    ✅ Angemeldet
                                   </span>
                                 ) : (
                                   <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 border border-red-300 rounded text-xs font-semibold text-red-700">
-                                    ❌ Kein PIN
+                                    ⏳ Ausstehend
                                   </span>
                                 )}
                               </div>
@@ -630,8 +630,8 @@ export default function OrganizerDashboard() {
                             {/* Gift Status - Different displays for FLEXIBLE vs MUTUAL mode */}
                             <div className="text-right">
                               {group.settings?.surpriseMode === 'mutual' ? (
-                                // In MUTUAL mode: Check if participant has actually joined (has PIN)
-                                participantHasPin ? (
+                                // In MUTUAL mode: Check if participant has actually joined
+                                participantHasJoined ? (
                                   <div className="flex flex-col items-center">
                                     <span className="text-2xl">🎊</span>
                                     <p className="font-bold text-purple-600 text-sm">Überrascht</p>
