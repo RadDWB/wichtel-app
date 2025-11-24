@@ -329,23 +329,39 @@ export default function OrganizerDashboard() {
     const participant = group?.participants?.find(p => p.id === participantId);
     const hasList = gifts[participantId] && gifts[participantId].length > 0;
     const wantsSurprise = participant?.wantsSurprise === true;
+    const isJoined = !!participant?.joinedAt || !!participant?.pin || (typeof window !== 'undefined' && !!localStorage.getItem(`participant_pin_${id}_${participant?.id}`));
 
     return {
       hasGifts: hasList || wantsSurprise, // Count "surprise me" as completed
       giftCount: gifts[participantId]?.length || 0,
       wantsSurprise,
+      isJoined,
     };
   };
 
   const completionStats = () => {
-    if (!group?.participants) return { completed: 0, total: 0 };
-    const completed = group.participants.filter(
-      (p) => getParticipantStatus(p.id).hasGifts
-    ).length;
+    if (!group?.participants) return { completed: 0, total: 0, percentage: 0, allJoined: false };
+
+    // In mutual surprise mode, check if all are registered (don't need gift lists)
+    const isMutualMode = group?.settings?.surpriseMode === 'mutual';
+
+    let completed = 0;
+    if (isMutualMode) {
+      // In mutual mode, "completed" means registered
+      completed = group.participants.filter((p) => getParticipantStatus(p.id).isJoined).length;
+    } else {
+      // In flexible mode, "completed" means has gifts
+      completed = group.participants.filter((p) => getParticipantStatus(p.id).hasGifts).length;
+    }
+
+    const allJoined = group.participants.every((p) => getParticipantStatus(p.id).isJoined);
+
     return {
       completed,
       total: group.participants.length,
       percentage: Math.round((completed / group.participants.length) * 100),
+      allJoined,
+      isMutualMode,
     };
   };
 
@@ -528,7 +544,7 @@ export default function OrganizerDashboard() {
             {/* Completion Progress */}
             <div className="card bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-300 shadow-lg mb-6">
               <h3 className="section-title text-green-900 mb-4">
-                ✅ Fortschritt: Geschenkelisten
+                ✅ Fortschritt: {stats.isMutualMode ? 'Anmeldungen' : 'Geschenkelisten'}
               </h3>
 
               <div className="mb-4">
@@ -550,11 +566,11 @@ export default function OrganizerDashboard() {
 
               {stats.percentage === 100 ? (
                 <div className="p-3 bg-green-100 border border-green-400 rounded text-green-900 text-sm font-semibold">
-                  🎉 Alle Teilnehmer haben ihre Geschenkelisten eingegeben! Du kannst jetzt auslosen.
+                  🎉 {stats.isMutualMode ? 'Alle Teilnehmer haben sich angemeldet!' : 'Alle Teilnehmer haben ihre Geschenkelisten eingegeben!'} Du kannst jetzt auslosen.
                 </div>
               ) : (
                 <div className="p-3 bg-blue-100 border border-blue-400 rounded text-blue-900 text-sm">
-                  🔄 Warte auf die restlichen Teilnehmer...
+                  🔄 Warte auf die restlichen Teilnehmer... ({100 - stats.percentage}%)
                 </div>
               )}
             </div>
@@ -564,7 +580,7 @@ export default function OrganizerDashboard() {
               <div className="card bg-gradient-to-br from-red-50 to-orange-50 border-4 border-red-400 shadow-xl mb-6">
                 <h3 className="section-title mb-4 text-red-900">🎲 Auslosung starten</h3>
                 <p className="text-sm text-gray-700 mb-6">
-                  Alle Teilnehmer haben ihre Geschenkelisten eingegeben! Die Auslosung ist bereit.
+                  {stats.isMutualMode ? 'Alle Teilnehmer haben sich angemeldet!' : 'Alle Teilnehmer haben ihre Geschenkelisten eingegeben!'} Die Auslosung ist bereit.
                 </p>
                 <Link href={`/organizer/${id}/draw`} className="block w-full text-center p-4 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white rounded-lg font-bold text-lg transition shadow-lg">
                   🎲 Jetzt auslosen
@@ -1038,7 +1054,7 @@ export default function OrganizerDashboard() {
                   <button
                     disabled
                     className="block w-full text-center p-4 bg-gray-400 text-white rounded-lg font-semibold cursor-not-allowed opacity-60"
-                    title={`${100 - stats.percentage}% der Teilnehmer müssen noch ihre Listen vervollständigen`}
+                    title={`${100 - stats.percentage}% der Teilnehmer müssen noch ${stats.isMutualMode ? 'sich anmelden' : 'ihre Listen vervollständigen'}`}
                   >
                     🎲 Auslosen (warte auf {100 - Math.round(stats.percentage)}%)
                   </button>
@@ -1053,7 +1069,7 @@ export default function OrganizerDashboard() {
 
           {!group.drawn && stats.percentage < 100 && (
             <p className="text-center text-sm text-gray-700 mt-4">
-              ℹ️ {Math.round(stats.percentage)}% abgeschlossen. Das Auslosen ist möglich, wenn alle Teilnehmer ihre Geschenkelisten eingegeben haben.
+              ℹ️ {Math.round(stats.percentage)}% abgeschlossen. Das Auslosen ist möglich, wenn {stats.isMutualMode ? 'alle Teilnehmer sich angemeldet haben' : 'alle Teilnehmer ihre Geschenkelisten eingegeben haben'}.
             </p>
           )}
         </div>
