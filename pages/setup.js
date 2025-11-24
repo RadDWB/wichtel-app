@@ -49,11 +49,14 @@ export default function Setup() {
         // Budget step - create group
         handleCreateGroup();
       } else if (step === 4) {
-        // After participants, go to surprise mode (step 4.5)
-        setStep(4.5);
-      } else if (step === 4.5) {
-        // After surprise mode, go to pairing visibility (step 4.75)
-        setStep(4.75);
+        // After participants, go to surprise mode (step 5)
+        setStep(5);
+      } else if (step === 5) {
+        // After surprise mode, go to pairing visibility (step 5.5)
+        setStep(5.5);
+      } else if (step === 5.5) {
+        // After pairing visibility, go to budget (step 6)
+        setStep(6);
       } else {
         setStep(step + 1);
       }
@@ -90,9 +93,9 @@ export default function Setup() {
           return false;
         }
         return true;
-      case 4.5: // Step 4b - Surprise Mode - no validation needed, has default
+      case 5: // Step 5 - Surprise Mode - no validation needed, has default
         return true;
-      case 4.75: // Step 4c - Pairing Visibility - no validation needed, has default
+      case 5.5: // Step 5.5 - Pairing Visibility - no validation needed, has default
         return true;
       case 6:
         // Budget step
@@ -219,7 +222,7 @@ export default function Setup() {
             ))}
           </div>
           <p className="text-center text-gray-600">
-            Schritt {step === 4.5 ? '4b' : step === 4.75 ? '4c' : Math.ceil(step)} von 6
+            Schritt {step === 5 ? '5' : step === 5.5 ? '5.5' : Math.ceil(step)} von 6
           </p>
         </div>
 
@@ -389,8 +392,8 @@ export default function Setup() {
             </div>
           )}
 
-          {/* Step 4b: Surprise Mode */}
-          {step === 4.5 && (
+          {/* Step 5: Surprise Mode */}
+          {step === 5 && (
             <div>
               <h2 className="text-3xl font-bold mb-6">🎉 Wichtel-Modus</h2>
               <p className="text-gray-600 mb-8">
@@ -445,8 +448,8 @@ export default function Setup() {
             </div>
           )}
 
-          {/* Step 4c: Pairing Visibility */}
-          {step === 4.75 && (
+          {/* Step 5.5: Pairing Visibility */}
+          {step === 5.5 && (
             <div>
               <h2 className="text-3xl font-bold mb-6">👀 Paarungen sichtbar?</h2>
               <p className="text-gray-600 mb-8">
@@ -527,10 +530,10 @@ export default function Setup() {
             {step > 1 && (
               <button
                 onClick={() => {
-                  if (step === 4.5) {
+                  if (step === 5) {
                     setStep(4);
-                  } else if (step === 4.75) {
-                    setStep(4.5);
+                  } else if (step === 5.5) {
+                    setStep(5);
                   } else {
                     setStep(step - 1);
                   }
