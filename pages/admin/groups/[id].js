@@ -101,12 +101,20 @@ export default function AdminGroupDetails() {
       {/* Header */}
       <div className="bg-gradient-to-r from-gray-800 to-gray-900 border-b border-gray-700 p-6">
         <div className="container mx-auto">
-          <a
-            href="/admin/dashboard"
-            className="text-blue-400 hover:underline mb-4 inline-block"
-          >
-            ← Zurück
-          </a>
+          <div className="flex gap-3 mb-4">
+            <a
+              href="/admin/dashboard"
+              className="text-blue-400 hover:underline inline-block"
+            >
+              ← Admin Dashboard
+            </a>
+            <a
+              href={`/organizer/${group.id}`}
+              className="text-green-400 hover:underline inline-block"
+            >
+              🔐 Organizer Dashboard
+            </a>
+          </div>
           <h1 className="text-4xl font-bold text-white mb-1">{group.name}</h1>
           <p className="text-gray-400 font-mono">{group.id}</p>
         </div>
