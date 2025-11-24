@@ -5,6 +5,7 @@ import { OCCASIONS } from '../../lib/occasions';
 import { getGroup, saveGroup } from '../../lib/kv-client';
 import GiftList from '../../components/GiftList';
 import AmazonFilterSelector from '../../components/AmazonFilterSelector';
+import PinInput from '../../components/PinInput';
 import { APP_VERSION } from '../../lib/constants';
 
 export const getServerSideProps = async () => {
@@ -454,19 +455,17 @@ export default function JoinGroup() {
 
             <div className="space-y-4 mb-6">
               <div>
-                <label className="block text-sm font-medium mb-2 text-gray-700">
-                  📝 Deine PIN (4-6 Ziffern)
-                </label>
-                <input
-                  type="password"
+                <PinInput
                   value={tempPin}
                   onChange={(e) => {
                     setTempPin(e.target.value);
                     setError('');
                   }}
                   placeholder="z.B. 123456"
+                  maxLength="6"
+                  autoFocus={true}
                   className={`input-field w-full ${pinError ? 'border-red-500' : ''}`}
-                  autoFocus
+                  label="📝 Deine PIN (4-6 Ziffern)"
                 />
                 {pinError && (
                   <p className="text-xs text-red-600 mt-2">
@@ -554,17 +553,17 @@ export default function JoinGroup() {
 
             <div className="space-y-4 mb-6">
               <div>
-                <label className="block text-sm font-medium mb-2">PIN</label>
-                <input
-                  type="password"
+                <PinInput
                   value={tempPin}
                   onChange={(e) => {
                     setTempPin(e.target.value);
                     setPinVerificationError(''); // Clear error when typing
                   }}
                   placeholder="Gib deine PIN ein"
+                  maxLength="6"
+                  autoFocus={true}
                   className="input-field w-full"
-                  autoFocus
+                  label="PIN"
                   onKeyPress={(e) => {
                     if (e.key === 'Enter') {
                       // Verify on Enter key
@@ -663,13 +662,13 @@ export default function JoinGroup() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">PIN zum Schutz (optional)</label>
-                <input
-                  type="password"
+                <PinInput
                   value={participantPin}
                   onChange={(e) => setParticipantPin(e.target.value)}
                   placeholder="z.B. 1234"
+                  maxLength="6"
                   className="input-field w-full"
+                  label="PIN zum Schutz (optional)"
                 />
                 <p className="text-xs text-gray-500 mt-2">
                   Setze eine PIN, um deine Daten zu schützen. Ohne PIN kann jeder auf diesem Gerät deine Daten bearbeiten.
@@ -752,16 +751,17 @@ export default function JoinGroup() {
 
             <div className="space-y-4 mb-6">
               <div>
-                <label className="block text-sm font-medium mb-2">PIN</label>
-                <input
-                  type="password"
+                <PinInput
                   value={tempPin}
                   onChange={(e) => {
                     setTempPin(e.target.value);
                     setPinVerificationError(''); // Clear error when typing
                   }}
                   placeholder="Gib deine PIN ein"
+                  maxLength="6"
+                  autoFocus={true}
                   className="input-field w-full"
+                  label="PIN"
                   onKeyPress={(e) => {
                     if (e.key === 'Enter') {
                       // Verify on Enter key
@@ -830,13 +830,13 @@ export default function JoinGroup() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">PIN zum Schutz (optional)</label>
-                <input
-                  type="password"
+                <PinInput
                   value={participantPin}
                   onChange={(e) => setParticipantPin(e.target.value)}
                   placeholder="z.B. 1234"
+                  maxLength="6"
                   className="input-field w-full"
+                  label="PIN zum Schutz (optional)"
                 />
                 <p className="text-xs text-gray-500 mt-2">
                   Leer lassen um die Seite ohne PIN zu nutzen

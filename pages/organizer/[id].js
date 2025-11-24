@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { getGroup, getGifts } from '../../lib/kv-client';
 import AmazonFilterSelector from '../../components/AmazonFilterSelector';
+import PinInput from '../../components/PinInput';
 import { APP_VERSION, getInvitationText, getPostDrawShareText } from '../../lib/constants';
 
 // Force SSR to prevent static generation errors
@@ -351,18 +352,15 @@ export default function OrganizerDashboard() {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Deine 3-stellige PIN
-                </label>
-                <input
-                  type="password"
-                  inputMode="numeric"
-                  maxLength="3"
+                <PinInput
                   value={pinInput}
                   onChange={(e) => setPinInput(e.target.value.replace(/[^0-9]/g, ''))}
                   placeholder="●●●"
+                  maxLength="3"
+                  autoFocus={true}
                   className="input-field w-full text-center text-4xl font-bold tracking-widest"
-                  autoFocus
+                  inputMode="numeric"
+                  label="Deine 3-stellige PIN"
                 />
                 <p className="text-xs text-gray-500 mt-2">
                   Diese PIN hast du beim Erstellen der Gruppe erhalten
