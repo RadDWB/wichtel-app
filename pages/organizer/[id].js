@@ -506,6 +506,19 @@ export default function OrganizerDashboard() {
                     {group.drawn ? '✅ Ausgelost' : '⏳ Ausstehend'}
                   </p>
                 </div>
+                <hr className="my-2 border-gray-300" />
+                <div>
+                  <p className="text-gray-500 font-semibold">Wichtel-Modus</p>
+                  <p className="text-gray-800">
+                    {group.settings?.surpriseMode === 'mutual' ? '🎊 Gegenseitig überrascht' : '🎁 Flexibel'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-gray-500 font-semibold">Paarungen sichtbar</p>
+                  <p className="text-gray-800">
+                    {group.settings?.pairingVisibility === 'public' ? '🌐 Öffentlich' : '🔒 Privat'}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
