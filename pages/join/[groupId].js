@@ -13,8 +13,8 @@ export const getServerSideProps = async () => {
   return { props: {} };
 };
 
-// Universal recovery PIN for forgotten participant PINs
-const RECOVERY_PIN = '999999';
+// Note: RECOVERY_PIN is only available in organizer dashboard, not in join flow
+// This ensures only the actual participant can access their account
 
 // Generate unique session token (UUID v4 style)
 function generateSessionToken() {
@@ -630,7 +630,7 @@ export default function JoinGroup() {
                   onKeyPress={(e) => {
                     if (e.key === 'Enter') {
                       // Verify on Enter key
-                      if (tempPin === participantPin || tempPin === RECOVERY_PIN) {
+                      if (tempPin === participantPin) {
                         setPinConfirmed(true);
                         setTempPin('');
                         createParticipantSession(tempPin);
@@ -828,7 +828,7 @@ export default function JoinGroup() {
                   onKeyPress={(e) => {
                     if (e.key === 'Enter') {
                       // Verify on Enter key
-                      if (tempPin === participantPin || tempPin === RECOVERY_PIN) {
+                      if (tempPin === participantPin) {
                         setPinConfirmed(true);
                         setTempPin('');
                         setWantsSurprise(undefined); // Reset to show gift choice menu
@@ -857,7 +857,7 @@ export default function JoinGroup() {
               </button>
               <button
                 onClick={() => {
-                  if (tempPin === participantPin || tempPin === RECOVERY_PIN) {
+                  if (tempPin === participantPin) {
                     setPinConfirmed(true);
                     setTempPin('');
                     setPinVerificationError('');
