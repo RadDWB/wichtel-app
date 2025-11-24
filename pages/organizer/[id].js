@@ -579,6 +579,15 @@ export default function OrganizerDashboard() {
             <div className="card shadow-lg">
               <h3 className="section-title mb-4">👥 Teilnehmerstatus</h3>
 
+              {/* Info for Mutual Mode */}
+              {group.settings?.surpriseMode === 'mutual' && (
+                <div className="mb-4 p-3 bg-purple-50 border-l-4 border-purple-400 rounded">
+                  <p className="text-xs text-purple-900">
+                    <strong>Gegenseitige Überraschung aktiviert:</strong> Alle Teilnehmer werden überrascht - es gibt keine Wunschlisten. Der Status "Überrascht - Angemeldet" zeigt, wer bereits beigetreten ist.
+                  </p>
+                </div>
+              )}
+
               {group.participants && group.participants.length > 0 ? (
                 <div className="space-y-3">
                   {group.participants.map((participant) => {
@@ -613,15 +622,6 @@ export default function OrganizerDashboard() {
                                     ❌ Kein PIN
                                   </span>
                                 )}
-                              </div>
-                            )}
-
-                            {/* Mutual Surprise Mode Indicator */}
-                            {group.settings?.surpriseMode === 'mutual' && (
-                              <div className="mt-2 flex items-center gap-2">
-                                <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 border border-purple-300 rounded text-xs font-semibold text-purple-700">
-                                  🎊 Im Blind-Modus
-                                </span>
                               </div>
                             )}
                           </div>
