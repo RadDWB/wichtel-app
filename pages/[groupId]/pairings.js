@@ -67,8 +67,11 @@ export default function PublicPairings() {
                 const toParticipant = groupData.participants.find(p => p.id === toId);
                 if (fromParticipant && toParticipant) {
                   pairingList.push({
+                    fromId,
                     fromName: fromParticipant.name,
+                    toId,
                     toName: toParticipant.name,
+                    toWantsSurprise: toParticipant.wantsSurprise, // In Flexible mode
                   });
                 }
               });
@@ -126,7 +129,17 @@ export default function PublicPairings() {
                 {pairings.map((pairing, index) => (
                   <div
                     key={index}
-                    className="p-6 border-2 border-blue-300 bg-blue-50 rounded-lg hover:shadow-lg transition"
+                    className={`p-6 border-2 rounded-lg transition ${
+                      group?.settings?.surpriseMode === 'flexible'
+                        ? 'border-blue-300 bg-blue-50 hover:shadow-lg cursor-pointer hover:border-blue-500'
+                        : 'border-blue-300 bg-blue-50 hover:shadow-lg'
+                    }`}
+                    onClick={() => {
+                      // In Flexible mode, click to see wishlist details
+                      if (group?.settings?.surpriseMode === 'flexible') {
+                        router.push(`/${groupId}/pairings/${pairing.toId}`);
+                      }
+                    }}
                   >
                     <div className="flex items-center justify-between mb-4">
                       <div>
@@ -136,7 +149,7 @@ export default function PublicPairings() {
                       <span className="text-3xl">🎁</span>
                     </div>
 
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mb-4">
                       <div>
                         <p className="text-sm text-gray-600">Für:</p>
                         <p className="text-xl font-bold text-purple-600">{pairing.toName}</p>
@@ -144,8 +157,21 @@ export default function PublicPairings() {
                       <span className="text-3xl">🎉</span>
                     </div>
 
+                    {group?.settings?.surpriseMode === 'flexible' && (
+                      <div className="mb-4 pt-4 border-t border-blue-200">
+                        <p className="text-sm font-semibold text-gray-700">
+                          {pairing.toWantsSurprise ? '🎊 Überraschung!' : '📝 Wunschliste'}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {pairing.toWantsSurprise
+                            ? 'Dieser Teilnehmer möchte überrascht werden'
+                            : 'Klick zum Anschauen der Wunschliste (mit PIN)'}
+                        </p>
+                      </div>
+                    )}
+
                     {group?.budget && (
-                      <div className="mt-4 pt-4 border-t border-blue-200">
+                      <div className="pt-4 border-t border-blue-200">
                         <p className="text-xs text-gray-600">Budget:</p>
                         <p className="text-sm font-semibold text-gray-800">{group.budget}</p>
                       </div>
