@@ -345,15 +345,27 @@ export default function JoinGroup() {
     setTempPin(''); // Reset PIN input
     setPinVerificationError(''); // Clear any previous errors
 
-    // NEW LOGIC: PIN required FIRST!
-    if (storedPin) {
-      // PIN exists → Verify it
-      setPinConfirmed(false);
-      setStep('pin-verify');
+    // PIN logic: Required if (A) has wish list (flexible mode) OR (B) pairings are private
+    // Only skip PIN in Mutual + Public mode (no wish lists AND pairings visible to everyone)
+    const isMutualMode = group?.settings?.surpriseMode === 'mutual';
+    const isPublicPairings = group?.settings?.pairingVisibility === 'public';
+    const pinNotNeeded = isMutualMode && isPublicPairings;
+
+    if (pinNotNeeded) {
+      // Mutual + Public: skip PIN steps entirely, go directly to gift choice (or confirmation)
+      setPinConfirmed(true);
+      setStep(1.5);
     } else {
-      // No PIN → Create one NOW!
-      setPinConfirmed(false);
-      setStep('pin-create');
+      // PIN is needed: either has wish list (flexible) or private pairings
+      if (storedPin) {
+        // PIN exists → Verify it
+        setPinConfirmed(false);
+        setStep('pin-verify');
+      } else {
+        // No PIN → Create one NOW!
+        setPinConfirmed(false);
+        setStep('pin-create');
+      }
     }
   };
 
@@ -618,6 +630,8 @@ export default function JoinGroup() {
   // NEW: Step 'pin-create' - Create PIN immediately after clicking name (BEFORE everything else!)
   if (step === 'pin-create' && selectedParticipant) {
     const pinError = tempPin && (tempPin.length < 4 || tempPin.length > 6 || !/^\d+$/.test(tempPin));
+    const isMutualMode = group?.settings?.surpriseMode === 'mutual';
+    const isPrivatePairings = group?.settings?.pairingVisibility === 'private';
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
@@ -625,7 +639,11 @@ export default function JoinGroup() {
           <div className="bg-white rounded-lg p-8 shadow-md">
             <h2 className="text-3xl font-bold mb-2">🔐 PIN erstellen</h2>
             <p className="text-gray-600 mb-6">
-              Hallo {selectedParticipant.name}! Erstelle eine PIN, um deine Wunschliste zu schützen.
+              Hallo {selectedParticipant.name}! Erstelle eine PIN, um {
+                isMutualMode
+                  ? 'zu sehen wem du etwas schenken musst'
+                  : 'deine Wunschliste zu schützen'
+              }.
             </p>
 
             <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-4 mb-6">
@@ -633,8 +651,15 @@ export default function JoinGroup() {
                 🔐 Wofür brauchst du die PIN?
               </p>
               <ul className="text-sm text-blue-800 space-y-2 ml-4">
-                <li>✅ <strong>Schutz:</strong> Nur du kannst deine Wunschliste sehen und bearbeiten</li>
-                <li>✅ <strong>Nach Auslosung:</strong> Du brauchst die PIN, um zu sehen wem du etwas schenken musst</li>
+                {!isMutualMode && (
+                  <li>✅ <strong>Schutz:</strong> Nur du kannst deine Wunschliste sehen und bearbeiten</li>
+                )}
+                {isPrivatePairings && (
+                  <li>✅ <strong>Nach Auslosung:</strong> Du brauchst die PIN, um zu sehen wem du etwas schenken musst</li>
+                )}
+                {!isPrivatePairings && (
+                  <li>✅ <strong>Nach Auslosung:</strong> Die Paarungen sind öffentlich, aber mit PIN bestätigst du deine Identität</li>
+                )}
                 <li>✅ <strong>Einfach:</strong> 4-6 Ziffern, die du dir gut merken kannst</li>
               </ul>
             </div>
