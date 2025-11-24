@@ -630,12 +630,20 @@ export default function OrganizerDashboard() {
                             {/* Gift Status - Different displays for FLEXIBLE vs MUTUAL mode */}
                             <div className="text-right">
                               {group.settings?.surpriseMode === 'mutual' ? (
-                                // In MUTUAL mode: Everyone is surprised, show joined status only
-                                <div className="flex flex-col items-center">
-                                  <span className="text-2xl">🎊</span>
-                                  <p className="font-bold text-purple-600 text-sm">Überrascht</p>
-                                  <p className="text-xs text-gray-500">Angemeldet</p>
-                                </div>
+                                // In MUTUAL mode: Check if participant has actually joined (has PIN)
+                                participantHasPin ? (
+                                  <div className="flex flex-col items-center">
+                                    <span className="text-2xl">🎊</span>
+                                    <p className="font-bold text-purple-600 text-sm">Überrascht</p>
+                                    <p className="text-xs text-gray-500">Angemeldet</p>
+                                  </div>
+                                ) : (
+                                  <div className="flex flex-col items-center">
+                                    <span className="text-2xl">⏳</span>
+                                    <p className="font-bold text-orange-600 text-sm">Ausstehend</p>
+                                    <p className="text-xs text-gray-500">Noch nicht angemeldet</p>
+                                  </div>
+                                )
                               ) : (
                                 // In FLEXIBLE mode: Show gift/surprise status
                                 <>
