@@ -131,6 +131,12 @@ export default function AdminGroupDetails() {
               {group.drawn ? '✅ Ausgelost' : '⏳ Offen'}
             </p>
           </div>
+          <div className="bg-gray-800 rounded-lg p-6 border-l-4 border-orange-500">
+            <p className="text-gray-400 text-sm">Anmeldungen</p>
+            <p className="text-2xl font-bold text-white">
+              {group.participants?.filter(p => p.joinedAt || p.pin).length || 0}/{group.participants?.length || 0}
+            </p>
+          </div>
         </div>
 
         {/* Created Date */}

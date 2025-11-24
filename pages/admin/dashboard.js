@@ -220,6 +220,7 @@ export default function AdminDashboard() {
                     <th className="px-4 py-3 text-center">Aktionen</th>
                     <th className="px-4 py-3 text-left">Budget</th>
                     <th className="px-4 py-3 text-left">Teilnehmer</th>
+                    <th className="px-4 py-3 text-left">Anmeldungen</th>
                     <th className="px-4 py-3 text-left">Adressen</th>
                     <th className="px-4 py-3 text-left">Status</th>
                     <th className="px-4 py-3 text-left">Erstellt</th>
@@ -274,6 +275,9 @@ export default function AdminDashboard() {
                       <td className="px-4 py-3 text-gray-300">{group.budget}</td>
                       <td className="px-4 py-3 text-gray-300 text-center">
                         {group.participants?.length || 0}
+                      </td>
+                      <td className="px-4 py-3 text-gray-300 text-center">
+                        {group.participants?.filter(p => p.joinedAt || p.pin).length || 0}/{group.participants?.length || 0}
                       </td>
                       <td className="px-4 py-3 text-gray-300 text-center">
                         {group.participants?.filter(p => p.address)?.length || 0}/{group.participants?.length || 0}
