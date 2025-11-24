@@ -242,7 +242,7 @@ export default function OrganizerDashboard() {
     return `${typeof window !== 'undefined' ? window.location.origin : ''}/${id}/pairings`;
   };
 
-  const getPairingsShareText = () => getPostDrawShareText(getParticipantLink());
+  const getPairingsShareText = () => getPostDrawShareText(getPairingsLink());
 
   const [copiedType, setCopiedType] = useState(null);
   const [copiedRecoveryPin, setCopiedRecoveryPin] = useState(false);
