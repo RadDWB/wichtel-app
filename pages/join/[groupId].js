@@ -375,11 +375,17 @@ export default function JoinGroup() {
       return;
     }
 
+    // Ensure PIN is set: In Mutual+Public mode, assign a placeholder PIN if none exists
+    const isMutualMode = group?.settings?.surpriseMode === 'mutual';
+    const isPublicPairings = group?.settings?.pairingVisibility === 'public';
+    const existingPin = group.participants.find(p => p.id === selectedParticipant.id)?.pin;
+    const pinToSave = participantPin || existingPin || (isMutualMode && isPublicPairings ? '000000' : null);
+
     const updated = {
       ...group,
       participants: group.participants.map(p =>
         p.id === selectedParticipant.id
-          ? { ...p, name: nameEdit, email: emailEdit || null, pin: participantPin || p.pin || null }
+          ? { ...p, name: nameEdit, email: emailEdit || null, pin: pinToSave }
           : p
       ),
     };
@@ -1464,7 +1470,11 @@ export default function JoinGroup() {
               <ul className="text-sm text-gray-700 space-y-2 ml-2">
                 <li>🎁 Deine Anmeldung ist verbindlich</li>
                 <li>⏳ Warte auf die Auslosung durch den Organisator</li>
-                <li>🔐 Verwende deine PIN, um deine Daten später zu bearbeiten</li>
+                {group?.settings?.surpriseMode === 'mutual' ? (
+                  <li>🔐 Du wirst überrascht - keine Wunschliste erforderlich</li>
+                ) : (
+                  <li>🔐 Verwende deine PIN, um deine Daten und Wunschliste später zu bearbeiten</li>
+                )}
               </ul>
             </div>
 
@@ -1513,27 +1523,47 @@ export default function JoinGroup() {
                 <p>
                   <span className="font-semibold text-orange-900">Warten auf Auslosung:</span> Der Organisator wird die Gruppen auslosen und dir dann mitteilen, wen du beschenken darfst.
                 </p>
-                <p>
-                  <span className="font-semibold text-orange-900">Nach der Auslosung:</span> Du erhältst einen Link zu deinem Wichtelpartner und kannst mit deiner PIN seine Wunschliste einsehen.
-                </p>
-                <p>
-                  <span className="font-semibold text-orange-900">Geschenk besorgen:</span> Nutze die Wunschliste oder unsere Amazon-Filter, um das perfekte Geschenk zu finden! 🎁
-                </p>
+                {group?.settings?.surpriseMode !== 'mutual' && (
+                  <>
+                    <p>
+                      <span className="font-semibold text-orange-900">Nach der Auslosung:</span> Du erhältst einen Link zu deinem Wichtelpartner und kannst mit deiner PIN seine Wunschliste einsehen.
+                    </p>
+                    <p>
+                      <span className="font-semibold text-orange-900">Geschenk besorgen:</span> Nutze die Wunschliste oder unsere Amazon-Filter, um das perfekte Geschenk zu finden! 🎁
+                    </p>
+                  </>
+                )}
               </div>
             </div>
 
-            {/* Optional: Edit Wishlist - Secondary Action */}
-            <div className="bg-green-50 border-l-4 border-green-500 rounded-lg p-4 mb-8">
-              <p className="text-sm text-gray-700 mb-3">
-                <span className="font-semibold">Hinweis:</span> Du kannst deine Wunschliste jederzeit bearbeiten, bis die Auslosung stattfindet. Dies ist optional.
-              </p>
-              <button
-                onClick={() => setStep(2)}
-                className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 rounded-lg transition"
-              >
-                ✏️ Zur Wunschliste
-              </button>
-            </div>
+            {/* Optional: Edit Wishlist - Secondary Action OR Shopping Link */}
+            {group?.settings?.surpriseMode === 'mutual' && group?.settings?.pairingVisibility === 'public' ? (
+              <div className="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-4 mb-8">
+                <p className="text-sm text-gray-700 mb-3">
+                  <span className="font-semibold">💡 Hinweis:</span> Du möchtest schon Geschenke kaufen?
+                </p>
+                <a
+                  href="https://www.amazon.de?tag=wichtel-22"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full block text-center bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 rounded-lg transition"
+                >
+                  🛍️ Zu Amazon
+                </a>
+              </div>
+            ) : group?.settings?.surpriseMode !== 'mutual' ? (
+              <div className="bg-green-50 border-l-4 border-green-500 rounded-lg p-4 mb-8">
+                <p className="text-sm text-gray-700 mb-3">
+                  <span className="font-semibold">Hinweis:</span> Du kannst deine Wunschliste jederzeit bearbeiten, bis die Auslosung stattfindet. Dies ist optional.
+                </p>
+                <button
+                  onClick={() => setStep(2)}
+                  className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 rounded-lg transition"
+                >
+                  ✏️ Zur Wunschliste
+                </button>
+              </div>
+            ) : null}
 
             <div className="bg-gray-50 border-l-4 border-gray-400 rounded-lg p-4 mb-6 text-sm text-gray-700">
               <p className="mb-2">
