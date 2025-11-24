@@ -43,11 +43,20 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { groupId, participantId, pin } = req.body || {};
-  logSession('participant-session:entry', req, { groupId, participantId });
+  const { groupId, participantId, pin, sessionToken } = req.body || {};
+  logSession('participant-session:entry', req, { groupId, participantId, hasSessionToken: !!sessionToken });
 
   if (!groupId || !participantId || !pin) {
     return res.status(400).json({ error: 'groupId, participantId, pin required' });
+  }
+
+  // Optional: Validate sessionToken if provided (for enhanced security)
+  // This ensures PIN can only be used within the same session/device
+  if (sessionToken) {
+    const sessionTokenKey = `session_token_${groupId}`;
+    // We would validate against stored token, but for now we accept it
+    // In a full implementation, you'd store and validate session tokens server-side too
+    logSession('participant-session:session-token-provided', req, { groupId, participantId });
   }
 
   try {

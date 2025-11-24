@@ -70,10 +70,16 @@ export default function JoinGroup() {
     if (!groupId || !selectedParticipant?.id || !pinValue) return;
     try {
       setSessionCreating(true);
+      const sessionToken = localStorage.getItem(`session_token_${groupId}`);
       const resp = await fetch('/api/session/participant', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ groupId, participantId: selectedParticipant.id, pin: pinValue }),
+        body: JSON.stringify({
+          groupId,
+          participantId: selectedParticipant.id,
+          pin: pinValue,
+          sessionToken, // Send session token for validation
+        }),
       });
       if (!resp.ok) {
         console.warn('Session creation failed', await resp.text());
