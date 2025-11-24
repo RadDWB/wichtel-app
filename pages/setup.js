@@ -28,7 +28,13 @@ export default function Setup() {
   // Step 4: Participants
   const [participants, setParticipants] = useState([{ name: '', email: '' }]);
 
-  // Step 5: Budget
+  // Step 4b: Surprise Mode
+  const [surpriseMode, setSurpriseMode] = useState('flexible'); // 'flexible' | 'mutual'
+
+  // Step 4c: Pairing Visibility
+  const [pairingVisibility, setPairingVisibility] = useState('private'); // 'private' | 'public'
+
+  // Step 5: Budget (alte Step 5 wird Step 6)
   const [budget, setBudget] = useState('');
 
   const handleOccasionSelect = (occasionId) => {
@@ -39,8 +45,15 @@ export default function Setup() {
 
   const handleNext = () => {
     if (validateStep()) {
-      if (step === 5) {
+      if (step === 6) {
+        // Budget step - create group
         handleCreateGroup();
+      } else if (step === 4) {
+        // After participants, go to surprise mode (step 4.5)
+        setStep(4.5);
+      } else if (step === 4.5) {
+        // After surprise mode, go to pairing visibility (step 4.75)
+        setStep(4.75);
       } else {
         setStep(step + 1);
       }
@@ -77,7 +90,12 @@ export default function Setup() {
           return false;
         }
         return true;
-      case 5:
+      case 4.5: // Step 4b - Surprise Mode - no validation needed, has default
+        return true;
+      case 4.75: // Step 4c - Pairing Visibility - no validation needed, has default
+        return true;
+      case 6:
+        // Budget step
         if (!budget.trim()) {
           setError('Bitte gib ein Budget ein');
           return false;
@@ -145,6 +163,10 @@ export default function Setup() {
         drawn: false,
         createdAt: new Date().toISOString(),
         isComplete: false,
+        settings: {
+          surpriseMode, // 'flexible' | 'mutual'
+          pairingVisibility, // 'private' | 'public'
+        },
       };
 
       // Save to Redis via API (server-side)
@@ -187,17 +209,17 @@ export default function Setup() {
         {/* Progress Bar */}
         <div className="mb-12">
           <div className="flex justify-between items-center mb-4">
-            {[1, 2, 3, 4, 5].map((s) => (
+            {[1, 2, 3, 4, 5, 6].map((s) => (
               <div
                 key={s}
                 className={`flex-1 h-2 mx-1 rounded-full ${
-                  s <= step ? 'bg-red-500' : 'bg-gray-300'
+                  s <= Math.ceil(step) ? 'bg-red-500' : 'bg-gray-300'
                 }`}
               />
             ))}
           </div>
           <p className="text-center text-gray-600">
-            Schritt {step} von 5
+            Schritt {step === 4.5 ? '4b' : step === 4.75 ? '4c' : Math.ceil(step)} von 6
           </p>
         </div>
 
@@ -367,8 +389,120 @@ export default function Setup() {
             </div>
           )}
 
-          {/* Step 5: Budget */}
-          {step === 5 && (
+          {/* Step 4b: Surprise Mode */}
+          {step === 4.5 && (
+            <div>
+              <h2 className="text-3xl font-bold mb-6">🎉 Wichtel-Modus</h2>
+              <p className="text-gray-600 mb-8">
+                Wie sollen eure Wichtelung ablaufen?
+              </p>
+
+              <div className="space-y-4">
+                {/* Flexible Mode */}
+                <label className="flex items-start gap-4 p-4 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-red-500 hover:bg-red-50 transition">
+                  <div className="flex items-center mt-1">
+                    <input
+                      type="radio"
+                      name="surpriseMode"
+                      value="flexible"
+                      checked={surpriseMode === 'flexible'}
+                      onChange={(e) => setSurpriseMode(e.target.value)}
+                      className="w-5 h-5"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-gray-900">
+                      🎁 Flexible Teilnahme
+                    </p>
+                    <p className="text-sm text-gray-600 mt-2">
+                      Jeder kann selbst entscheiden: Entweder eine Wunschliste anlegen (normal wichteln) oder eine Überraschung erlauben (blind wichteln). So kann jeder nach seinen Wünschen teilnehmen.
+                    </p>
+                  </div>
+                </label>
+
+                {/* Mutual Surprise Mode */}
+                <label className="flex items-start gap-4 p-4 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-red-500 hover:bg-red-50 transition">
+                  <div className="flex items-center mt-1">
+                    <input
+                      type="radio"
+                      name="surpriseMode"
+                      value="mutual"
+                      checked={surpriseMode === 'mutual'}
+                      onChange={(e) => setSurpriseMode(e.target.value)}
+                      className="w-5 h-5"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-gray-900">
+                      🎊 Gegenseitige Überraschung
+                    </p>
+                    <p className="text-sm text-gray-600 mt-2">
+                      Alle werden überrascht! Keiner kennt den Wunsch des anderen. Ein echter Blind-Secret-Santa - einfach auswählen und überraschen!
+                    </p>
+                  </div>
+                </label>
+              </div>
+            </div>
+          )}
+
+          {/* Step 4c: Pairing Visibility */}
+          {step === 4.75 && (
+            <div>
+              <h2 className="text-3xl font-bold mb-6">👀 Paarungen sichtbar?</h2>
+              <p className="text-gray-600 mb-8">
+                Wer soll sehen, wer wen beschenkt?
+              </p>
+
+              <div className="space-y-4">
+                {/* Private Mode */}
+                <label className="flex items-start gap-4 p-4 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-red-500 hover:bg-red-50 transition">
+                  <div className="flex items-center mt-1">
+                    <input
+                      type="radio"
+                      name="pairingVisibility"
+                      value="private"
+                      checked={pairingVisibility === 'private'}
+                      onChange={(e) => setPairingVisibility(e.target.value)}
+                      className="w-5 h-5"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-gray-900">
+                      🔒 Privat
+                    </p>
+                    <p className="text-sm text-gray-600 mt-2">
+                      Jeder sieht nur seine eigene Paarung. Der klassische Wichtel-Modus - die Überraschung bleibt erhalten!
+                    </p>
+                  </div>
+                </label>
+
+                {/* Public Mode */}
+                <label className="flex items-start gap-4 p-4 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-red-500 hover:bg-red-50 transition">
+                  <div className="flex items-center mt-1">
+                    <input
+                      type="radio"
+                      name="pairingVisibility"
+                      value="public"
+                      checked={pairingVisibility === 'public'}
+                      onChange={(e) => setPairingVisibility(e.target.value)}
+                      className="w-5 h-5"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-gray-900">
+                      🌐 Öffentlich
+                    </p>
+                    <p className="text-sm text-gray-600 mt-2">
+                      Alle sehen alle Paarungen. Perfekt für Transparenz - wer schenkt wem? Auch mit Amazon-Links zum Einkaufen verfügbar.
+                    </p>
+                  </div>
+                </label>
+              </div>
+            </div>
+          )}
+
+          {/* Step 5: Budget (old Step 5, now Step 6) */}
+          {step === 6 && (
             <div>
               <h2 className="text-3xl font-bold mb-6">💰 Budget</h2>
 
@@ -392,7 +526,15 @@ export default function Setup() {
           <div className="flex gap-4 mt-8">
             {step > 1 && (
               <button
-                onClick={() => setStep(step - 1)}
+                onClick={() => {
+                  if (step === 4.5) {
+                    setStep(4);
+                  } else if (step === 4.75) {
+                    setStep(4.5);
+                  } else {
+                    setStep(step - 1);
+                  }
+                }}
                 className="flex-1 btn-outline"
               >
                 ← Zurück
@@ -403,7 +545,7 @@ export default function Setup() {
               disabled={loading}
               className="flex-1 btn-primary disabled:opacity-50"
             >
-              {step === 5
+              {step === 6
                 ? loading
                   ? '🔄 Wird erstellt...'
                   : '✅ Gruppe erstellen'

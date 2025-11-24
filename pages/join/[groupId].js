@@ -60,6 +60,7 @@ export default function JoinGroup() {
   const [sessionCreating, setSessionCreating] = useState(false);
   const [showSwitchDialog, setShowSwitchDialog] = useState(false); // Show account switch confirmation dialog
   const [pendingParticipant, setPendingParticipant] = useState(null); // Participant waiting to be selected
+  const [showMutualSurpriseWarning, setShowMutualSurpriseWarning] = useState(false); // Show mutual surprise warning
 
   // Update ref when step changes
   useEffect(() => {
@@ -266,18 +267,31 @@ export default function JoinGroup() {
     const currentParticipantId = localStorage.getItem(`participant_${groupId}`);
 
     // Multi-participant detection:
-    // 1. With Session Token (new system): Check if currentParticipantId differs from new participant
-    // 2. Without Session Token (legacy): Still allow switching but without dialog (backwards compatible)
-    if (currentParticipantId && currentParticipantId !== participant.id && selectedParticipant) {
+    // Check if user is switching to a different participant
+    // Use currentParticipantId (from localStorage) instead of selectedParticipant (React state)
+    // because selectedParticipant can be null after page reload while localStorage persists
+    if (currentParticipantId && currentParticipantId !== participant.id) {
       const sessionToken = localStorage.getItem(`session_token_${groupId}`);
 
-      // If we have a session token, show the switch dialog (new behavior)
-      if (sessionToken) {
-        setPendingParticipant(participant);
-        setShowSwitchDialog(true);
-        return;
+      // If we have a session token, find the current participant from the group data
+      // and show the switch dialog (new behavior)
+      if (sessionToken && group) {
+        const currentParticipant = group.participants?.find(p => p.id === currentParticipantId);
+        if (currentParticipant) {
+          setPendingParticipant(participant);
+          setShowSwitchDialog(true);
+          return;
+        }
       }
       // If no session token (legacy), just allow switching silently (backwards compatible)
+    }
+
+    // Check if this is mutual surprise mode AND first time joining
+    // Show warning about irreversible participant selection
+    if (group.settings?.surpriseMode === 'mutual' && !currentParticipantId) {
+      setPendingParticipant(participant);
+      setShowMutualSurpriseWarning(true);
+      return;
     }
 
     // Perform the actual join
@@ -457,18 +471,30 @@ export default function JoinGroup() {
 
             <div className="space-y-4 mb-8">
               {group.participants && group.participants.length > 0 ? (
-                group.participants.map((p, index) => {
-                  const color = getParticipantColor(index);
-                  return (
-                    <button
-                      key={p.id}
-                      onClick={() => handleJoin(p)}
-                      className={`w-full p-6 border-3 ${color.border} rounded-lg hover:shadow-lg hover:scale-105 transition transform ${color.bg} ${color.text}`}
-                    >
-                      <p className="text-2xl font-bold text-center">{p.name}</p>
-                    </button>
-                  );
-                })
+                group.participants
+                  .filter(p => {
+                    // In mutual surprise mode: hide already-signed-in participants (except current user)
+                    // Store who is "signed in" = has a PIN set (they've already participated in the draw)
+                    if (group.settings?.surpriseMode === 'mutual') {
+                      // Check if this participant has signed in (via localStorage or PIN stored)
+                      const hasJoined = localStorage.getItem(`participant_${groupId}`) === p.id ||
+                        localStorage.getItem(`participant_pin_${groupId}_${p.id}`);
+                      return !hasJoined;
+                    }
+                    return true;
+                  })
+                  .map((p, index) => {
+                    const color = getParticipantColor(index);
+                    return (
+                      <button
+                        key={p.id}
+                        onClick={() => handleJoin(p)}
+                        className={`w-full p-6 border-3 ${color.border} rounded-lg hover:shadow-lg hover:scale-105 transition transform ${color.bg} ${color.text}`}
+                      >
+                        <p className="text-2xl font-bold text-center">{p.name}</p>
+                      </button>
+                    );
+                  })
               ) : (
                 <p className="text-gray-600">Noch keine Teilnehmer</p>
               )}
@@ -979,8 +1005,16 @@ export default function JoinGroup() {
     );
   }
 
-  // Step 1.5: Gift Choice (Wunschliste oder überrascht werden)
+  // Step 1.5: Gift Choice (Wunschliste oder überrascht werden) - ONLY FOR FLEXIBLE MODE
+  // In MUTUAL SURPRISE MODE: skip directly to completion
   if (step === 1.5 && selectedParticipant && pinConfirmed && !group.drawn) {
+    // In mutual surprise mode, automatically mark as surprised and skip to step 4
+    if (group.settings?.surpriseMode === 'mutual') {
+      setWantsSurprise(true);
+      setStep(4); // Skip to waiting for draw - no gift lists or exclusions in mutual mode
+      return null;
+    }
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
         <div className="container mx-auto py-12 px-4 max-w-2xl">
@@ -1435,12 +1469,80 @@ export default function JoinGroup() {
     );
   }
 
+  // Render Mutual Surprise Warning Dialog if needed
+  if (showMutualSurpriseWarning && pendingParticipant) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg shadow-2xl max-w-md w-full">
+          <div className="p-6">
+            {/* Icon */}
+            <div className="text-center mb-4">
+              <div className="text-5xl mb-2">🎊</div>
+              <h2 className="text-2xl font-bold text-gray-900">Gegenseitige Überraschung!</h2>
+            </div>
+
+            {/* Message */}
+            <div className="bg-purple-50 border-l-4 border-purple-400 p-4 mb-6 rounded">
+              <p className="text-sm text-gray-800 mb-3">
+                <strong>Du bist im Blind-Secret-Santa-Modus!</strong>
+              </p>
+              <p className="text-sm text-gray-700">
+                In diesem Modus haben alle Überraschungen - keiner kennt die Wünsche des anderen. Das macht es spannender! 🎁
+              </p>
+            </div>
+
+            {/* Important Info */}
+            <div className="bg-orange-50 border-l-4 border-orange-400 p-4 mb-6 rounded">
+              <p className="text-xs text-orange-900 mb-2 font-semibold">
+                ⚠️ <strong>Wichtig:</strong>
+              </p>
+              <p className="text-xs text-orange-800 mb-2">
+                Deine Wahl ist <strong>endgültig</strong>. Du kannst dich nach der Bestätigung nicht mehr als andere Person anmelden oder deine Auswahl ändern.
+              </p>
+              <p className="text-xs text-orange-800">
+                Nur der Organisator kann diese Wahl bei Bedarf rückgängig machen.
+              </p>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowMutualSurpriseWarning(false);
+                  setPendingParticipant(null);
+                }}
+                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-900 font-bold py-2 px-4 rounded-lg transition"
+              >
+                ← Abbrechen
+              </button>
+              <button
+                onClick={() => {
+                  setShowMutualSurpriseWarning(false);
+                  performJoin(pendingParticipant);
+                }}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition"
+              >
+                ✅ Ja, ich bin {pendingParticipant.name}!
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Render Switch Account Dialog if needed
-  if (showSwitchDialog && selectedParticipant && pendingParticipant) {
+  if (showSwitchDialog && pendingParticipant && group) {
+    // Get current participant name from group data using stored ID
+    // This handles the case where selectedParticipant state is null after reload
+    const currentParticipantId = localStorage.getItem(`participant_${groupId}`);
+    const currentParticipantFromGroup = group.participants?.find(p => p.id === currentParticipantId);
+    const currentName = currentParticipantFromGroup?.name || selectedParticipant?.name || 'Unbekannter Benutzer';
+
     return (
       <>
         <SwitchAccountDialog
-          currentParticipantName={selectedParticipant.name}
+          currentParticipantName={currentName}
           newParticipantName={pendingParticipant.name}
           onConfirm={() => handleSwitchAccount(pendingParticipant)}
           onCancel={() => {

@@ -294,6 +294,37 @@ export default function OrganizerDashboard() {
     }
   };
 
+  // Reset mutual surprise mode selection - allows participant to change their mind
+  const handleResetMutualSurpriseSelection = async (participantId, participantName) => {
+    if (!window.confirm(`⚠️ Wirklich die Auswahl von "${participantName}" zurücksetzen? Sie können sich dann neu anmelden und eine andere Person wählen.`)) {
+      return;
+    }
+
+    setDeletingParticipantId(participantId);
+
+    try {
+      // Clear participant's localStorage selections on all devices (no direct way)
+      // For now, we just clear the PIN so they can re-join and re-select
+      const response = await fetch(`/api/groups/${id}/participants/${participantId}/reset-pin`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Fehler beim Zurücksetzen');
+      }
+
+      // Refresh group data
+      await loadGroupData();
+      alert(`✅ Die Auswahl von "${participantName}" wurde zurückgesetzt. Sie können sich jetzt neu anmelden.`);
+    } catch (err) {
+      console.error('Error resetting participant selection:', err);
+      alert(`❌ Fehler: ${err.message}`);
+    } finally {
+      setDeletingParticipantId(null);
+    }
+  };
+
   const getParticipantStatus = (participantId) => {
     const participant = group?.participants?.find(p => p.id === participantId);
     const hasList = gifts[participantId] && gifts[participantId].length > 0;
@@ -557,50 +588,88 @@ export default function OrganizerDashboard() {
                               <p className="text-xs text-gray-500">{participant.email}</p>
                             )}
 
-                            {/* PIN Status - NEW */}
-                            <div className="mt-2 flex items-center gap-2">
-                              {participantHasPin ? (
-                                <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 border border-green-300 rounded text-xs font-semibold text-green-700">
-                                  🔐 PIN gesetzt
+                            {/* PIN Status - Only show in FLEXIBLE mode */}
+                            {group.settings?.surpriseMode !== 'mutual' && (
+                              <div className="mt-2 flex items-center gap-2">
+                                {participantHasPin ? (
+                                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 border border-green-300 rounded text-xs font-semibold text-green-700">
+                                    🔐 PIN gesetzt
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 border border-red-300 rounded text-xs font-semibold text-red-700">
+                                    ❌ Kein PIN
+                                  </span>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Mutual Surprise Mode Indicator */}
+                            {group.settings?.surpriseMode === 'mutual' && (
+                              <div className="mt-2 flex items-center gap-2">
+                                <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 border border-purple-300 rounded text-xs font-semibold text-purple-700">
+                                  🎊 Im Blind-Modus
                                 </span>
-                              ) : (
-                                <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 border border-red-300 rounded text-xs font-semibold text-red-700">
-                                  ❌ Kein PIN
-                                </span>
-                              )}
-                            </div>
+                              </div>
+                            )}
                           </div>
 
                           <div className="flex items-start gap-2">
-                            {/* Gift Status */}
+                            {/* Gift Status - Different displays for FLEXIBLE vs MUTUAL mode */}
                             <div className="text-right">
-                              {status.hasGifts ? (
+                              {group.settings?.surpriseMode === 'mutual' ? (
+                                // In MUTUAL mode: Everyone is surprised, show joined status only
                                 <div className="flex flex-col items-center">
-                                  <span className="text-2xl">{status.wantsSurprise ? '🎉' : '✅'}</span>
-                                  <p className={`font-bold text-sm ${status.wantsSurprise ? 'text-purple-600' : 'text-green-600'}`}>
-                                    {status.wantsSurprise ? 'Überraschung!' : `${status.giftCount} Geschenke`}
-                                  </p>
-                                  <p className="text-xs text-gray-500">Fertig</p>
+                                  <span className="text-2xl">🎊</span>
+                                  <p className="font-bold text-purple-600 text-sm">Überrascht</p>
+                                  <p className="text-xs text-gray-500">Angemeldet</p>
                                 </div>
                               ) : (
-                                <div className="flex flex-col items-center">
-                                  <span className="text-2xl">⏳</span>
-                                  <p className="font-bold text-orange-600 text-sm">Ausstehend</p>
-                                  <p className="text-xs text-gray-500">Keine Liste</p>
-                                </div>
+                                // In FLEXIBLE mode: Show gift/surprise status
+                                <>
+                                  {status.hasGifts ? (
+                                    <div className="flex flex-col items-center">
+                                      <span className="text-2xl">{status.wantsSurprise ? '🎉' : '✅'}</span>
+                                      <p className={`font-bold text-sm ${status.wantsSurprise ? 'text-purple-600' : 'text-green-600'}`}>
+                                        {status.wantsSurprise ? 'Überraschung!' : `${status.giftCount} Geschenke`}
+                                      </p>
+                                      <p className="text-xs text-gray-500">Fertig</p>
+                                    </div>
+                                  ) : (
+                                    <div className="flex flex-col items-center">
+                                      <span className="text-2xl">⏳</span>
+                                      <p className="font-bold text-orange-600 text-sm">Ausstehend</p>
+                                      <p className="text-xs text-gray-500">Keine Liste</p>
+                                    </div>
+                                  )}
+                                </>
                               )}
                             </div>
 
-                            {/* Delete button */}
+                            {/* Action buttons - Different for MUTUAL vs FLEXIBLE mode */}
                             {!group.drawn && (
-                              <button
-                                onClick={() => handleDeleteParticipant(participant.id, participant.name)}
-                                disabled={deletingParticipantId === participant.id}
-                                className="text-red-600 hover:text-red-700 hover:bg-red-50 p-2 rounded transition disabled:opacity-50"
-                                title="Teilnehmer löschen"
-                              >
-                                {deletingParticipantId === participant.id ? '🔄' : '🗑️'}
-                              </button>
+                              <>
+                                {group.settings?.surpriseMode === 'mutual' ? (
+                                  // In MUTUAL mode: show reset button to undo selection
+                                  <button
+                                    onClick={() => handleResetMutualSurpriseSelection(participant.id, participant.name)}
+                                    disabled={deletingParticipantId === participant.id}
+                                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 p-2 rounded transition disabled:opacity-50"
+                                    title="Auswahl zurücksetzen - Teilnehmer kann sich neu anmelden"
+                                  >
+                                    {deletingParticipantId === participant.id ? '🔄' : '↩️'}
+                                  </button>
+                                ) : (
+                                  // In FLEXIBLE mode: show delete button
+                                  <button
+                                    onClick={() => handleDeleteParticipant(participant.id, participant.name)}
+                                    disabled={deletingParticipantId === participant.id}
+                                    className="text-red-600 hover:text-red-700 hover:bg-red-50 p-2 rounded transition disabled:opacity-50"
+                                    title="Teilnehmer löschen"
+                                  >
+                                    {deletingParticipantId === participant.id ? '🔄' : '🗑️'}
+                                  </button>
+                                )}
+                              </>
                             )}
                           </div>
                         </div>
