@@ -265,11 +265,19 @@ export default function JoinGroup() {
     // Check if someone is already logged in and they're clicking a different name
     const currentParticipantId = localStorage.getItem(`participant_${groupId}`);
 
+    // Multi-participant detection:
+    // 1. With Session Token (new system): Check if currentParticipantId differs from new participant
+    // 2. Without Session Token (legacy): Still allow switching but without dialog (backwards compatible)
     if (currentParticipantId && currentParticipantId !== participant.id && selectedParticipant) {
-      // Different user trying to login - show switch dialog
-      setPendingParticipant(participant);
-      setShowSwitchDialog(true);
-      return;
+      const sessionToken = localStorage.getItem(`session_token_${groupId}`);
+
+      // If we have a session token, show the switch dialog (new behavior)
+      if (sessionToken) {
+        setPendingParticipant(participant);
+        setShowSwitchDialog(true);
+        return;
+      }
+      // If no session token (legacy), just allow switching silently (backwards compatible)
     }
 
     // Perform the actual join
