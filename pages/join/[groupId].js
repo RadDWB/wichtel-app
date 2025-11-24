@@ -1031,6 +1031,15 @@ export default function JoinGroup() {
 
           <div className="space-y-3">
             <button
+              onClick={() => {
+                // Switch back to step 1 to select a different participant
+                clearSession();
+              }}
+              className="w-full py-3 px-4 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg transition"
+            >
+              👤 Als anderer Benutzer anmelden
+            </button>
+            <button
               onClick={handleLeaveGroup}
               className="w-full py-3 px-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition"
             >
