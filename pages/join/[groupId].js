@@ -15,6 +15,11 @@ export const getServerSideProps = async () => {
 // Universal recovery PIN for forgotten participant PINs
 const RECOVERY_PIN = '999999';
 
+// Generate unique session token (UUID v4 style)
+function generateSessionToken() {
+  return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
+
 // Map budget text to price range keys for the filter
 function getBudgetPriceRange(budget) {
   if (!budget) return null;
@@ -80,6 +85,14 @@ export default function JoinGroup() {
   useEffect(() => {
     if (groupId) {
       loadGroup();
+
+      // Generate unique session token on first visit to this link
+      const existingSessionToken = localStorage.getItem(`session_token_${groupId}`);
+      if (!existingSessionToken) {
+        const sessionToken = generateSessionToken();
+        localStorage.setItem(`session_token_${groupId}`, sessionToken);
+        console.log('✅ New session token created:', sessionToken);
+      }
 
       // Load organizer PIN from localStorage if available
       if (orgParticipant) {
@@ -242,6 +255,10 @@ export default function JoinGroup() {
   const handleJoin = (participant) => {
     // Store participant ID first (before checking anything)
     localStorage.setItem(`participant_${groupId}`, participant.id);
+
+    // Store session token with participant for validation
+    const sessionToken = localStorage.getItem(`session_token_${groupId}`);
+    localStorage.setItem(`participant_session_${groupId}_${participant.id}`, sessionToken);
 
     // Check if this participant has a stored PIN using participant.id
     const newKey = `participant_pin_${groupId}_${participant.id}`;
