@@ -798,12 +798,20 @@ export default function OrganizerDashboard() {
         </div>
 
         {/* Pairings Share Section (after draw) - MOVED TO TOP */}
-        {group.drawn && (
+        {group.drawn && group.settings?.pairingVisibility === 'public' && (
           <div className="card bg-gradient-to-br from-pink-50 to-red-50 border-2 border-red-300 shadow-lg mb-6">
             <h3 className="section-title text-red-900 mb-4">🎁 Link mit den Wichtel-Paarungen teilen</h3>
 
             <p className="text-sm text-gray-700 mb-4">
-              Teile diesen Link mit allen Teilnehmern. Sie sehen dort eine Liste mit allen Namen und können auf ihren eigenen Namen klicken, um ihren Wichtelpartner und dessen Wunschliste zu sehen. <strong>Wichtig: Jeder Teilnehmer benötigt seine PIN, um auf die Seite zuzugreifen!</strong>
+              {isMutualMode ? (
+                <>
+                  Teile diesen Link mit allen Teilnehmern, um die Paarungen anzuschauen. Die Seite zeigt wer wen beschenkt, ohne dass eine PIN erforderlich ist.
+                </>
+              ) : (
+                <>
+                  Teile diesen Link mit allen Teilnehmern. Sie sehen dort eine Liste mit allen Namen und wer wen beschenkt. Wenn ein Teilnehmer eine Wunschliste hat, können sie diese mit ihrer PIN sehen. <strong>Wichtig: Jeder Teilnehmer benötigt seine PIN, um auf private Wunschlisten zuzugreifen!</strong>
+                </>
+              )}
             </p>
 
             <div className="bg-white rounded border border-red-300 p-4 mb-4 whitespace-pre-wrap font-mono text-xs text-gray-800">
