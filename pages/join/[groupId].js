@@ -369,7 +369,7 @@ export default function JoinGroup() {
     }
   };
 
-  const handleConfirmJoin = async () => {
+  const handleConfirmJoin = async (skipStepChange = false) => {
     if (!nameEdit.trim()) {
       setError('Bitte gib deinen Namen ein');
       return;
@@ -396,7 +396,10 @@ export default function JoinGroup() {
       console.log('✅ Group updated in KV');
       setGroup(updated);
       setSelectedParticipant({ ...selectedParticipant, name: nameEdit, email: emailEdit });
-      setStep(1.5); // Go to gift choice first
+      // Only change step if not called from confirm screen (skipStepChange flag)
+      if (!skipStepChange) {
+        setStep(1.5); // Go to gift choice first
+      }
     } catch (kvErr) {
       console.error('❌ Failed to save group:', kvErr);
       setError('Fehler beim Speichern. Bitte versuche es später erneut.');
@@ -1488,8 +1491,9 @@ export default function JoinGroup() {
                 ← Zurück
               </button>
               <button
-                onClick={() => {
-                  // Move to step 4 (waiting for draw)
+                onClick={async () => {
+                  // Save participant data before moving to step 4 (skipStepChange=true so we control the transition)
+                  await handleConfirmJoin(true);
                   setStep(4);
                 }}
                 className="flex-1 btn-primary"
