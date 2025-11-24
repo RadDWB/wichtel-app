@@ -250,7 +250,7 @@ export default function AdminDashboard() {
                       <td className="px-4 py-3">
                         <div className="flex gap-1 justify-center">
                           <a
-                            href={`/organizer/${group.id}`}
+                            href={`/organizer/${group.id}?admin=true`}
                             className="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs font-semibold"
                             title="Organizer Dashboard"
                           >

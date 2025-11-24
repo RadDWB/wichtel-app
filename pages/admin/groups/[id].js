@@ -109,7 +109,7 @@ export default function AdminGroupDetails() {
               ← Admin Dashboard
             </a>
             <a
-              href={`/organizer/${group.id}`}
+              href={`/organizer/${group.id}?admin=true`}
               className="text-green-400 hover:underline inline-block"
             >
               🔐 Organizer Dashboard

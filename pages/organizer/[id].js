@@ -27,7 +27,7 @@ const AMAZON_AFFILIATE_LINKS = {
 
 export default function OrganizerDashboard() {
   const router = useRouter();
-  const { id, showPin } = router.query;
+  const { id, showPin, admin } = router.query;
   const [group, setGroup] = useState(null);
   const [gifts, setGifts] = useState({});
   const [loading, setLoading] = useState(true);
@@ -43,8 +43,11 @@ export default function OrganizerDashboard() {
 
   useEffect(() => {
     if (id) {
-      // If showPin in URL, verify it server-side FIRST
-      if (showPin) {
+      // Admin bypass - no PIN needed
+      if (admin === 'true') {
+        setAuthenticated(true);
+      } else if (showPin) {
+        // If showPin in URL, verify it server-side FIRST
         verifyPinServerSide();
       } else {
         // Check if authenticated via PIN from localStorage
@@ -66,7 +69,7 @@ export default function OrganizerDashboard() {
         }
       }
     }
-  }, [id, showPin]);
+  }, [id, showPin, admin]);
 
   // Server-side PIN verification
   const verifyPinServerSide = async () => {
