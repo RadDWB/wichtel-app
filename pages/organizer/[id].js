@@ -539,7 +539,9 @@ export default function OrganizerDashboard() {
                 <div className="space-y-3">
                   {group.participants.map((participant) => {
                     const status = getParticipantStatus(participant.id);
-                    const participantHasPin = typeof window !== 'undefined' && !!localStorage.getItem(`participant_pin_${id}_${participant.id}`);
+                    // Validate PIN status server-side first (from group data),
+                    // fallback to localStorage for legacy entries
+                    const participantHasPin = !!participant.pin || (typeof window !== 'undefined' && !!localStorage.getItem(`participant_pin_${id}_${participant.id}`));
 
                     return (
                       <div
