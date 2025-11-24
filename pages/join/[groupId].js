@@ -1282,7 +1282,7 @@ export default function JoinGroup() {
                 onClick={() => {
                   if (orgParticipant) {
                     const isMutualAndPublic = group?.settings?.surpriseMode === 'mutual' && group?.settings?.pairingVisibility === 'public';
-                    const dashboardUrl = isMutualAndPublic ? `/[groupId]/pairings`.replace('[groupId]', groupId) : (organizerPin ? `/organizer/${groupId}?showPin=${organizerPin}` : `/organizer/${groupId}`);
+                    const dashboardUrl = isMutualAndPublic ? `/${groupId}/pairings` : (organizerPin ? `/organizer/${groupId}?showPin=${organizerPin}` : `/organizer/${groupId}`);
                     router.push(dashboardUrl);
                   } else {
                     setStep(1);
