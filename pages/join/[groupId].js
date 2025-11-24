@@ -432,6 +432,101 @@ export default function JoinGroup() {
     );
   }
 
+  // Render dialogs BEFORE step checks so they appear on top
+  // Mutual Surprise Warning Dialog
+  if (showMutualSurpriseWarning && pendingParticipant) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg shadow-2xl max-w-md w-full">
+          <div className="p-6">
+            {/* Icon */}
+            <div className="text-center mb-4">
+              <div className="text-5xl mb-2">🎊</div>
+              <h2 className="text-2xl font-bold text-gray-900">Gegenseitige Überraschung!</h2>
+            </div>
+
+            {/* Message */}
+            <div className="bg-purple-50 border-l-4 border-purple-400 p-4 mb-6 rounded">
+              <p className="text-sm text-gray-800 mb-3">
+                <strong>Du bist im Blind-Secret-Santa-Modus!</strong>
+              </p>
+              <p className="text-sm text-gray-700">
+                In diesem Modus haben alle Überraschungen - keiner kennt die Wünsche des anderen. Das macht es spannender! 🎁
+              </p>
+            </div>
+
+            {/* Important Info */}
+            <div className="bg-orange-50 border-l-4 border-orange-400 p-4 mb-6 rounded">
+              <p className="text-xs text-orange-900 mb-2 font-semibold">
+                ⚠️ <strong>Wichtig:</strong>
+              </p>
+              <p className="text-xs text-orange-800 mb-2">
+                Deine Wahl ist <strong>endgültig</strong>. Du kannst dich nach der Bestätigung nicht mehr als andere Person anmelden oder deine Auswahl ändern.
+              </p>
+              <p className="text-xs text-orange-800">
+                Nur der Organisator kann diese Wahl bei Bedarf rückgängig machen.
+              </p>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowMutualSurpriseWarning(false);
+                  setPendingParticipant(null);
+                }}
+                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-900 font-bold py-2 px-4 rounded-lg transition"
+              >
+                ← Abbrechen
+              </button>
+              <button
+                onClick={() => {
+                  setShowMutualSurpriseWarning(false);
+                  performJoin(pendingParticipant);
+                }}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition"
+              >
+                ✅ Ja, ich bin {pendingParticipant.name}!
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Render Switch Account Dialog if needed
+  if (showSwitchDialog && pendingParticipant && group) {
+    // Get current participant name from group data using stored ID
+    // This handles the case where selectedParticipant state is null after reload
+    const currentParticipantId = localStorage.getItem(`participant_${groupId}`);
+    const currentParticipantFromGroup = group.participants?.find(p => p.id === currentParticipantId);
+    const currentName = currentParticipantFromGroup?.name || selectedParticipant?.name || 'Unbekannter Benutzer';
+
+    return (
+      <>
+        <SwitchAccountDialog
+          currentParticipantName={currentName}
+          newParticipantName={pendingParticipant.name}
+          onConfirm={() => handleSwitchAccount(pendingParticipant)}
+          onCancel={() => {
+            setShowSwitchDialog(false);
+            setPendingParticipant(null);
+          }}
+        />
+        {/* Keep the Step 1 view in background */}
+        <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50 opacity-50 pointer-events-none">
+          <div className="container mx-auto py-12 px-4 max-w-2xl">
+            <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-lg p-8 mb-8 shadow-lg">
+              <h1 className="text-4xl font-bold mb-2">{occasion?.label}</h1>
+              <p className="text-lg">{group?.name}</p>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   const occasion = OCCASIONS.find(o => o.id === group.occasion);
 
   // Color palette for participant names
@@ -1522,100 +1617,6 @@ export default function JoinGroup() {
           </div>
         </div>
       </div>
-    );
-  }
-
-  // Render Mutual Surprise Warning Dialog if needed
-  if (showMutualSurpriseWarning && pendingParticipant) {
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-lg shadow-2xl max-w-md w-full">
-          <div className="p-6">
-            {/* Icon */}
-            <div className="text-center mb-4">
-              <div className="text-5xl mb-2">🎊</div>
-              <h2 className="text-2xl font-bold text-gray-900">Gegenseitige Überraschung!</h2>
-            </div>
-
-            {/* Message */}
-            <div className="bg-purple-50 border-l-4 border-purple-400 p-4 mb-6 rounded">
-              <p className="text-sm text-gray-800 mb-3">
-                <strong>Du bist im Blind-Secret-Santa-Modus!</strong>
-              </p>
-              <p className="text-sm text-gray-700">
-                In diesem Modus haben alle Überraschungen - keiner kennt die Wünsche des anderen. Das macht es spannender! 🎁
-              </p>
-            </div>
-
-            {/* Important Info */}
-            <div className="bg-orange-50 border-l-4 border-orange-400 p-4 mb-6 rounded">
-              <p className="text-xs text-orange-900 mb-2 font-semibold">
-                ⚠️ <strong>Wichtig:</strong>
-              </p>
-              <p className="text-xs text-orange-800 mb-2">
-                Deine Wahl ist <strong>endgültig</strong>. Du kannst dich nach der Bestätigung nicht mehr als andere Person anmelden oder deine Auswahl ändern.
-              </p>
-              <p className="text-xs text-orange-800">
-                Nur der Organisator kann diese Wahl bei Bedarf rückgängig machen.
-              </p>
-            </div>
-
-            {/* Buttons */}
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setShowMutualSurpriseWarning(false);
-                  setPendingParticipant(null);
-                }}
-                className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-900 font-bold py-2 px-4 rounded-lg transition"
-              >
-                ← Abbrechen
-              </button>
-              <button
-                onClick={() => {
-                  setShowMutualSurpriseWarning(false);
-                  performJoin(pendingParticipant);
-                }}
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition"
-              >
-                ✅ Ja, ich bin {pendingParticipant.name}!
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Render Switch Account Dialog if needed
-  if (showSwitchDialog && pendingParticipant && group) {
-    // Get current participant name from group data using stored ID
-    // This handles the case where selectedParticipant state is null after reload
-    const currentParticipantId = localStorage.getItem(`participant_${groupId}`);
-    const currentParticipantFromGroup = group.participants?.find(p => p.id === currentParticipantId);
-    const currentName = currentParticipantFromGroup?.name || selectedParticipant?.name || 'Unbekannter Benutzer';
-
-    return (
-      <>
-        <SwitchAccountDialog
-          currentParticipantName={currentName}
-          newParticipantName={pendingParticipant.name}
-          onConfirm={() => handleSwitchAccount(pendingParticipant)}
-          onCancel={() => {
-            setShowSwitchDialog(false);
-            setPendingParticipant(null);
-          }}
-        />
-        {/* Keep the Step 1 view in background */}
-        <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50 opacity-50 pointer-events-none">
-          <div className="container mx-auto py-12 px-4 max-w-2xl">
-            <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-lg p-8 mb-8 shadow-lg">
-              <h1 className="text-4xl font-bold mb-2">{occasion?.label}</h1>
-              <p className="text-lg">{group?.name}</p>
-            </div>
-          </div>
-        </div>
-      </>
     );
   }
 

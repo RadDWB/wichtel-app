@@ -10,7 +10,9 @@
       "Bash(findstr /r /s \"admin#3635\\|3635\" c:Usersrad3OneDriveDokumenteGithubNewStrichlisteRepoStrichlisteChatwichtel-app 2)",
       "Bash(nul)",
       "Bash(git checkout:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(npm run dev:*)",
+      "Bash(node -c:*)"
     ],
     "deny": [],
     "ask": []
