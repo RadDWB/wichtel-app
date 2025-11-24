@@ -43,7 +43,7 @@ export default function JoinGroup() {
   const [group, setGroup] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [step, setStep] = useState(1); // 1: Join | pin-create | pin-verify | 1.5: GiftChoice | 2: Gifts | 3: Exclusions | 4: Complete
+  const [step, setStep] = useState(1); // 1: Join | pin-create | pin-verify | 1.5: GiftChoice | 2: Gifts | 3: Exclusions | confirm | 4: Complete
   const [selectedParticipant, setSelectedParticipant] = useState(null);
   const [nameEdit, setNameEdit] = useState('');
   const [emailEdit, setEmailEdit] = useState('');
@@ -473,13 +473,13 @@ export default function JoinGroup() {
               {group.participants && group.participants.length > 0 ? (
                 group.participants
                   .filter(p => {
-                    // In mutual surprise mode: hide already-signed-in participants (except current user)
-                    // Store who is "signed in" = has a PIN set (they've already participated in the draw)
+                    // In mutual surprise mode: hide already-joined participants (those that completed the flow)
+                    // A participant is "joined" if they've already set up their PIN in this session
                     if (group.settings?.surpriseMode === 'mutual') {
-                      // Check if this participant has signed in (via localStorage or PIN stored)
-                      const hasJoined = localStorage.getItem(`participant_${groupId}`) === p.id ||
-                        localStorage.getItem(`participant_pin_${groupId}_${p.id}`);
-                      return !hasJoined;
+                      // Check if this participant has already joined in this session
+                      const currentParticipantId = localStorage.getItem(`participant_${groupId}`);
+                      // Show all participants except the one currently logged in
+                      return p.id !== currentParticipantId;
                     }
                     return true;
                   })
@@ -1006,12 +1006,12 @@ export default function JoinGroup() {
   }
 
   // Step 1.5: Gift Choice (Wunschliste oder überrascht werden) - ONLY FOR FLEXIBLE MODE
-  // In MUTUAL SURPRISE MODE: skip directly to completion
+  // In MUTUAL SURPRISE MODE: skip directly to confirmation
   if (step === 1.5 && selectedParticipant && pinConfirmed && !group.drawn) {
-    // In mutual surprise mode, automatically mark as surprised and skip to step 4
+    // In mutual surprise mode, skip gift choice and go to confirmation step
+    // Note: wantsSurprise should NOT be set - it's about pairingVisibility, not gift lists
     if (group.settings?.surpriseMode === 'mutual') {
-      setWantsSurprise(true);
-      setStep(4); // Skip to waiting for draw - no gift lists or exclusions in mutual mode
+      setStep('confirm'); // Go to explicit confirmation - no gift lists or exclusions in mutual mode
       return null;
     }
 
@@ -1297,7 +1297,7 @@ export default function JoinGroup() {
                   await saveGroup(groupId, updated);
                   console.log('✅ Exclusions and surprise preference saved to KV');
                   setGroup(updated);
-                  setStep(4);
+                  setStep('confirm'); // Go to confirmation step before waiting
                 } catch (kvErr) {
                   console.error('❌ Failed to save exclusions:', kvErr);
                   setError('Fehler beim Speichern der Ausschlüsse. Bitte versuche es später erneut.');
@@ -1307,6 +1307,62 @@ export default function JoinGroup() {
             >
               ✅ Fertig!
             </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Step "confirm": Final confirmation before waiting for draw
+  if (step === 'confirm' && selectedParticipant && !group.drawn) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
+        <div className="container mx-auto py-12 px-4 max-w-2xl">
+          <div className="bg-white rounded-lg p-8 shadow-lg mb-6">
+            <div className="text-5xl mb-4 text-center">🎉</div>
+            <h1 className="text-4xl font-bold mb-4 text-center text-gray-900">Bestätigung erforderlich</h1>
+            <p className="text-lg text-gray-700 mb-8 text-center">
+              Alles bereit? Bitte bestätige deine Teilnahme.
+            </p>
+
+            <div className="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-6 mb-8">
+              <p className="text-gray-800 font-semibold mb-4">Du meldest dich an als:</p>
+              <p className="text-2xl font-bold text-blue-600 mb-2">{selectedParticipant.name}</p>
+              {selectedParticipant.email && (
+                <p className="text-sm text-gray-600">📧 {selectedParticipant.email}</p>
+              )}
+            </div>
+
+            <div className="bg-green-50 border-l-4 border-green-500 rounded-lg p-6 mb-8">
+              <p className="text-sm text-gray-700 mb-3">
+                <strong>✅ Das ist dein finaler Schritt:</strong>
+              </p>
+              <ul className="text-sm text-gray-700 space-y-2 ml-2">
+                <li>🎁 Deine Anmeldung ist verbindlich</li>
+                <li>⏳ Warte auf die Auslosung durch den Organisator</li>
+                <li>🔐 Verwende deine PIN, um deine Daten später zu bearbeiten</li>
+              </ul>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setStep(3); // Go back to previous step (exclusions in flexible, or back button in mutual)
+                }}
+                className="flex-1 btn-outline"
+              >
+                ← Zurück
+              </button>
+              <button
+                onClick={() => {
+                  // Move to step 4 (waiting for draw)
+                  setStep(4);
+                }}
+                className="flex-1 btn-primary"
+              >
+                ✅ Ja, ich bin dabei!
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -645,31 +645,29 @@ export default function OrganizerDashboard() {
                               )}
                             </div>
 
-                            {/* Action buttons - Different for MUTUAL vs FLEXIBLE mode */}
+                            {/* Action buttons - Show both reset and delete options */}
                             {!group.drawn && (
-                              <>
-                                {group.settings?.surpriseMode === 'mutual' ? (
-                                  // In MUTUAL mode: show reset button to undo selection
-                                  <button
-                                    onClick={() => handleResetMutualSurpriseSelection(participant.id, participant.name)}
-                                    disabled={deletingParticipantId === participant.id}
-                                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 p-2 rounded transition disabled:opacity-50"
-                                    title="Auswahl zurücksetzen - Teilnehmer kann sich neu anmelden"
-                                  >
-                                    {deletingParticipantId === participant.id ? '🔄' : '↩️'}
-                                  </button>
-                                ) : (
-                                  // In FLEXIBLE mode: show delete button
-                                  <button
-                                    onClick={() => handleDeleteParticipant(participant.id, participant.name)}
-                                    disabled={deletingParticipantId === participant.id}
-                                    className="text-red-600 hover:text-red-700 hover:bg-red-50 p-2 rounded transition disabled:opacity-50"
-                                    title="Teilnehmer löschen"
-                                  >
-                                    {deletingParticipantId === participant.id ? '🔄' : '🗑️'}
-                                  </button>
-                                )}
-                              </>
+                              <div className="flex gap-2">
+                                {/* Reset button - Undo participant selection (works in all modes) */}
+                                <button
+                                  onClick={() => handleResetMutualSurpriseSelection(participant.id, participant.name)}
+                                  disabled={deletingParticipantId === participant.id}
+                                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 p-2 rounded transition disabled:opacity-50"
+                                  title="Auswahl zurücksetzen - Teilnehmer kann sich neu anmelden"
+                                >
+                                  {deletingParticipantId === participant.id ? '🔄' : '↩️'}
+                                </button>
+
+                                {/* Delete button - Permanently remove participant */}
+                                <button
+                                  onClick={() => handleDeleteParticipant(participant.id, participant.name)}
+                                  disabled={deletingParticipantId === participant.id}
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50 p-2 rounded transition disabled:opacity-50"
+                                  title="Teilnehmer vollständig löschen"
+                                >
+                                  {deletingParticipantId === participant.id ? '🔄' : '🗑️'}
+                                </button>
+                              </div>
                             )}
                           </div>
                         </div>
