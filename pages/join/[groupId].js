@@ -447,6 +447,8 @@ export default function JoinGroup() {
   // Render dialogs BEFORE step checks so they appear on top
   // Mutual Surprise Warning Dialog
   if (showMutualSurpriseWarning && pendingParticipant) {
+    const isPublicPairings = group?.settings?.pairingVisibility === 'public';
+
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-lg shadow-2xl max-w-md w-full">
@@ -459,11 +461,13 @@ export default function JoinGroup() {
 
             {/* Message */}
             <div className="bg-purple-50 border-l-4 border-purple-400 p-4 mb-6 rounded">
-              <p className="text-sm text-gray-800 mb-3">
-                <strong>Du bist im Blind-Secret-Santa-Modus!</strong>
+              <p className="text-sm text-gray-700 mb-3">
+                Dieses Wichteln findet so statt, dass <strong>jeder überrascht wird</strong> und {isPublicPairings ? 'die Paarungen öffentlich nach der Auslosung einsehbar sind' : 'nur jeder seine eigene Paarung sehen kann'}.
               </p>
               <p className="text-sm text-gray-700">
-                In diesem Modus haben alle Überraschungen - keiner kennt die Wünsche des anderen. Das macht es spannender! 🎁
+                {isPublicPairings
+                  ? '🎁 Es gibt keine geheimen Wunschlisten - alle Wichtelpaare werden nach dem Zug verraten.'
+                  : '🎁 Es gibt keine geheimen Wunschlisten - nur deine eigene Paarung bleibt privat.'}
               </p>
             </div>
 
