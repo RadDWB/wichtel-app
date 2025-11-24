@@ -6,6 +6,7 @@ import { getGroup, saveGroup } from '../../lib/kv-client';
 import GiftList from '../../components/GiftList';
 import AmazonFilterSelector from '../../components/AmazonFilterSelector';
 import PinInput from '../../components/PinInput';
+import SwitchAccountDialog from '../../components/SwitchAccountDialog';
 import { APP_VERSION } from '../../lib/constants';
 
 export const getServerSideProps = async () => {
@@ -57,6 +58,8 @@ export default function JoinGroup() {
   const [currentGifts, setCurrentGifts] = useState([]); // Store gifts for current participant during step 2
   const [organizerPin, setOrganizerPin] = useState(''); // Store organizer PIN to redirect back correctly
   const [sessionCreating, setSessionCreating] = useState(false);
+  const [showSwitchDialog, setShowSwitchDialog] = useState(false); // Show account switch confirmation dialog
+  const [pendingParticipant, setPendingParticipant] = useState(null); // Participant waiting to be selected
 
   // Update ref when step changes
   useEffect(() => {
@@ -253,6 +256,43 @@ export default function JoinGroup() {
   };
 
   const handleJoin = (participant) => {
+    // Check if someone is already logged in and they're clicking a different name
+    const currentParticipantId = localStorage.getItem(`participant_${groupId}`);
+
+    if (currentParticipantId && currentParticipantId !== participant.id && selectedParticipant) {
+      // Different user trying to login - show switch dialog
+      setPendingParticipant(participant);
+      setShowSwitchDialog(true);
+      return;
+    }
+
+    // Perform the actual join
+    performJoin(participant);
+  };
+
+  const clearSession = () => {
+    // Clear all session and participant data
+    if (selectedParticipant) {
+      localStorage.removeItem(`participant_${groupId}`);
+      localStorage.removeItem(`participant_pin_${groupId}_${selectedParticipant.id}`);
+      localStorage.removeItem(`participant_session_${groupId}_${selectedParticipant.id}`);
+    }
+    setSelectedParticipant(null);
+    setParticipantPin('');
+    setTempPin('');
+    setPinConfirmed(false);
+    setPinVerificationError('');
+    setStep(1);
+  };
+
+  const handleSwitchAccount = (newParticipant) => {
+    // Clear current session and login as new participant
+    clearSession();
+    setShowSwitchDialog(false);
+    performJoin(newParticipant);
+  };
+
+  const performJoin = (participant) => {
     // Store participant ID first (before checking anything)
     localStorage.setItem(`participant_${groupId}`, participant.id);
 
@@ -1369,6 +1409,32 @@ export default function JoinGroup() {
           </div>
         </div>
       </div>
+    );
+  }
+
+  // Render Switch Account Dialog if needed
+  if (showSwitchDialog && selectedParticipant && pendingParticipant) {
+    return (
+      <>
+        <SwitchAccountDialog
+          currentParticipantName={selectedParticipant.name}
+          newParticipantName={pendingParticipant.name}
+          onConfirm={() => handleSwitchAccount(pendingParticipant)}
+          onCancel={() => {
+            setShowSwitchDialog(false);
+            setPendingParticipant(null);
+          }}
+        />
+        {/* Keep the Step 1 view in background */}
+        <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50 opacity-50 pointer-events-none">
+          <div className="container mx-auto py-12 px-4 max-w-2xl">
+            <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-lg p-8 mb-8 shadow-lg">
+              <h1 className="text-4xl font-bold mb-2">{occasion?.label}</h1>
+              <p className="text-lg">{group?.name}</p>
+            </div>
+          </div>
+        </div>
+      </>
     );
   }
 
