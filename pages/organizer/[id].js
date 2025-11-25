@@ -803,7 +803,7 @@ export default function OrganizerDashboard() {
             <h3 className="section-title text-red-900 mb-4">🎁 Link mit den Wichtel-Paarungen teilen</h3>
 
             <p className="text-sm text-gray-700 mb-4">
-              {isMutualMode ? (
+              {stats.isMutualMode ? (
                 <>
                   Teile diesen Link mit allen Teilnehmern, um die Paarungen anzuschauen. Die Seite zeigt wer wen beschenkt, ohne dass eine PIN erforderlich ist.
                 </>

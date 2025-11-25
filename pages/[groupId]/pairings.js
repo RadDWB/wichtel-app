@@ -61,8 +61,8 @@ export default function PublicPairings() {
           // Load pairings - construct from pairings map in group
           try {
             const pairingList = [];
-            if (groupData.pairings) {
-              Object.entries(groupData.pairings).forEach(([fromId, toId]) => {
+            if (groupData.pairing) {
+              Object.entries(groupData.pairing).forEach(([fromId, toId]) => {
                 const fromParticipant = groupData.participants.find(p => p.id === fromId);
                 const toParticipant = groupData.participants.find(p => p.id === toId);
                 if (fromParticipant && toParticipant) {
