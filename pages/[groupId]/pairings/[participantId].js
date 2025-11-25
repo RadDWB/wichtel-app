@@ -191,15 +191,14 @@ export default function PartnerDetailPage() {
         {/* Header */}
         <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-orange-500 to-amber-600">
-              🎁 {partner.name}s Profil
+            <h1 className="text-4xl font-bold text-gray-900">
+              🎁 Du beschenst {partner.name}
             </h1>
-            <span className="inline-block bg-gradient-to-r from-red-600 to-orange-500 text-white px-2 py-1 rounded text-xs font-bold">
-              v{APP_VERSION}
-            </span>
           </div>
-          <p className="text-xl text-gray-700">{group.name}</p>
-          <p className="text-gray-600">Budget: {group.budget}</p>
+          <p className="text-xl text-gray-700 mb-2">{group.name}</p>
+          <div className="card bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-orange-300 inline-block mt-4">
+            <p className="text-lg font-semibold text-gray-800">💰 Budget: {group.budget}</p>
+          </div>
         </div>
 
         <div className="max-w-3xl mx-auto">
