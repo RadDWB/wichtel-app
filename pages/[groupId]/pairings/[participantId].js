@@ -261,6 +261,10 @@ export default function PartnerDetailPage() {
             ← Zurück zu den Paarungen
           </Link>
         </div>
+
+        <div className="max-w-4xl mx-auto mt-12 text-center text-sm text-gray-600">
+          <p>Wichtel v{APP_VERSION}</p>
+        </div>
       </div>
     </div>
   );
