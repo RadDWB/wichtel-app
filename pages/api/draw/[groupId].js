@@ -70,10 +70,14 @@ export default async function handler(req, res) {
 
       const isPublic = group.settings?.pairingVisibility === 'public';
 
-      // For all modes after draw: Show pairings page
-      // - VAR 1 & 3 (Public): Everyone can view via /[groupId]/pairings
-      // - VAR 2 & 4 (Private): Must enter PIN at /[groupId]/pairings
-      let pairingsShareLink = `${baseUrl}/${groupId}/pairings`;
+      let pairingsShareLink;
+      if (isPublic) {
+        // VAR 1 & 3 (Public): Public pairings page - everyone can view
+        pairingsShareLink = `${baseUrl}/${groupId}/pairings`;
+      } else {
+        // VAR 2 & 4 (Private): Participant join page - TN melden sich an
+        pairingsShareLink = `${baseUrl}/join/${groupId}`;
+      }
 
       return res.status(200).json({
         success: true,
