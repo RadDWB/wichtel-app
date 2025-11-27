@@ -99,6 +99,12 @@ export default function DrawPage() {
       };
 
       setGroup(updatedGroup);
+
+      // Store the pairings share link for the dashboard
+      if (data.pairingsShareLink) {
+        localStorage.setItem(`drawSuccess_${id}`, data.pairingsShareLink);
+      }
+
       setSuccess(true);
 
       // Redirect to dashboard with success popup after 1 second

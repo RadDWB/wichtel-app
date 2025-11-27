@@ -68,17 +68,12 @@ export default async function handler(req, res) {
         ? `https://${process.env.VERCEL_URL}`
         : `http://localhost:${process.env.PORT || 3000}`;
 
-      const isMutualMode = group.settings?.surpriseMode === 'mutual';
       const isPublic = group.settings?.pairingVisibility === 'public';
 
-      let pairingsShareLink;
-      if (isPublic) {
-        // VAR 1 (Mutual+Public) & VAR 3 (Flexible+Public): Public Pairings Page
-        pairingsShareLink = `${baseUrl}/${groupId}/pairings`;
-      } else {
-        // VAR 2 (Mutual+Private) & VAR 4 (Flexible+Private): Participant Join Page
-        pairingsShareLink = `${baseUrl}/join/${groupId}`;
-      }
+      // For all modes after draw: Show pairings page
+      // - VAR 1 & 3 (Public): Everyone can view via /[groupId]/pairings
+      // - VAR 2 & 4 (Private): Must enter PIN at /[groupId]/pairings
+      let pairingsShareLink = `${baseUrl}/${groupId}/pairings`;
 
       return res.status(200).json({
         success: true,
