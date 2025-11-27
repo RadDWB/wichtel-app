@@ -27,7 +27,7 @@ const AMAZON_AFFILIATE_LINKS = {
 
 export default function OrganizerDashboard() {
   const router = useRouter();
-  const { id, showPin, admin } = router.query;
+  const { id, showPin, admin, drawSuccess } = router.query;
   const [group, setGroup] = useState(null);
   const [gifts, setGifts] = useState({});
   const [loading, setLoading] = useState(true);
@@ -40,6 +40,7 @@ export default function OrganizerDashboard() {
   const [showPairingsAccordion, setShowPairingsAccordion] = useState(false);
   const [showLegend, setShowLegend] = useState(false);
   const [showRecoveryPin, setShowRecoveryPin] = useState(false);
+  const [showDrawSuccess, setShowDrawSuccess] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -68,8 +69,13 @@ export default function OrganizerDashboard() {
           setAuthenticated(false);
         }
       }
+
+      // Check for draw success popup
+      if (drawSuccess === 'true') {
+        setShowDrawSuccess(true);
+      }
     }
-  }, [id, showPin, admin]);
+  }, [id, showPin, admin, drawSuccess]);
 
   // Server-side PIN verification
   const verifyPinServerSide = async () => {
@@ -477,6 +483,39 @@ export default function OrganizerDashboard() {
                   ✅ Verstanden
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Draw Success Popup - Modal mit Overlay */}
+        {showDrawSuccess && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-2xl p-8 max-w-lg w-full">
+              <div className="text-center mb-6">
+                <div className="text-6xl mb-4 animate-bounce">✅</div>
+                <h2 className="text-3xl font-bold text-green-600 mb-2">Auslosung erfolgreich!</h2>
+                <p className="text-gray-700 text-lg">Die Wichtel-Paarungen wurden generiert.</p>
+              </div>
+
+              <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded mb-6 text-left">
+                <p className="text-gray-700 font-semibold mb-3">✨ Was jetzt zu tun ist:</p>
+                <ol className="text-sm text-gray-600 space-y-2 list-decimal list-inside">
+                  <li>Kopiere den Link unten</li>
+                  <li>Versende ihn an alle Teilnehmer</li>
+                  <li>Alle können nun sehen, wen sie beschenken</li>
+                </ol>
+              </div>
+
+              <div className="bg-gray-50 border border-gray-300 rounded-lg p-4 mb-6 max-h-32 overflow-y-auto">
+                <p className="text-xs text-gray-600 font-mono whitespace-pre-wrap break-words">{pairingsShareText}</p>
+              </div>
+
+              <button
+                onClick={() => setShowDrawSuccess(false)}
+                className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition"
+              >
+                ✅ Okay, ich versende den Link
+              </button>
             </div>
           </div>
         )}

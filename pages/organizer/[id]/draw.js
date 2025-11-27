@@ -126,6 +126,11 @@ export default function DrawPage() {
 
       setGroup(updatedGroup);
       setSuccess(true);
+
+      // Redirect to dashboard with success popup after 1 second
+      setTimeout(() => {
+        router.push(`/organizer/${id}?drawSuccess=true`);
+      }, 1000);
     } catch (err) {
       console.error('Error performing draw:', err);
       setError(err.message || 'Fehler beim Auslosen');
@@ -156,94 +161,8 @@ export default function DrawPage() {
   }
 
   if (success) {
-    const participantLink = getParticipantLink();
-    const postDrawShareText = getPostDrawShareText(participantLink);
-
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50 flex items-center justify-center">
-        <div className="text-center max-w-2xl">
-          <div className="bg-white rounded-lg p-12 shadow-lg">
-            <div className="text-6xl mb-4 animate-bounce">🎉</div>
-            <h1 className="text-4xl font-bold text-green-600 mb-4">Auslosung erfolgreich!</h1>
-            <p className="text-xl text-gray-700 mb-2">
-              Die Wichtel-Paarungen wurden generiert. Jeder Teilnehmer kann jetzt seinen Partner und dessen Wunschliste sehen, wenn er seinen PIN eingibt.
-            </p>
-
-            <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded mb-8 text-left">
-              <p className="text-sm text-gray-700 mb-3">
-                <strong>Was passiert jetzt:</strong>
-              </p>
-              <ul className="text-sm text-gray-600 space-y-2">
-                <li>✅ Alle Teilnehmer können die Gruppe öffnen und sehen, wen sie beschenken</li>
-                <li>✅ Jeder sieht die Wunschliste des Partners mit Amazon-Links</li>
-                <li>✅ Jeder kann direkt auf Amazon einkaufen</li>
-                <li>✅ Wir nehmen am Amazon Affiliate Programm teil – Sie unterstützen uns durch Ihre Käufe!</li>
-              </ul>
-            </div>
-
-            {/*             {/* Participant Share Text Section - matches dashboard text copy */}
-            <div className="bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-300 rounded-lg p-6 mb-8 text-left shadow-md">
-              <h2 className="text-xl font-bold text-orange-900 mb-3">📢 Text für Teilnehmer kopieren & versenden:</h2>
-              <p className="text-sm text-gray-700 mb-4">
-                Kopiere den kompletten Nachrichtentext (inkl. Link) und versende ihn an alle Teilnehmer.
-              </p>
-              <div className="bg-white p-4 rounded border-l-4 border-orange-400 mb-4">
-                <p className="text-xs text-gray-700 font-semibold mb-2">Nachricht zum Versenden:</p>
-                <textarea
-                  value={postDrawShareText}
-                  onChange={() => {}}
-                  readOnly
-                  className="w-full text-xs text-gray-600 leading-relaxed whitespace-pre-wrap bg-white border border-orange-200 rounded p-3 font-mono"
-                  rows={6}
-                />
-              </div>
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(postDrawShareText);
-                  const btn = document.getElementById('copy-share-text');
-                  if (btn) {
-                    btn.innerText = '✅ Kopiert';
-                    setTimeout(() => {
-                      btn.innerText = '📋 Text kopieren';
-                    }, 1200);
-                  }
-                }}
-                id="copy-share-text"
-                className="px-4 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg transition w-full md:w-auto"
-              >
-                📋 Text kopieren
-              </button>
-            </div>
-{/* Prominent Amazon Affiliate Section */}
-            <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-400 rounded-lg p-6 mb-8 shadow-md">
-              <h2 className="text-2xl font-bold text-orange-900 mb-3">🛍️ Jetzt einkaufen gehen!</h2>
-              <p className="text-gray-700 mb-5">
-                Stöbere jetzt auf Amazon.de nach tollen Geschenkideen für deine Wichtel! Wir nehmen am Amazon Affiliate Programm teil – Sie unterstützen uns durch Ihre Käufe.
-              </p>
-              <a
-                href={getAmazonLink()}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block w-full md:w-auto text-center bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-4 px-8 rounded-lg transition transform hover:scale-105 shadow-lg text-lg"
-              >
-                🎁 Zu Amazon.de
-              </a>
-              <p className="text-xs text-gray-600 mt-3">
-                Mit deinem Budget: <strong>{group?.budget || 'Flexibel'}</strong>
-              </p>
-            </div>
-
-            <p className="text-gray-600 mb-8">
-              Leite deine Teilnehmer auf die Seite weiter, damit sie ihre Wichtel-Partner sehen können.
-            </p>
-
-            <Link href={`/organizer/${id}`} className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition">
-              ← Zum Dashboard zurück
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
+    // Redirect to dashboard - don't show anything
+    return null;
   }
 
   // Show confirmation screen

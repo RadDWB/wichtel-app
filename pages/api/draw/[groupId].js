@@ -63,11 +63,29 @@ export default async function handler(req, res) {
         // Still return success because the client will save it locally
       }
 
+      // Generate mode-aware share link
+      const baseUrl = process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : `http://localhost:${process.env.PORT || 3000}`;
+
+      const isMutualMode = group.settings?.surpriseMode === 'mutual';
+      const isPublic = group.settings?.pairingVisibility === 'public';
+
+      let pairingsShareLink;
+      if (isPublic) {
+        // VAR 1 (Mutual+Public) & VAR 3 (Flexible+Public): Public Pairings Page
+        pairingsShareLink = `${baseUrl}/${groupId}/pairings`;
+      } else {
+        // VAR 2 (Mutual+Private) & VAR 4 (Flexible+Private): Participant Join Page
+        pairingsShareLink = `${baseUrl}/join/${groupId}`;
+      }
+
       return res.status(200).json({
         success: true,
         message: 'Draw completed successfully',
         drawn: true,
         pairing,
+        pairingsShareLink,
         group: updated, // Return full group so client can save it
       });
     } catch (error) {
