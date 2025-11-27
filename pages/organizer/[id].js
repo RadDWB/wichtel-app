@@ -511,7 +511,19 @@ export default function OrganizerDashboard() {
               </div>
 
               <button
-                onClick={() => setShowDrawSuccess(false)}
+                onClick={() => {
+                  // Copy link to clipboard
+                  navigator.clipboard.writeText(pairingsShareText);
+                  // Close modal
+                  setShowDrawSuccess(false);
+                  // Optional: Show feedback (if you want visual confirmation)
+                  const btn = event.target;
+                  const originalText = btn.innerText;
+                  btn.innerText = '✅ Link kopiert!';
+                  setTimeout(() => {
+                    btn.innerText = originalText;
+                  }, 2000);
+                }}
                 className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition"
               >
                 ✅ Okay, ich versende den Link
