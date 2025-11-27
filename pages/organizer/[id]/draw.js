@@ -178,64 +178,11 @@ export default function DrawPage() {
             </div>
           )}
 
-          {/* Prerequisites Check */}
-          <div className="bg-blue-50 border-l-4 border-blue-500 p-6 rounded mb-8">
-            <h2 className="text-xl font-bold text-blue-900 mb-4">✅ Checkliste vor Auslosung:</h2>
-            <ul className="space-y-3 text-sm text-gray-700">
-              <li className="flex items-start gap-3">
-                <span className="text-green-600 font-bold mt-0.5">✓</span>
-                <span>Alle Teilnehmer haben sich angemeldet</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="text-green-600 font-bold mt-0.5">✓</span>
-                <span>Alle Teilnehmer haben ihre Geschenkelisten eingegeben</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="text-green-600 font-bold mt-0.5">✓</span>
-                <span>Alle Exclusions wurden gesetzt</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="text-green-600 font-bold mt-0.5">✓</span>
-                <span>Auslosung kann NICHT rückgängig gemacht werden!</span>
-              </li>
-            </ul>
-          </div>
-
           {/* Group Info */}
-          <div className="grid grid-cols-2 gap-4 mb-8">
-            <div className="bg-gray-50 rounded p-4">
-              <p className="text-gray-600 text-sm font-semibold">Gruppe</p>
-              <p className="text-2xl font-bold text-gray-900">{group.name}</p>
-            </div>
-            <div className="bg-gray-50 rounded p-4">
-              <p className="text-gray-600 text-sm font-semibold">Teilnehmer</p>
-              <p className="text-2xl font-bold text-gray-900">{group.participants?.length || 0}</p>
-            </div>
-          </div>
-
-          {/* Participants List */}
-          <div className="mb-8">
-            <h3 className="font-bold text-gray-900 mb-3">📋 Teilnehmer die ausgelost werden:</h3>
-            <div className="space-y-2">
-              {group.participants && group.participants.length > 0 ? (
-                group.participants.map((p) => (
-                  <div key={p.id} className="bg-gray-50 p-3 rounded flex items-center gap-2">
-                    <span className="text-blue-600">•</span>
-                    <span className="font-medium text-gray-900">{p.name}</span>
-                  </div>
-                ))
-              ) : (
-                <p className="text-gray-500">Keine Teilnehmer</p>
-              )}
-            </div>
-          </div>
-
-          {/* Warning */}
-          <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded mb-8">
-            <p className="text-red-900 font-bold mb-2">⚠️ WICHTIG:</p>
-            <p className="text-sm text-red-800">
-              Bitte stelle sicher, dass ALLE Teilnehmer ihre Geschenkelisten eingetragen haben, bevor du auslos! Diese Aktion kann nicht rückgängig gemacht werden.
-            </p>
+          <div className="text-center mb-8">
+            <p className="text-gray-600 text-sm font-semibold mb-2">Gruppe</p>
+            <p className="text-3xl font-bold text-gray-900 mb-4">{group.name}</p>
+            <p className="text-gray-700"><span className="font-semibold">{group.participants?.length || 0}</span> Teilnehmer</p>
           </div>
 
           {/* Buttons */}

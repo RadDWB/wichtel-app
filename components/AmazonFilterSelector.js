@@ -1,59 +1,152 @@
-import { useEffect, useState } from 'react';
-import { AUDIENCES, CATEGORIES, GENDERS, PRICE_LABELS, PRICE_RANGES, generateAmazonUrl } from '../lib/amazon-filters';
+import { useState } from 'react';
+
+const AFFILIATE_TAG = 'httpwwwspor03-21';
+const BASE_URL = 'https://www.amazon.de/s';
+
+// Same filter structure as GiftList - query-based approach
+const AMAZON_FILTERS = {
+  price: [
+    { label: '1-5 €', query: 'bis 5 Euro' },
+    { label: '5-10 €', query: '5 bis 10 Euro' },
+    { label: '10-15 €', query: '10 bis 15 Euro' },
+    { label: '15-20 €', query: '15 bis 20 Euro' },
+    { label: '20-30 €', query: '20 bis 30 Euro' },
+    { label: '30-50 €', query: '30 bis 50 Euro' },
+    { label: '50-100 €', query: '50 bis 100 Euro' },
+    { label: '100+ €', query: 'über 100 Euro' },
+  ],
+  age: [
+    { label: '👶 Baby (0-2 Jahre)', query: 'Baby Geschenk' },
+    { label: '👧 Kind (3-7 Jahre)', query: 'Kinder 3-7 Jahre Geschenk' },
+    { label: '🧒 Schulkind (8-12 Jahre)', query: 'Kinder 8-12 Jahre Geschenk' },
+    { label: '👦 Teenager (13-17 Jahre)', query: 'Teenager Geschenk' },
+    { label: '👨 Erwachsener (18-40 Jahre)', query: 'Geschenk für Erwachsene' },
+    { label: '👩 Reifer (40-60 Jahre)', query: 'Geschenk für 40-60 Jährige' },
+    { label: '👴 Senioren (über 60 Jahre)', query: 'Geschenk für Senioren' },
+  ],
+  gender: [
+    { label: '👩 Weiblich', query: 'für Frauen' },
+    { label: '👨 Männlich', query: 'für Männer' },
+    { label: '❓ Egal', query: '' },
+  ],
+  category: [
+    { label: '📚 Bücher & E-Reader', query: 'Bücher E-Reader' },
+    { label: '🎮 Gaming & Konsolen', query: 'Gaming Konsole' },
+    { label: '🎧 Audio & Kopfhörer', query: 'Kopfhörer Lautsprecher' },
+    { label: '⌚ Uhren & Schmuck', query: 'Uhren Schmuck' },
+    { label: '💻 Elektronik & Gadgets', query: 'Elektronik Gadget' },
+    { label: '🏃 Sport & Outdoor', query: 'Sport Outdoor' },
+    { label: '🧘 Beauty & Wellness', query: 'Beauty Wellness' },
+    { label: '🍳 Haushalt & Küche', query: 'Haushalt Küche' },
+  ],
+};
+
+// Build Amazon search URL using text-based query strings
+const buildAmazonSearchUrl = (price, category, age, gender) => {
+  const queryParts = ['geschenkideen'];
+
+  if (category?.query) queryParts.push(category.query);
+  if (age?.query) queryParts.push(age.query);
+  if (gender?.query) queryParts.push(gender.query);
+  if (price?.query) queryParts.push(price.query);
+
+  const searchParams = new URLSearchParams();
+  searchParams.set('k', queryParts.join(' '));
+  searchParams.set('language', 'de_DE');
+  searchParams.set('tag', AFFILIATE_TAG);
+
+  return `${BASE_URL}?${searchParams.toString()}`;
+};
 
 export default function AmazonFilterSelector({ preselectedPrice = null, compact = false }) {
-  const [selectedAudience, setSelectedAudience] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [selectedPrice, setSelectedPrice] = useState(preselectedPrice || null);
+  const [selectedPrice, setSelectedPrice] = useState(
+    preselectedPrice ? AMAZON_FILTERS.price.find(p => p.label === preselectedPrice) : null
+  );
+  const [selectedAge, setSelectedAge] = useState(null);
   const [selectedGender, setSelectedGender] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(null);
 
-  const getAmazonLink = (priceRange) => {
-    const priceRangeKey = PRICE_RANGES[priceRange] || null;
-    return generateAmazonUrl(priceRangeKey, selectedAudience, selectedCategory, selectedGender);
+  const handleSearch = () => {
+    const url = buildAmazonSearchUrl(selectedPrice, selectedCategory, selectedAge, selectedGender);
+    window.open(url, '_blank');
   };
 
-  useEffect(() => {
-    if (preselectedPrice) {
-      setSelectedPrice(preselectedPrice);
-    }
-  }, [preselectedPrice]);
-
   return (
-    <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-400 rounded-lg p-6 shadow-md">
-      <h3 className="text-xl font-bold text-orange-900 mb-4">🎯 Geschenk-Filter für Amazon</h3>
+    <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-400 rounded-lg p-6 shadow-md space-y-6">
+      <h3 className="text-xl font-bold text-orange-900">🎯 Geschenk-Filter für Amazon</h3>
 
-      {/* Audience Selection */}
-      <div className="mb-6">
-        <p className="text-sm font-semibold text-gray-900 mb-3">Für wen suchst du?</p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          {Object.entries(AUDIENCES).map(([key, audience]) => (
+      {/* Budget - Vorausgewählt */}
+      <div className="bg-orange-100 border border-orange-300 p-4 rounded-lg">
+        <p className="text-sm font-semibold text-orange-900 mb-3">💰 SCHRITT 1: Budget wählen</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+          {AMAZON_FILTERS.price.map((range) => (
             <button
-              key={key}
-              onClick={() => setSelectedAudience(selectedAudience === key ? null : key)}
+              key={range.label}
+              onClick={() => setSelectedPrice(range)}
               className={`py-2 px-3 rounded-lg font-semibold text-sm transition ${
-                selectedAudience === key
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'bg-white border border-gray-300 text-gray-700 hover:border-blue-400'
+                selectedPrice?.label === range.label
+                  ? 'bg-orange-600 text-white shadow-md'
+                  : 'bg-white border border-gray-300 text-gray-900 hover:border-orange-400'
               }`}
             >
-              {audience.label}
+              {range.label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Gender Selection */}
-      <div className="mb-6">
-        <p className="text-sm font-semibold text-gray-900 mb-3">Geschlecht:</p>
-        <div className="grid grid-cols-3 gap-2">
-          {Object.entries(GENDERS).map(([key, gender]) => (
+      {/* Kategorie */}
+      <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded">
+        <p className="text-sm font-semibold text-green-900 mb-3">🏷️ SCHRITT 2: Kategorie (optional)</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {AMAZON_FILTERS.category.map((cat) => (
             <button
-              key={key}
-              onClick={() => setSelectedGender(selectedGender === key ? null : key)}
-              className={`py-2 px-3 rounded-lg font-semibold text-sm transition ${
-                selectedGender === key
-                  ? 'bg-purple-600 text-white shadow-md'
-                  : 'bg-white border border-gray-300 text-gray-700 hover:border-purple-400'
+              key={cat.label}
+              onClick={() => setSelectedCategory(cat)}
+              className={`text-sm py-2 px-3 rounded font-semibold transition ${
+                selectedCategory?.label === cat.label
+                  ? 'bg-green-600 text-white ring-2 ring-green-300'
+                  : 'bg-green-100 text-green-900 hover:bg-green-200'
+              }`}
+            >
+              {cat.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Alter */}
+      <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+        <p className="text-sm font-semibold text-blue-900 mb-3">👥 SCHRITT 3: Altersbereich (optional)</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {AMAZON_FILTERS.age.map((age) => (
+            <button
+              key={age.label}
+              onClick={() => setSelectedAge(age)}
+              className={`text-sm py-2 px-3 rounded font-semibold transition ${
+                selectedAge?.label === age.label
+                  ? 'bg-blue-600 text-white ring-2 ring-blue-300'
+                  : 'bg-blue-100 text-blue-900 hover:bg-blue-200'
+              }`}
+            >
+              {age.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Geschlecht */}
+      <div className="bg-purple-50 border-l-4 border-purple-400 p-4 rounded">
+        <p className="text-sm font-semibold text-purple-900 mb-3">👫 SCHRITT 4: Geschlecht (optional)</p>
+        <div className="grid grid-cols-2 gap-2">
+          {AMAZON_FILTERS.gender.map((gender) => (
+            <button
+              key={gender.label}
+              onClick={() => setSelectedGender(gender)}
+              className={`text-sm py-2 px-3 rounded font-semibold transition ${
+                selectedGender?.label === gender.label
+                  ? 'bg-purple-600 text-white ring-2 ring-purple-300'
+                  : 'bg-purple-100 text-purple-900 hover:bg-purple-200'
               }`}
             >
               {gender.label}
@@ -62,52 +155,13 @@ export default function AmazonFilterSelector({ preselectedPrice = null, compact 
         </div>
       </div>
 
-      {/* Category Selection */}
-      <div className="mb-6">
-        <p className="text-sm font-semibold text-gray-900 mb-3">Produkttyp:</p>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-          {Object.entries(CATEGORIES).map(([key, category]) => (
-            <button
-              key={key}
-              onClick={() => setSelectedCategory(selectedCategory === key ? null : key)}
-              className={`py-2 px-3 rounded-lg font-semibold text-sm transition ${
-                selectedCategory === key
-                  ? 'bg-green-600 text-white shadow-md'
-                  : 'bg-white border border-gray-300 text-gray-700 hover:border-green-400'
-              }`}
-            >
-              {category.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Price Range Buttons */}
-      <div className="mb-4">
-        <p className="text-sm font-semibold text-gray-900 mb-3">Budget:</p>
-        <div className={`grid ${compact ? 'grid-cols-3 md:grid-cols-4' : 'grid-cols-2 md:grid-cols-5'} gap-2`}>
-          {PRICE_LABELS.map((price) => {
-            const isSelected = selectedPrice === price.range;
-            const isPreselected = preselectedPrice === price.range;
-            return (
-              <a
-                key={price.range || 'all'}
-                href={getAmazonLink(price.range)}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setSelectedPrice(price.range)}
-                className={`py-3 px-4 rounded-lg font-semibold text-center transition transform hover:scale-105 shadow-md text-white ${
-                  isSelected || isPreselected
-                    ? 'bg-gradient-to-r from-orange-600 to-orange-700 ring-2 ring-orange-400 scale-105'
-                    : 'bg-orange-500 hover:bg-orange-600'
-                }`}
-              >
-                {price.label}
-              </a>
-            );
-          })}
-        </div>
-      </div>
+      {/* Search Button */}
+      <button
+        onClick={handleSearch}
+        className="w-full py-4 px-6 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white rounded-lg font-bold text-lg transition shadow-lg transform hover:scale-105"
+      >
+        🚀 AMAZON-SUCHE STARTEN
+      </button>
 
       <p className="text-xs text-gray-600 text-center">
         💚 Wir nehmen am Amazon Affiliate Programm teil, Sie unterstützen uns durch Ihre Käufe!
