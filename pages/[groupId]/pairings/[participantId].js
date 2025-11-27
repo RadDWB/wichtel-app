@@ -111,8 +111,8 @@ export default function PartnerDetailPage() {
     }
   };
 
-  // Check if partner wants surprise
-  const wantsSurprise = !gifts || gifts.length === 0;
+  // Check if partner wants surprise (from database, not inferred from gifts)
+  const wantsSurprise = partner?.wantsSurprise === true;
 
   // Get preselected budget for Amazon filters
   const preselectedPrice = getBudgetPriceRange(group?.budget);
