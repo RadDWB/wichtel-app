@@ -11,15 +11,6 @@ export const getServerSideProps = async () => {
   };
 };
 
-// Amazon Affiliate Links with different budget ranges
-const AMAZON_AFFILIATE_LINKS = {
-  // Für verschiedene Preisranges - diese Links leiten zu gefilterten Suchergebnissen
-  all: 'https://www.amazon.de/s?k=geschenkideen&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl',
-  lowBudget: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A500-1500&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl', // 5-15€
-  mediumBudget: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A2000-3000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl', // 20-30€
-  highBudget: 'https://www.amazon.de/s?k=geschenkideen&rh=p_price%3A5000-10000&linkCode=ll2&tag=httpwwwspor03-21&linkId=352789827e8ff4245765ad12811dd59f&language=de_DE&ref_=as_li_ss_tl', // 50-100€
-};
-
 export default function DrawPage() {
   const router = useRouter();
   const { id } = router.query;
@@ -76,23 +67,6 @@ export default function DrawPage() {
       setLoading(false);
     }
   };
-
-  // Get appropriate Amazon link based on budget
-  const getAmazonLink = () => {
-    if (!group?.budget) return AMAZON_AFFILIATE_LINKS.all;
-
-    const budget = group.budget.toLowerCase();
-    if (budget.includes('5') || budget.includes('10') || budget.includes('15')) {
-      return AMAZON_AFFILIATE_LINKS.lowBudget;
-    } else if (budget.includes('20') || budget.includes('25') || budget.includes('30')) {
-      return AMAZON_AFFILIATE_LINKS.mediumBudget;
-    } else if (budget.includes('50') || budget.includes('100')) {
-      return AMAZON_AFFILIATE_LINKS.highBudget;
-    }
-    return AMAZON_AFFILIATE_LINKS.all;
-  };
-
-  const getParticipantLink = () => `${typeof window !== 'undefined' ? window.location.origin : ''}/join/${id}`;
 
   const performDraw = async () => {
     if (!window.confirm('⚠️ WARNUNG: Das Auslosen kann NICHT rückgängig gemacht werden! Sicher fortfahren?')) {

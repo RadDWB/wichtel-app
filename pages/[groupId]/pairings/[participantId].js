@@ -202,7 +202,30 @@ export default function PartnerDetailPage() {
         </div>
 
         <div className="max-w-3xl mx-auto">
-          {gifts.length === 0 && wantsSurprise ? (
+          {gifts.length > 0 ? (
+            // Gift list
+            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">📋 {partner.name}s Wunschliste</h2>
+
+              <div className="mb-8">
+                <GiftList
+                  group={group}
+                  groupId={groupId}
+                  participantId={participantId}
+                  isViewing={true}
+                />
+              </div>
+
+              {/* Amazon Filters for Gift List */}
+              <div className="mt-8">
+                <h3 className="text-2xl font-bold text-gray-900 mb-6">🛍️ Konntest du das perfekte Geschenk nicht finden?</h3>
+                <p className="text-gray-700 mb-6">
+                  Nutze unsere intelligenten Filter, um auf Amazon.de nach Alternativen zu suchen:
+                </p>
+                <AmazonFilterSelector preselectedPrice={preselectedPrice} />
+              </div>
+            </div>
+          ) : wantsSurprise ? (
             // Surprise message with Amazon Filters
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <div className="text-center mb-8">
@@ -229,30 +252,7 @@ export default function PartnerDetailPage() {
               {/* Amazon Filters for Surprise */}
               <AmazonFilterSelector preselectedPrice={preselectedPrice} />
             </div>
-          ) : (
-            // Gift list
-            <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-6">📋 {partner.name}s Wunschliste</h2>
-
-              <div className="mb-8">
-                <GiftList
-                  group={group}
-                  groupId={groupId}
-                  participantId={participantId}
-                  isViewing={true}
-                />
-              </div>
-
-              {/* Amazon Filters for Gift List */}
-              <div className="mt-8">
-                <h3 className="text-2xl font-bold text-gray-900 mb-6">🛍️ Konntest du das perfekte Geschenk nicht finden?</h3>
-                <p className="text-gray-700 mb-6">
-                  Nutze unsere intelligenten Filter, um auf Amazon.de nach Alternativen zu suchen:
-                </p>
-                <AmazonFilterSelector preselectedPrice={preselectedPrice} />
-              </div>
-            </div>
-          )}
+          ) : null}
         </div>
 
         {/* Back Button */}
