@@ -202,7 +202,7 @@ export default function PartnerDetailPage() {
         </div>
 
         <div className="max-w-3xl mx-auto">
-          {wantsSurprise ? (
+          {gifts.length === 0 && wantsSurprise ? (
             // Surprise message with Amazon Filters
             <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
               <div className="text-center mb-8">
