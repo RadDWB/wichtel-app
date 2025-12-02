@@ -1188,6 +1188,54 @@ export default function OrganizerDashboard() {
             <AmazonFilterSelector />
           </div>
         )}
+
+        {/* Footer with Contact & Support */}
+        <div className="mt-16 pt-8 border-t border-gray-300">
+          <div className="text-center mb-8">
+            <p className="text-sm text-gray-600 mb-2">
+              Entwickler: <a href="mailto:wichtel@oneonone.de" className="text-blue-600 hover:underline">wichtel@oneonone.de</a>
+            </p>
+            <p className="text-xs text-gray-500">Copyright © RD 2025. Alle Rechte vorbehalten.</p>
+          </div>
+
+          {/* Ko-Fi Donation Widget */}
+          <div className="text-center mb-8">
+            <p className="text-sm text-gray-700 mb-4">
+              Wenn Sie diese App hilfreich finden, spendieren Sie dem Entwickler einen Kaffee:
+            </p>
+            <iframe
+              id='kofiframe'
+              src='https://ko-fi.com/jacksnyderkofi/?hidefeed=true&widget=true&embed=true&preview=true'
+              style={{border:'none', width:'100%', padding:'4px', background:'#f9f9f9'}}
+              height='712'
+              title='jacksnyderkofi'
+            />
+          </div>
+
+          {/* Buy Me A Coffee Widget Script */}
+          <div className="text-center">
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.addEventListener('load', function() {
+                    const script = document.createElement('script');
+                    script.setAttribute('data-name', 'BMC-Widget');
+                    script.setAttribute('data-cfasync', 'false');
+                    script.src = 'https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js';
+                    script.setAttribute('data-id', 'rduwenbecky');
+                    script.setAttribute('data-description', 'Support me on Buy me a coffee!');
+                    script.setAttribute('data-message', 'Hi, falls Sie diese kleine App hilfreich finden, unterstützen Sie mich gerne mit einem Kaffee! Gruß');
+                    script.setAttribute('data-color', '#FF5F5F');
+                    script.setAttribute('data-position', 'Right');
+                    script.setAttribute('data-x_margin', '18');
+                    script.setAttribute('data-y_margin', '18');
+                    document.body.appendChild(script);
+                  });
+                `
+              }}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
