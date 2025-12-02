@@ -254,13 +254,21 @@ export default function JoinGroupMutual() {
     setTempPin('');
     setPinVerificationError('');
 
-    // In Mutual Mode: Always require PIN for security
-    if (storedPin) {
-      // PIN exists → Verify it
+    // PIN logic: Required if pairings are PRIVATE (for security)
+    // In Public + Mutual mode: No PIN needed (pairings visible to everyone anyway)
+    const isPublicPairings = group?.settings?.pairingVisibility === 'public';
+    const pinNotNeeded = isPublicPairings;
+
+    if (pinNotNeeded) {
+      // Public pairings: No PIN required, go straight to confirmation
+      setPinConfirmed(true);
+      setStep('confirm');
+    } else if (storedPin) {
+      // Private pairings + PIN exists → Verify it
       setPinConfirmed(false);
       setStep('pin-verify');
     } else {
-      // No PIN → Create one NOW!
+      // Private pairings + No PIN → Create one NOW!
       setPinConfirmed(false);
       setStep('pin-create');
     }
@@ -272,11 +280,13 @@ export default function JoinGroupMutual() {
       return;
     }
 
-    // Ensure PIN is set: Mutual mode ALWAYS has a PIN
+    // PIN logic: Required if pairings are PRIVATE (for security)
+    // In Public + Mutual mode: PIN is optional (pairings visible to everyone anyway)
+    const isPublicPairings = group?.settings?.pairingVisibility === 'public';
     const existingPin = group.participants.find(p => p.id === selectedParticipant.id)?.pin;
     const pinToSave = participantPin || existingPin;
 
-    if (!pinToSave) {
+    if (!isPublicPairings && !pinToSave) {
       setError('PIN ist erforderlich. Bitte setze eine PIN.');
       return;
     }
