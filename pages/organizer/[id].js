@@ -242,9 +242,7 @@ export default function OrganizerDashboard() {
 
   const getParticipantLink = () => {
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
-    const isMutual = group?.settings?.surpriseMode === 'mutual';
-    const path = isMutual ? `/join/${id}/mutual` : `/join/${id}`;
-    return `${origin}${path}`;
+    return `${origin}/join/${id}`;
   };
 
   const getPairingsLink = () => {

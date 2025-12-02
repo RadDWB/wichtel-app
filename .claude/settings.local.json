@@ -14,7 +14,9 @@
       "Bash(npm run dev:*)",
       "Bash(node -c:*)",
       "Bash(npm run build:*)",
-      "Bash(xargs -I {} sh -c 'echo \"\"\"\"===== {} =====\"\"\"\" && grep -n \"\"\"\"Wichtel v\"\"\"\" {}')"
+      "Bash(xargs -I {} sh -c 'echo \"\"\"\"===== {} =====\"\"\"\" && grep -n \"\"\"\"Wichtel v\"\"\"\" {}')",
+      "Bash(git tag:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []
