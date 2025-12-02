@@ -32,7 +32,7 @@ export default function Home() {
             </h2>
             <a
               href="/setup"
-              className="block w-full bg-gradient-to-r from-red-600 to-orange-500 text-white font-bold py-3 rounded-lg text-center hover:from-red-700 hover:to-orange-600 transition"
+              className="block w-full bg-gradient-to-r from-red-600 to-orange-500 text-white font-bold py-3 rounded-lg text-center transition hover:shadow-xl hover:shadow-blue-400"
             >
               ✅ Neue Wichtelgruppe anlegen
             </a>
