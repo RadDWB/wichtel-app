@@ -27,7 +27,7 @@ export default function Home() {
         {/* Main Content */}
         <div className="max-w-md mx-auto">
           <div className="card bg-gradient-to-br from-white to-amber-50 shadow-xl border-2 border-amber-200 mb-6">
-            <h2 className="text-2xl font-bold text-center mb-6 text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-amber-600">
+            <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
               🚀 Jetzt starten!
             </h2>
             <a
