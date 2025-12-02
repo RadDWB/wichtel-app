@@ -804,7 +804,7 @@ export default function JoinGroupMutual() {
                 }}
                 className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-3 px-4 rounded-lg transition"
               >
-                ✅ Ja, ich bin dabei! Auf geht's zur Auslosung!
+                ✅ Ja, ich bin dabei!
               </button>
 
               <button
@@ -814,16 +814,9 @@ export default function JoinGroupMutual() {
                   setPinConfirmed(false);
                   setStep(1);
                 }}
-                className="w-full py-2 px-4 text-red-600 hover:underline text-sm"
+                className="w-full py-2 px-4 text-blue-600 hover:underline text-sm"
               >
                 ← Zurück zur Teilnehmerliste
-              </button>
-
-              <button
-                onClick={handleLeaveGroup}
-                className="w-full py-3 px-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition"
-              >
-                ❌ Nicht teilnehmen (aus Gruppe entfernen)
               </button>
             </div>
           </div>
@@ -854,15 +847,11 @@ export default function JoinGroupMutual() {
               </ul>
             </div>
 
-            <div className="text-gray-600 mb-8">
-              <p className="font-semibold">Oder möchtest du dich abmelden?</p>
-            </div>
-
             <button
-              onClick={handleLeaveGroup}
-              className="w-full py-3 px-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition"
+              onClick={() => window.close()}
+              className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition"
             >
-              ❌ Aus Gruppe entfernen
+              ✅ Fertig - ich kann den Tab schließen
             </button>
 
             <div className="mt-12 text-center text-sm text-gray-600">
