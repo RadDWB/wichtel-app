@@ -3,17 +3,17 @@ import { useState } from 'react';
 const AFFILIATE_TAG = 'httpwwwspor03-21';
 const BASE_URL = 'https://www.amazon.de/s';
 
-// Same filter structure as GiftList - query-based approach
+// Filter mit echten Preisranges (min/max in €) für p_36 Amazon-Parameter
 const AMAZON_FILTERS = {
   price: [
-    { label: '1-5 €', query: 'bis 5 Euro' },
-    { label: '5-10 €', query: '5 bis 10 Euro' },
-    { label: '10-15 €', query: '10 bis 15 Euro' },
-    { label: '15-20 €', query: '15 bis 20 Euro' },
-    { label: '20-30 €', query: '20 bis 30 Euro' },
-    { label: '30-50 €', query: '30 bis 50 Euro' },
-    { label: '50-100 €', query: '50 bis 100 Euro' },
-    { label: '100+ €', query: 'über 100 Euro' },
+    { label: '1-5 €', min: 1, max: 5 },
+    { label: '5-10 €', min: 5, max: 10 },
+    { label: '10-15 €', min: 10, max: 15 },
+    { label: '15-20 €', min: 15, max: 20 },
+    { label: '20-30 €', min: 20, max: 30 },
+    { label: '30-50 €', min: 30, max: 50 },
+    { label: '50-100 €', min: 50, max: 100 },
+    { label: '100+ €', min: 100, max: null },
   ],
   age: [
     { label: '👶 Baby (0-2 Jahre)', query: 'Baby Geschenk' },
@@ -21,7 +21,7 @@ const AMAZON_FILTERS = {
     { label: '🧒 Schulkind (8-12 Jahre)', query: 'Kinder 8-12 Jahre Geschenk' },
     { label: '👦 Teenager (13-17 Jahre)', query: 'Teenager Geschenk' },
     { label: '👨 Erwachsener (18-40 Jahre)', query: 'Geschenk für Erwachsene' },
-    { label: '👩 Reifer (40-60 Jahre)', query: 'Geschenk für 40-60 Jährige' },
+    { label: '👩 Reifer (40-60 Jahre)', query: 'Geschenk 40-60 Jahre' },
     { label: '👴 Senioren (über 60 Jahre)', query: 'Geschenk für Senioren' },
   ],
   gender: [
@@ -32,31 +32,54 @@ const AMAZON_FILTERS = {
   category: [
     { label: '📚 Bücher & E-Reader', query: 'Bücher E-Reader' },
     { label: '🎮 Gaming & Konsolen', query: 'Gaming Konsole' },
-    { label: '🎧 Audio & Kopfhörer', query: 'Kopfhörer Lautsprecher' },
+    { label: '🎧 Audio & Kopfhörer', query: 'Kopfhörer Bluetooth' },
     { label: '⌚ Uhren & Schmuck', query: 'Uhren Schmuck' },
     { label: '💻 Elektronik & Gadgets', query: 'Elektronik Gadget' },
     { label: '🏃 Sport & Outdoor', query: 'Sport Outdoor' },
     { label: '🧘 Beauty & Wellness', query: 'Beauty Wellness' },
-    { label: '🍳 Haushalt & Küche', query: 'Haushalt Küche' },
+    { label: '🍳 Haushalt & Küche', query: 'Küche Haushalt' },
   ],
 };
 
-// Build Amazon search URL using text-based query strings
-const buildAmazonSearchUrl = (price, category, age, gender) => {
+// Build Amazon search URL with proper p_36 price filter (in cents)
+function buildAmazonSearchUrl(selectedFilters) {
+  const { price, category, age, gender } = selectedFilters;
+
   const queryParts = ['geschenkideen'];
 
   if (category?.query) queryParts.push(category.query);
   if (age?.query) queryParts.push(age.query);
   if (gender?.query) queryParts.push(gender.query);
-  if (price?.query) queryParts.push(price.query);
 
   const searchParams = new URLSearchParams();
+
+  // Search keywords (without price text)
   searchParams.set('k', queryParts.join(' '));
+
+  // REAL price filter: p_36 with price range in cents
+  if (price) {
+    let priceStr = '';
+    if (price.min !== undefined && price.min !== null) {
+      priceStr += price.min * 100; // convert € to cents
+    }
+    priceStr += '-';
+    if (price.max !== undefined && price.max !== null) {
+      priceStr += price.max * 100;
+    }
+    searchParams.set('rh', `p_36:${priceStr}`);
+  }
+
+  // For cheap gifts (< 20 €) always sort by price ascending → higher conversion!
+  if (price && price.max && price.max <= 20) {
+    searchParams.set('s', 'price-asc-rank');
+  }
+
+  // Language and affiliate tag
   searchParams.set('language', 'de_DE');
   searchParams.set('tag', AFFILIATE_TAG);
 
   return `${BASE_URL}?${searchParams.toString()}`;
-};
+}
 
 export default function AmazonFilterSelector({ preselectedPrice = null, compact = false }) {
   const [selectedPrice, setSelectedPrice] = useState(
@@ -67,7 +90,12 @@ export default function AmazonFilterSelector({ preselectedPrice = null, compact 
   const [selectedCategory, setSelectedCategory] = useState(null);
 
   const handleSearch = () => {
-    const url = buildAmazonSearchUrl(selectedPrice, selectedCategory, selectedAge, selectedGender);
+    const url = buildAmazonSearchUrl({
+      price: selectedPrice,
+      category: selectedCategory,
+      age: selectedAge,
+      gender: selectedGender,
+    });
     window.open(url, '_blank');
   };
 
