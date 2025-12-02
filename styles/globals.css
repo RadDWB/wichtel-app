@@ -43,12 +43,13 @@ a {
 }
 
 /* Button links should not have red text styling */
-a.btn, a[class*="bg-gradient"] {
-  @apply !text-white no-underline;
+a[class*="bg-gradient"] {
+  color: white !important;
+  text-decoration: none !important;
 }
 
-a.btn:hover, a[class*="bg-gradient"]:hover {
-  @apply !text-white;
+a[class*="bg-gradient"]:hover {
+  color: white !important;
 }
 
 /* Utility classes */
