@@ -241,7 +241,10 @@ export default function OrganizerDashboard() {
   };
 
   const getParticipantLink = () => {
-    return `${typeof window !== 'undefined' ? window.location.origin : ''}/join/${id}`;
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const isMutual = group?.settings?.surpriseMode === 'mutual';
+    const path = isMutual ? `/join/${id}/mutual` : `/join/${id}`;
+    return `${origin}${path}`;
   };
 
   const getPairingsLink = () => {
@@ -1092,7 +1095,7 @@ export default function OrganizerDashboard() {
             {/* Quick Access to Organizer's Own Gift List */}
             {getOrganizerParticipant() && (
               <div className="relative group">
-                <Link href={`/join/${id}?orgParticipant=${getOrganizerParticipant().id}`} className="block text-center p-4 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition shadow-lg">
+                <Link href={`${getParticipantLink()}?orgParticipant=${getOrganizerParticipant().id}`} className="block text-center p-4 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition shadow-lg">
                   🎁 Meine Wunschliste
                 </Link>
                 <div className="absolute hidden group-hover:flex bg-gray-900 text-white text-xs rounded-lg p-3 left-0 mt-2 w-56 z-10 flex-col gap-1">
@@ -1102,7 +1105,7 @@ export default function OrganizerDashboard() {
               </div>
             )}
 
-            <Link href={`/join/${id}`} className="block text-center p-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold transition">
+            <Link href={getParticipantLink()} className="block text-center p-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold transition">
               🔗 Zum Beitritts-Link
             </Link>
 
