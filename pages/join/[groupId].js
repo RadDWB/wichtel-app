@@ -342,6 +342,12 @@ export default function JoinGroup() {
       const legacyKey = `participant_pin_${participant.id}`;
       const legacyPin = localStorage.getItem(legacyKey);
       storedPin = localStorage.getItem(newKey) || legacyPin;
+
+      // Also check if participant has PIN stored in the group database
+      if (!storedPin && participant.pin) {
+        storedPin = participant.pin;
+      }
+
       if (!localStorage.getItem(newKey) && legacyPin) {
         localStorage.setItem(newKey, legacyPin); // migrate once so future logins work
       }
@@ -895,19 +901,22 @@ export default function JoinGroup() {
                 />
               </div>
 
-              <div>
-                <PinInput
-                  value={participantPin}
-                  onChange={(e) => setParticipantPin(e.target.value)}
-                  placeholder="z.B. 1234"
-                  maxLength="6"
-                  className="input-field w-full"
-                  label="PIN zum Schutz (optional)"
-                />
-                <p className="text-xs text-gray-500 mt-2">
-                  Setze eine PIN, um deine Daten zu schützen. Ohne PIN kann jeder auf diesem Gerät deine Daten bearbeiten.
-                </p>
-              </div>
+              {/* Show PIN input only if PIN is actually needed (not for mutual + public mode) */}
+              {!(group?.settings?.surpriseMode === 'mutual' && group?.settings?.pairingVisibility === 'public') && (
+                <div>
+                  <PinInput
+                    value={participantPin}
+                    onChange={(e) => setParticipantPin(e.target.value)}
+                    placeholder="z.B. 1234"
+                    maxLength="6"
+                    className="input-field w-full"
+                    label="PIN zum Schutz (optional)"
+                  />
+                  <p className="text-xs text-gray-500 mt-2">
+                    Setze eine PIN, um deine Daten zu schützen. Ohne PIN kann jeder auf diesem Gerät deine Daten bearbeiten.
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="flex gap-3 mt-6">
@@ -923,11 +932,16 @@ export default function JoinGroup() {
                     setError('Bitte gib deinen Namen ein');
                     return;
                   }
+                  // Check if PIN is needed for this group
+                  const isMutualMode = group?.settings?.surpriseMode === 'mutual';
+                  const isPublicPairings = group?.settings?.pairingVisibility === 'public';
+                  const pinNeeded = !(isMutualMode && isPublicPairings);
+
                   const newParticipant = {
                     id: Date.now().toString(),
                     name: nameEdit,
                     email: emailEdit || null,
-                    pin: participantPin || null,
+                    pin: (pinNeeded && participantPin) ? participantPin : null, // Only save PIN if needed
                   };
                   const updated = {
                     ...group,
@@ -940,8 +954,8 @@ export default function JoinGroup() {
                     console.log('✅ New participant added to KV');
                     localStorage.setItem(`participant_${groupId}`, newParticipant.id);
 
-                    // Save PIN if provided
-                    if (participantPin.trim()) {
+                    // Save PIN if provided and needed
+                    if (pinNeeded && participantPin.trim()) {
                       localStorage.setItem(`participant_pin_${groupId}_${newParticipant.id}`, participantPin);
                     }
 
