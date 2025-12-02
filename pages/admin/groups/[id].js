@@ -147,10 +147,17 @@ export default function AdminGroupDetails() {
           </div>
         </div>
 
-        {/* Created Date */}
-        <div className="bg-gray-800 rounded-lg p-6 mb-8 border-b border-gray-700">
-          <p className="text-gray-400 text-sm mb-2">Erstellt am</p>
-          <p className="text-white font-mono">{formatDate(group.createdAt)}</p>
+        {/* Created Date & Organizer PIN */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="bg-gray-800 rounded-lg p-6 border-b border-gray-700">
+            <p className="text-gray-400 text-sm mb-2">Erstellt am</p>
+            <p className="text-white font-mono">{formatDate(group.createdAt)}</p>
+          </div>
+          <div className="bg-gray-800 rounded-lg p-6 border-b border-gray-700">
+            <p className="text-gray-400 text-sm mb-2">🔒 Organizer PIN</p>
+            <p className="text-white font-mono text-2xl font-bold">{group.organizerPin}</p>
+            <p className="text-gray-500 text-xs mt-2">Diese PIN kann der Organisator anfordern wenn er sie vergessen hat</p>
+          </div>
         </div>
 
         {/* Participants */}

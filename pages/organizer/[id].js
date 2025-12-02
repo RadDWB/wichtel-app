@@ -47,6 +47,7 @@ export default function OrganizerDashboard() {
       // Admin bypass - no PIN needed
       if (admin === 'true') {
         setAuthenticated(true);
+        setLoading(false);
       } else if (showPin) {
         // If showPin in URL, verify it server-side FIRST
         verifyPinServerSide();
@@ -68,6 +69,8 @@ export default function OrganizerDashboard() {
         } else {
           setAuthenticated(false);
         }
+        // Stop loading spinner so PIN input form appears
+        setLoading(false);
       }
 
       // Check for draw success popup
@@ -110,6 +113,8 @@ export default function OrganizerDashboard() {
       console.error('Error verifying PIN:', err);
       setAuthenticated(false);
       setPinError('Fehler beim Überprüfen der PIN');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -546,6 +551,9 @@ export default function OrganizerDashboard() {
           <p className="text-xl text-gray-700 mb-1">{group.name}</p>
           <p className="text-gray-600">Überblick über den Status deiner Wichtelgruppe</p>
           <p className="text-sm text-gray-500 mt-2 font-mono">ID: {id}</p>
+          {group?.organizerPin && (
+            <p className="text-sm text-red-600 mt-2 font-mono font-bold">🔒 PIN: {group.organizerPin}</p>
+          )}
         </div>
 
         {/* Main Content Grid */}

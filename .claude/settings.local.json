@@ -16,7 +16,8 @@
       "Bash(npm run build:*)",
       "Bash(xargs -I {} sh -c 'echo \"\"\"\"===== {} =====\"\"\"\" && grep -n \"\"\"\"Wichtel v\"\"\"\" {}')",
       "Bash(git tag:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []
