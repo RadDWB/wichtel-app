@@ -91,6 +91,24 @@ export default function Home() {
           <p className="text-xs text-gray-400 mt-4">
             Made with ❤️ for families, friends & communities
           </p>
+
+          {/* Donation Section */}
+          <div className="mt-8 pt-6 border-t border-gray-200">
+            <p className="text-xs text-gray-600 mb-3">
+              Wenn Sie diese kleine App hilfreich finden, können Sie mir einen Kaffee spendieren:
+            </p>
+            <a
+              href="https://www.paypal.com/paypalme/duwenbeck/1.99"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-2 px-4 rounded-lg transition text-sm"
+            >
+              💳 PayPal Spende
+            </a>
+            <p className="text-xs text-gray-500 mt-3">
+              Copyright © RD 2025
+            </p>
+          </div>
         </div>
       </main>
     </div>
