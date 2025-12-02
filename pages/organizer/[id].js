@@ -946,13 +946,13 @@ export default function OrganizerDashboard() {
           </p>
 
           <div className="bg-white rounded border border-green-300 p-4 mb-4 whitespace-pre-wrap font-mono text-xs text-gray-800 max-h-48 overflow-y-auto">
-            {getInvitationText(getParticipantLink())}
+            {getInvitationText(getParticipantLink(), group)}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
             <button
               onClick={() => {
-                navigator.clipboard.writeText(getInvitationText(getParticipantLink()));
+                navigator.clipboard.writeText(getInvitationText(getParticipantLink(), group));
                 setCopiedType('invitation');
                 setTimeout(() => setCopiedType(null), 2000);
               }}
@@ -967,7 +967,7 @@ export default function OrganizerDashboard() {
               </button>
               <div className="absolute hidden group-hover:flex bg-gray-900 text-white text-xs rounded-lg p-3 right-0 md:left-0 mt-2 w-48 z-10 flex-col gap-2">
                 <a
-                  href={`https://wa.me/?text=${encodeURIComponent(getInvitationText(getParticipantLink()))}`}
+                  href={`https://wa.me/?text=${encodeURIComponent(getInvitationText(getParticipantLink(), group))}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-green-400 block"
@@ -975,7 +975,7 @@ export default function OrganizerDashboard() {
                   💬 WhatsApp
                 </a>
                 <a
-                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(getInvitationText(getParticipantLink()))}`}
+                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(getInvitationText(getParticipantLink(), group))}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-green-400 block text-xs"
@@ -983,7 +983,7 @@ export default function OrganizerDashboard() {
                   💬 WhatsApp (App)
                 </a>
                 <a
-                  href={`https://signal.me/#p/${encodeURIComponent(getInvitationText(getParticipantLink()))}`}
+                  href={`https://signal.me/#p/${encodeURIComponent(getInvitationText(getParticipantLink(), group))}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-blue-400 block"
@@ -1000,14 +1000,14 @@ export default function OrganizerDashboard() {
                   🔐 Threema
                 </a>
                 <a
-                  href={`mailto:?body=${encodeURIComponent(getInvitationText(getParticipantLink()))}`}
+                  href={`mailto:?body=${encodeURIComponent(getInvitationText(getParticipantLink(), group))}`}
                   className="hover:text-blue-400 block"
                 >
                   📧 Email
                 </a>
                 <button
                   onClick={() => {
-                    navigator.clipboard.writeText(getInvitationText(getParticipantLink()));
+                    navigator.clipboard.writeText(getInvitationText(getParticipantLink(), group));
                     setCopiedType('share');
                     setTimeout(() => setCopiedType(null), 2000);
                   }}
