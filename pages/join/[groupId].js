@@ -1482,6 +1482,15 @@ export default function JoinGroup() {
               </ul>
             </div>
 
+            {/* Amazon Filter - Always visible so users can browse */}
+            <div className="mb-8">
+              <p className="text-sm font-semibold text-gray-700 mb-3">💡 Schon mal schauen? Nutze unsere Amazon-Filter:</p>
+              <AmazonFilterSelector
+                preselectedPrice={getBudgetPriceRange(group?.budget)}
+                compact={false}
+              />
+            </div>
+
             <div className="flex gap-3">
               <button
                 onClick={() => {
@@ -1552,22 +1561,17 @@ export default function JoinGroup() {
               </div>
             </div>
 
-            {/* Optional: Edit Wishlist - Secondary Action OR Shopping Link */}
-            {group?.settings?.surpriseMode === 'mutual' && group?.settings?.pairingVisibility === 'public' ? (
-              <div className="bg-blue-50 border-l-4 border-blue-500 rounded-lg p-4 mb-8">
-                <p className="text-sm text-gray-700 mb-3">
-                  <span className="font-semibold">💡 Hinweis:</span> Du möchtest schon Geschenke kaufen?
-                </p>
-                <a
-                  href="https://www.amazon.de?tag=wichtel-22"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full block text-center bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 rounded-lg transition"
-                >
-                  🛍️ Zu Amazon
-                </a>
-              </div>
-            ) : group?.settings?.surpriseMode !== 'mutual' ? (
+            {/* Amazon Filters - Always visible */}
+            <div className="mb-8">
+              <p className="text-sm font-semibold text-gray-700 mb-3">🛍️ Schon nach Geschenken schauen? Nutze unsere Amazon-Filter:</p>
+              <AmazonFilterSelector
+                preselectedPrice={getBudgetPriceRange(group?.budget)}
+                compact={false}
+              />
+            </div>
+
+            {/* Optional: Edit Wishlist - Secondary Action (only for flexible mode) */}
+            {group?.settings?.surpriseMode !== 'mutual' && (
               <div className="bg-green-50 border-l-4 border-green-500 rounded-lg p-4 mb-8">
                 <p className="text-sm text-gray-700 mb-3">
                   <span className="font-semibold">Hinweis:</span> Du kannst deine Wunschliste jederzeit bearbeiten, bis die Auslosung stattfindet. Dies ist optional.
@@ -1579,7 +1583,7 @@ export default function JoinGroup() {
                   ✏️ Zur Wunschliste
                 </button>
               </div>
-            ) : null}
+            )}
 
             <div className="bg-gray-50 border-l-4 border-gray-400 rounded-lg p-4 mb-6 text-sm text-gray-700">
               <p className="mb-2">
