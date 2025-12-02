@@ -1201,10 +1201,10 @@ export default function OrganizerDashboard() {
           {/* PayPal Donation Link */}
           <div className="text-center">
             <p className="text-sm text-gray-700 mb-4">
-              Wenn Sie diese App hilfreich finden, spendieren Sie dem Entwickler einen Kaffee:
+              Wenn Sie diese kleine App hilfreich finden, können Sie mir einen Kaffee spendieren:
             </p>
             <a
-              href="https://paypal.me/rduwenbecky"
+              href="https://www.paypal.com/paypalme/duwenbeck/1.99"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3 px-6 rounded-lg transition"
