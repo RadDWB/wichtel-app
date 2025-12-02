@@ -1045,7 +1045,9 @@ export default function JoinGroup() {
   }
 
   // Step 1.5a2: Confirm existing participant & set optional PIN (NEW PARTICIPANTS ONLY)
-  if (step === 1.5 && selectedParticipant && !pinConfirmed && !participantPin && !group.drawn) {
+  // Skip this for mutual + public mode (no PIN needed)
+  const isMutualPublic = group?.settings?.surpriseMode === 'mutual' && group?.settings?.pairingVisibility === 'public';
+  if (step === 1.5 && selectedParticipant && !pinConfirmed && !participantPin && !group.drawn && !isMutualPublic) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
         <div className="container mx-auto py-12 px-4 max-w-2xl">
