@@ -1482,15 +1482,6 @@ export default function JoinGroup() {
               </ul>
             </div>
 
-            {/* Amazon Filter - Always visible so users can browse */}
-            <div className="mb-8">
-              <p className="text-sm font-semibold text-gray-700 mb-3">💡 Schon mal schauen? Nutze unsere Amazon-Filter:</p>
-              <AmazonFilterSelector
-                preselectedPrice={getBudgetPriceRange(group?.budget)}
-                compact={false}
-              />
-            </div>
-
             <div className="flex gap-3">
               <button
                 onClick={() => {
