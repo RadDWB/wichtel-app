@@ -5,6 +5,22 @@ import { getGroup } from '../../lib/kv-client';
 import AmazonFilterSelector from '../../components/AmazonFilterSelector';
 import { APP_VERSION } from '../../lib/constants';
 
+// Map budget text to price range keys for the filter
+function getBudgetPriceRange(budget) {
+  if (!budget) return null;
+
+  const budgetStr = budget.toLowerCase();
+  if (budgetStr.includes('5') && !budgetStr.includes('15') && !budgetStr.includes('25') && !budgetStr.includes('50')) return '5-10';
+  if (budgetStr.includes('10') && !budgetStr.includes('100')) return '10-15';
+  if (budgetStr.includes('15') && !budgetStr.includes('50')) return '15-20';
+  if (budgetStr.includes('20')) return '20-30';
+  if (budgetStr.includes('30')) return '30-50';
+  if (budgetStr.includes('50')) return '50-100';
+  if (budgetStr.includes('100')) return '50-100';
+
+  return null;
+}
+
 export const getServerSideProps = async () => {
   return { props: {} };
 };
@@ -183,7 +199,7 @@ export default function PublicPairings() {
               {/* Amazon Filter - Nur für Public Pairings */}
               <div className="mt-12 pt-8 border-t-2 border-gray-300">
                 <h3 className="section-title mb-6">🛍️ Geschenkideen auf Amazon</h3>
-                <AmazonFilterSelector budget={group?.settings?.budget} />
+                <AmazonFilterSelector preselectedPrice={getBudgetPriceRange(group?.settings?.budget)} />
               </div>
             </>
           )}
