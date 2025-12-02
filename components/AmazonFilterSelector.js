@@ -4,6 +4,7 @@ const AFFILIATE_TAG = 'httpwwwspor03-21';
 const BASE_URL = 'https://www.amazon.de/s';
 
 // Filter mit echten Preisranges (min/max in €) für p_36 Amazon-Parameter
+// Age filters mit maxAge für intelligente Jungen/Mädchen-Logik
 const AMAZON_FILTERS = {
   price: [
     { label: '1-5 €', min: 1, max: 5 },
@@ -16,18 +17,18 @@ const AMAZON_FILTERS = {
     { label: '100+ €', min: 100, max: null },
   ],
   age: [
-    { label: '👶 Baby (0-2 Jahre)', query: 'Baby Geschenk' },
-    { label: '👧 Kind (3-7 Jahre)', query: 'Kinder 3-7 Jahre Geschenk' },
-    { label: '🧒 Schulkind (8-12 Jahre)', query: 'Kinder 8-12 Jahre Geschenk' },
-    { label: '👦 Teenager (13-17 Jahre)', query: 'Teenager Geschenk' },
-    { label: '👨 Erwachsener (18-40 Jahre)', query: 'Geschenk für Erwachsene' },
-    { label: '👩 Reifer (40-60 Jahre)', query: 'Geschenk 40-60 Jahre' },
-    { label: '👴 Senioren (über 60 Jahre)', query: 'Geschenk für Senioren' },
+    { label: '👶 Baby (0-2 Jahre)', maxAge: 2, queryBase: 'Baby Geschenk' },
+    { label: '👧 Kind (3-7 Jahre)', maxAge: 7, queryBase: 'Kinder 3-7 Jahre Geschenk' },
+    { label: '🧒 Schulkind (8-12 Jahre)', maxAge: 12, queryBase: 'Kinder 8-12 Jahre Geschenk' },
+    { label: '👦 Teenager (13-17 Jahre)', maxAge: 17, queryBase: 'Teenager Geschenk' },
+    { label: '👨 Erwachsener (18-40 Jahre)', maxAge: 40, queryBase: 'Geschenk für Erwachsene' },
+    { label: '👩 Reifer (40-60 Jahre)', maxAge: 60, queryBase: 'Geschenk 40-60 Jahre' },
+    { label: '👴 Senioren (über 60 Jahre)', maxAge: 999, queryBase: 'Geschenk für Senioren' },
   ],
   gender: [
-    { label: '👩 Weiblich', query: 'für Frauen' },
-    { label: '👨 Männlich', query: 'für Männer' },
-    { label: '❓ Egal', query: '' },
+    { label: '👩 Weiblich', queryAdult: 'für Frauen', queryChild: 'für Mädchen' },
+    { label: '👨 Männlich', queryAdult: 'für Männer', queryChild: 'für Jungen' },
+    { label: '❓ Egal', queryAdult: '', queryChild: '' },
   ],
   category: [
     { label: '📚 Bücher & E-Reader', query: 'Bücher E-Reader' },
@@ -41,15 +42,27 @@ const AMAZON_FILTERS = {
   ],
 };
 
-// Build Amazon search URL with proper p_36 price filter (in cents)
+// Build Amazon search URL with proper p_36 price filter and smart gender detection
 function buildAmazonSearchUrl(selectedFilters) {
-  const { price, category, age, gender } = selectedFilters;
+  const { price, category, age: selectedAge, gender: selectedGender } = selectedFilters;
 
   const queryParts = ['geschenkideen'];
 
+  // Add category
   if (category?.query) queryParts.push(category.query);
-  if (age?.query) queryParts.push(age.query);
-  if (gender?.query) queryParts.push(gender.query);
+
+  // Add age base
+  if (selectedAge?.queryBase) queryParts.push(selectedAge.queryBase);
+
+  // Smart gender detection: Jungen/Mädchen für Kinder, Männer/Frauen für Erwachsene
+  if (selectedGender && selectedGender?.queryAdult) {
+    const useChildVersion = selectedAge?.maxAge <= 17; // bis 17 Jahre = Kind/Teenager
+    const genderQuery = useChildVersion
+      ? selectedGender.queryChild
+      : selectedGender.queryAdult;
+
+    if (genderQuery) queryParts.push(genderQuery);
+  }
 
   const searchParams = new URLSearchParams();
 

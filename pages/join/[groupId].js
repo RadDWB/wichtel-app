@@ -502,7 +502,7 @@ export default function JoinGroup() {
                 }}
                 className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-900 font-bold py-2 px-4 rounded-lg transition"
               >
-                ← Abbrechen
+                ← Andere Person wählen
               </button>
               <button
                 onClick={() => {
