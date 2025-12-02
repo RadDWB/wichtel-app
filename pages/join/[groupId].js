@@ -328,28 +328,32 @@ export default function JoinGroup() {
     const sessionToken = localStorage.getItem(`session_token_${groupId}`);
     localStorage.setItem(`participant_session_${groupId}_${participant.id}`, sessionToken);
 
-    // Check if this participant has a stored PIN using participant.id
-    const newKey = `participant_pin_${groupId}_${participant.id}`;
-    const legacyKey = `participant_pin_${participant.id}`;
-    const legacyPin = localStorage.getItem(legacyKey);
-    const storedPin = localStorage.getItem(newKey) || legacyPin;
-    if (!localStorage.getItem(newKey) && legacyPin) {
-      localStorage.setItem(newKey, legacyPin); // migrate once so future logins work
+    // PIN logic: Required if (A) has wish list (flexible mode) OR (B) pairings are private
+    // Only skip PIN in Mutual + Public mode (no wish lists AND pairings visible to everyone)
+    const isMutualMode = group?.settings?.surpriseMode === 'mutual';
+    const isPublicPairings = group?.settings?.pairingVisibility === 'public';
+    const pinNotNeeded = isMutualMode && isPublicPairings;
+
+    let storedPin = '';
+
+    // Only check for stored PIN if PIN is actually needed
+    if (!pinNotNeeded) {
+      const newKey = `participant_pin_${groupId}_${participant.id}`;
+      const legacyKey = `participant_pin_${participant.id}`;
+      const legacyPin = localStorage.getItem(legacyKey);
+      storedPin = localStorage.getItem(newKey) || legacyPin;
+      if (!localStorage.getItem(newKey) && legacyPin) {
+        localStorage.setItem(newKey, legacyPin); // migrate once so future logins work
+      }
     }
 
     // Set participant data
     setSelectedParticipant(participant);
     setNameEdit(participant.name);
     setEmailEdit(participant.email || '');
-    setParticipantPin(storedPin || ''); // Store PIN if it exists
+    setParticipantPin(storedPin || ''); // Store PIN if it exists (or empty for mutual + public)
     setTempPin(''); // Reset PIN input
     setPinVerificationError(''); // Clear any previous errors
-
-    // PIN logic: Required if (A) has wish list (flexible mode) OR (B) pairings are private
-    // Only skip PIN in Mutual + Public mode (no wish lists AND pairings visible to everyone)
-    const isMutualMode = group?.settings?.surpriseMode === 'mutual';
-    const isPublicPairings = group?.settings?.pairingVisibility === 'public';
-    const pinNotNeeded = isMutualMode && isPublicPairings;
 
     if (pinNotNeeded) {
       // Mutual + Public: skip PIN steps entirely, go directly to gift choice (or confirmation)
@@ -1045,8 +1049,15 @@ export default function JoinGroup() {
   }
 
   // Step 1.5a2: Confirm existing participant & set optional PIN (NEW PARTICIPANTS ONLY)
-  // Skip this for mutual + public mode (no PIN needed)
+  // Skip this for mutual + public mode (no PIN needed - participantPin will be empty)
   const isMutualPublic = group?.settings?.surpriseMode === 'mutual' && group?.settings?.pairingVisibility === 'public';
+
+  // For mutual + public mode: skip PIN screen and set pinConfirmed immediately
+  if (step === 1.5 && selectedParticipant && !pinConfirmed && !participantPin && !group.drawn && isMutualPublic) {
+    setPinConfirmed(true);
+    return null;
+  }
+
   if (step === 1.5 && selectedParticipant && !pinConfirmed && !participantPin && !group.drawn && !isMutualPublic) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 via-white to-red-50">
