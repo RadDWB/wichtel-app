@@ -1212,28 +1212,17 @@ export default function OrganizerDashboard() {
             />
           </div>
 
-          {/* Buy Me A Coffee Widget Script */}
-          <div className="text-center">
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `
-                  window.addEventListener('load', function() {
-                    const script = document.createElement('script');
-                    script.setAttribute('data-name', 'BMC-Widget');
-                    script.setAttribute('data-cfasync', 'false');
-                    script.src = 'https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js';
-                    script.setAttribute('data-id', 'rduwenbecky');
-                    script.setAttribute('data-description', 'Support me on Buy me a coffee!');
-                    script.setAttribute('data-message', 'Hi, falls Sie diese kleine App hilfreich finden, unterstützen Sie mich gerne mit einem Kaffee! Gruß');
-                    script.setAttribute('data-color', '#FF5F5F');
-                    script.setAttribute('data-position', 'Right');
-                    script.setAttribute('data-x_margin', '18');
-                    script.setAttribute('data-y_margin', '18');
-                    document.body.appendChild(script);
-                  });
-                `
-              }}
-            />
+          {/* Buy Me A Coffee Direct Link */}
+          <div className="text-center mt-8">
+            <p className="text-sm text-gray-700 mb-4">oder spendieren Sie einen Kaffee hier:</p>
+            <a
+              href="https://www.buymeacoffee.com/rduwenbecky"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-bold py-3 px-6 rounded-lg transition"
+            >
+              ☕ Buy Me A Coffee
+            </a>
           </div>
         </div>
       </div>
