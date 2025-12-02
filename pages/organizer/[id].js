@@ -1198,30 +1198,18 @@ export default function OrganizerDashboard() {
             <p className="text-xs text-gray-500">Copyright © RD 2025. Alle Rechte vorbehalten.</p>
           </div>
 
-          {/* Ko-Fi Donation Widget */}
-          <div className="text-center mb-8">
+          {/* PayPal Donation Link */}
+          <div className="text-center">
             <p className="text-sm text-gray-700 mb-4">
               Wenn Sie diese App hilfreich finden, spendieren Sie dem Entwickler einen Kaffee:
             </p>
-            <iframe
-              id='kofiframe'
-              src='https://ko-fi.com/jacksnyderkofi/?hidefeed=true&widget=true&embed=true&preview=true'
-              style={{border:'none', width:'100%', padding:'4px', background:'#f9f9f9'}}
-              height='712'
-              title='jacksnyderkofi'
-            />
-          </div>
-
-          {/* Buy Me A Coffee Direct Link */}
-          <div className="text-center mt-8">
-            <p className="text-sm text-gray-700 mb-4">oder spendieren Sie einen Kaffee hier:</p>
             <a
-              href="https://www.buymeacoffee.com/rduwenbecky"
+              href="https://paypal.me/rduwenbecky"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-bold py-3 px-6 rounded-lg transition"
+              className="inline-block bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3 px-6 rounded-lg transition"
             >
-              ☕ Buy Me A Coffee
+              💳 PayPal Spende
             </a>
           </div>
         </div>
